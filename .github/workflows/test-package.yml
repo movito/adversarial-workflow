@@ -1,0 +1,217 @@
+name: Test Adversarial Workflow Package
+
+on:
+  push:
+    branches: [ main, feature/* ]
+    paths:
+      - 'adversarial-workflow/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'adversarial-workflow/**'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  test-installation:
+    name: Test Installation on ${{ matrix.os }} - Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+      fail-fast: false  # Continue testing other combinations even if one fails
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Display system information
+        run: |
+          echo "OS: ${{ matrix.os }}"
+          echo "Python: ${{ matrix.python-version }}"
+          python --version
+          bash --version | head -1
+          git --version
+          pwd
+
+      - name: Install package
+        run: |
+          cd adversarial-workflow
+          pip install -e .
+
+      - name: Verify installation
+        run: |
+          pip list | grep adversarial-workflow
+          which adversarial
+          adversarial --help
+
+      - name: Test CLI commands
+        run: |
+          # Test help for each command
+          adversarial init --help
+          adversarial check --help
+          adversarial evaluate --help
+          adversarial review --help
+          adversarial validate --help
+
+  test-workflow:
+    name: Test Complete Workflow on Ubuntu
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install package
+        run: |
+          cd adversarial-workflow
+          pip install -e .
+
+      - name: Install aider-chat
+        run: |
+          pip install aider-chat
+
+      - name: Create test project
+        run: |
+          mkdir -p /tmp/test-adversarial-project
+          cd /tmp/test-adversarial-project
+          git init
+          git config user.name "Test User"
+          git config user.email "test@example.com"
+
+          # Create simple Python project
+          echo "def hello():" > main.py
+          echo "    return 'world'" >> main.py
+
+          echo "from main import hello" > test_main.py
+          echo "def test_hello():" >> test_main.py
+          echo "    assert hello() == 'world'" >> test_main.py
+
+          git add .
+          git commit -m "Initial commit"
+
+      - name: Initialize adversarial workflow
+        run: |
+          cd /tmp/test-adversarial-project
+          adversarial init
+
+      - name: Verify initialization
+        run: |
+          cd /tmp/test-adversarial-project
+          test -d .adversarial || exit 1
+          test -f .adversarial/config.yml || exit 1
+          test -f .adversarial/scripts/evaluate_plan.sh || exit 1
+          test -f .adversarial/scripts/review_implementation.sh || exit 1
+          test -f .adversarial/scripts/validate_tests.sh || exit 1
+          test -f .aider.conf.yml || exit 1
+          test -f .env.example || exit 1
+          echo "✓ All expected files created"
+
+      - name: Check script executability
+        run: |
+          cd /tmp/test-adversarial-project
+          test -x .adversarial/scripts/evaluate_plan.sh || exit 1
+          test -x .adversarial/scripts/review_implementation.sh || exit 1
+          test -x .adversarial/scripts/validate_tests.sh || exit 1
+          echo "✓ All scripts are executable"
+
+      - name: Validate script syntax
+        run: |
+          cd /tmp/test-adversarial-project
+          bash -n .adversarial/scripts/evaluate_plan.sh
+          bash -n .adversarial/scripts/review_implementation.sh
+          bash -n .adversarial/scripts/validate_tests.sh
+          echo "✓ All scripts have valid bash syntax"
+
+      - name: Test adversarial check (without API key)
+        run: |
+          cd /tmp/test-adversarial-project
+          # Should detect missing API key
+          adversarial check || echo "Expected failure: API key not set"
+
+      - name: Verify config file is valid YAML
+        run: |
+          cd /tmp/test-adversarial-project
+          python -c "import yaml; yaml.safe_load(open('.adversarial/config.yml'))"
+          echo "✓ config.yml is valid YAML"
+
+      - name: Test case sensitivity (Linux-specific)
+        run: |
+          cd /tmp/test-adversarial-project
+          echo "test" > Test.txt
+          # On Linux, this should fail (case-sensitive)
+          test ! -f test.txt && echo "✓ Linux file system is case-sensitive as expected" || exit 1
+
+  test-bash-compatibility:
+    name: Test Bash Version Compatibility
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check Bash version
+        run: |
+          bash --version
+          echo "Bash major version:"
+          bash -c 'echo $BASH_VERSION' | cut -d. -f1
+
+      - name: Install package
+        run: |
+          cd adversarial-workflow
+          pip install -e .
+
+      - name: Initialize and test scripts
+        run: |
+          mkdir -p /tmp/bash-test
+          cd /tmp/bash-test
+          git init
+          git config user.name "Test"
+          git config user.email "test@example.com"
+
+          adversarial init
+
+          # Test scripts with explicit bash version check
+          for script in .adversarial/scripts/*.sh; do
+            echo "Testing: $script"
+            bash -n "$script" || exit 1
+          done
+          echo "✓ All scripts compatible with Linux bash"
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-22.04
+    needs: [test-installation, test-workflow, test-bash-compatibility]
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.test-installation.result }}" == "success" ] && \
+             [ "${{ needs.test-workflow.result }}" == "success" ] && \
+             [ "${{ needs.test-bash-compatibility.result }}" == "success" ]; then
+            echo "✅ All tests passed!"
+            exit 0
+          else
+            echo "❌ Some tests failed"
+            echo "Installation: ${{ needs.test-installation.result }}"
+            echo "Workflow: ${{ needs.test-workflow.result }}"
+            echo "Bash compatibility: ${{ needs.test-bash-compatibility.result }}"
+            exit 1
+          fi

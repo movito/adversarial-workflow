@@ -1,0 +1,23 @@
+# Adversarial Workflow Configuration
+# This file configures the adversarial workflow for your project
+
+# Model Configuration
+evaluator_model: {{EVALUATOR_MODEL}}
+
+# Directory Structure
+task_directory: {{TASK_DIRECTORY}}
+log_directory: {{LOG_DIRECTORY}}
+artifacts_directory: {{ARTIFACTS_DIRECTORY}}
+
+# Test Configuration
+test_command: {{TEST_COMMAND}}
+
+# Workflow Settings
+# Enable/disable automatic script execution
+auto_run: false
+
+# Git integration (requires git repo)
+git_integration: true
+
+# Save artifacts after each phase
+save_artifacts: true

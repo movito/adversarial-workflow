@@ -1,0 +1,111 @@
+# Task: Fix Off-By-One Error in List Processing
+
+**Type**: Bug Fix
+**Priority**: Medium
+**Estimated Time**: 15 minutes
+
+---
+
+## Problem
+
+The `process_items()` function in our codebase has an off-by-one error that causes it to skip the last item in any list it processes.
+
+**Current Behavior:**
+```python
+def process_items(items):
+    results = []
+    for i in range(len(items) - 1):  # BUG: Should be len(items)
+        results.append(items[i].upper())
+    return results
+
+# Example:
+process_items(['a', 'b', 'c'])
+# Returns: ['A', 'B']  ❌ Missing 'C'
+```
+
+**Expected Behavior:**
+```python
+process_items(['a', 'b', 'c'])
+# Should return: ['A', 'B', 'C']  ✅
+```
+
+---
+
+## Root Cause
+
+The `range(len(items) - 1)` in the for loop iterates one less time than needed, skipping the last element.
+
+---
+
+## Implementation Plan
+
+### Step 1: Fix the Loop
+Change `range(len(items) - 1)` to `range(len(items))`.
+
+### Step 2: Add Test Coverage
+Add a test to ensure all items are processed:
+
+```python
+def test_process_items_includes_last():
+    items = ['a', 'b', 'c']
+    result = process_items(items)
+    assert len(result) == len(items)
+    assert result[-1] == 'C'
+```
+
+### Step 3: Add Edge Case Test
+Test with single-item and empty lists:
+
+```python
+def test_process_items_edge_cases():
+    assert process_items([]) == []
+    assert process_items(['x']) == ['X']
+```
+
+---
+
+## Acceptance Criteria
+
+- [x] `process_items()` processes all items including the last one
+- [x] Tests pass for normal lists (3+ items)
+- [x] Tests pass for edge cases (0, 1 item)
+- [x] No regressions in existing functionality
+
+---
+
+## Estimated Cost
+
+- Plan Evaluation: $0.01
+- Implementation Review: $0.02
+- Test Validation: $0.01
+- **Total: ~$0.04**
+
+---
+
+## Notes
+
+This is an **example task** created by `adversarial quickstart`.
+
+It demonstrates:
+- Clear problem statement
+- Expected behavior
+- Implementation plan
+- Test coverage
+- Acceptance criteria
+
+**Try running the workflow:**
+```bash
+# Phase 1: Evaluate this plan
+adversarial evaluate tasks/example-bug-fix.md
+
+# Phase 2: Implement (do this yourself or use aider)
+# (Make the code changes)
+
+# Phase 3: Review implementation
+adversarial review
+
+# Phase 4: Validate with tests
+adversarial validate
+```
+
+Learn more: https://github.com/movito/adversarial-workflow

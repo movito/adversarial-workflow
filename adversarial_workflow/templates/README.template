@@ -1,0 +1,51 @@
+# Adversarial Workflow
+
+This project uses the **Author-Reviewer adversarial workflow** for quality-controlled development.
+
+## Quick Start
+
+### 1. Setup
+```bash
+# API keys are already configured in .env
+# Configuration is in .adversarial/config.yml
+```
+
+### 2. Workflow Scripts
+
+All scripts are located in `.adversarial/scripts/`:
+
+- **evaluate_plan.sh** - Phase 1: Plan evaluation before implementation
+- **review_implementation.sh** - Phase 3: Code review after implementation
+- **validate_tests.sh** - Phase 4: Test validation and analysis
+
+### 3. Typical Workflow
+
+```bash
+# Phase 1: Evaluate your plan
+./.adversarial/scripts/evaluate_plan.sh tasks/TASK-001.md
+
+# Phase 2: Implement (manual or with aider)
+# ... make your changes ...
+
+# Phase 3: Review implementation
+./.adversarial/scripts/review_implementation.sh tasks/TASK-001.md
+
+# Phase 4: Validate tests
+./.adversarial/scripts/validate_tests.sh tasks/TASK-001.md
+
+# Phase 5: Commit if approved
+git add . && git commit -m "feat: Implement TASK-001"
+```
+
+## Configuration
+
+Edit `.adversarial/config.yml` to customize:
+- Reviewer model (evaluator_model: GPT-4, Claude, etc.)
+- Task directory location
+- Test command
+- Output directories
+
+## Learn More
+
+- [Adversarial Workflow Package](https://github.com/yourusername/adversarial-workflow)
+- Run `adversarial --help` for command reference
