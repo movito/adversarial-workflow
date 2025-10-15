@@ -13,7 +13,7 @@ Usage:
 """
 
 __version__ = "0.2.0"
-__author__ = "broadcaster_one"
+__author__ = "Fredrik Matheson"
 __license__ = "MIT"
 
 from .cli import check, evaluate, init, main, review, validate

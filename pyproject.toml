@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "Multi-stage AI code review system preventing phantom work - Author/Reviewer pattern"
 readme = "README.md"
 authors = [
-    {name = "broadcaster_one"}
+    {name = "Fredrik Matheson"}
 ]
 license = {text = "MIT"}
 classifiers = [
