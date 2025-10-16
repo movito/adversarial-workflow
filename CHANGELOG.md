@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2025-10-16
+
+### Fixed
+- **CRITICAL: Missing dotfile templates in distribution**: Added `templates/.*` pattern to package-data in pyproject.toml
+  - Now includes `.aider.conf.yml.template` and `.env.example.template` in wheel/sdist
+  - Fixes BLOCKING issue where `adversarial init` would fail with missing template errors
+  - Reported by agent integration testing
+- **Version mismatch in CLI**: Updated cli.py `__version__` from 0.1.0 to 0.2.1
+  - `adversarial --version` now correctly shows package version
+  - All three version declarations now synchronized (pyproject.toml, __init__.py, cli.py)
+
+### Verification
+- All 8 template files verified in wheel distribution (including dotfiles)
+- Fresh installation test passed with correct version display
+- twine check: PASSED for both wheel and source distribution
+
 ## [0.2.0] - 2025-10-16
 
 ### Added
