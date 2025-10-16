@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.3] - 2025-10-16
+
+### Fixed
+- **CRITICAL: Workflow scripts now validate API keys before calling aider**
+  - Scripts silently fell back to OpenRouter when no API keys were configured
+  - Now explicitly check for `.env` file and validate API keys are present
+  - Provide clear error messages with ERROR/WHY/FIX/HELP pattern
+  - Direct users to `adversarial init --interactive` to set up API keys
+  - Prevents unexpected OpenRouter authentication prompts
+  - Affects all three workflow scripts: evaluate_plan.sh, review_implementation.sh, validate_tests.sh
+
+### Changed
+- Workflow script error messages now use consistent color-coded formatting
+- API key validation happens before any aider calls are made
+- Error messages clearly distinguish between "no .env file" vs "empty .env file"
+
+### For AI Agents
+This release fixes a critical UX issue where workflow scripts would proceed without API keys and fall back to OpenRouter, causing unexpected authentication prompts. Scripts now fail fast with clear error messages directing users to proper setup.
+
 ## [0.2.2] - 2025-10-16
 
 ### Added

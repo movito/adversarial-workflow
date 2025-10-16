@@ -1,9 +1,63 @@
 #!/bin/bash
 # Phase 4: Test Validation - Reviewer validates implementation
 
+# ANSI color codes
+RED='\033[91m'
+GREEN='\033[92m'
+YELLOW='\033[93m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
 # Load environment variables from .env file
 if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
+else
+  echo -e "${RED}❌ ERROR: No .env file found${RESET}"
+  echo ""
+  echo -e "${BOLD}WHY:${RESET}"
+  echo "   Workflow scripts need API keys to call AI models (GPT-4o, Claude, etc.)"
+  echo "   These keys should be stored in a .env file in your project root."
+  echo ""
+  echo -e "${BOLD}FIX:${RESET}"
+  echo "   Option 1 (RECOMMENDED): Run interactive setup"
+  echo "     adversarial init --interactive"
+  echo ""
+  echo "   Option 2: Copy example and add your keys manually"
+  echo "     cp .env.example .env"
+  echo "     # Then edit .env and add your API keys"
+  echo ""
+  echo -e "${BOLD}GET API KEYS:${RESET}"
+  echo "   • Anthropic (Claude): https://console.anthropic.com/settings/keys"
+  echo "   • OpenAI (GPT-4o): https://platform.openai.com/api-keys"
+  echo ""
+  exit 1
+fi
+
+# Validate API keys are present
+if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ]; then
+  echo -e "${RED}❌ ERROR: No API keys configured${RESET}"
+  echo ""
+  echo -e "${BOLD}WHY:${RESET}"
+  echo "   Your .env file exists but contains no API keys."
+  echo "   At least one API key is required: OPENAI_API_KEY or ANTHROPIC_API_KEY"
+  echo ""
+  echo -e "${BOLD}FIX:${RESET}"
+  echo "   Edit .env and add at least one API key:"
+  echo ""
+  echo "     # For GPT-4o (OpenAI)"
+  echo "     OPENAI_API_KEY=sk-proj-your-key-here"
+  echo ""
+  echo "     # For Claude 3.5 Sonnet (Anthropic)"
+  echo "     ANTHROPIC_API_KEY=sk-ant-your-key-here"
+  echo ""
+  echo -e "${BOLD}GET API KEYS:${RESET}"
+  echo "   • Anthropic: https://console.anthropic.com/settings/keys"
+  echo "   • OpenAI: https://platform.openai.com/api-keys"
+  echo ""
+  echo -e "${BOLD}VERIFY:${RESET}"
+  echo "   adversarial check"
+  echo ""
+  exit 1
 fi
 
 # Load configuration from .adversarial/config.yml

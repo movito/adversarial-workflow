@@ -57,7 +57,7 @@ pip install adversarial-workflow
 adversarial --version
 ```
 
-Expected output: `adversarial-workflow 0.2.2` (or later)
+Expected output: `adversarial-workflow 0.2.3` (or later)
 
 **Alternative verification:**
 ```bash
