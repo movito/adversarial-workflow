@@ -3,6 +3,60 @@
 ## Overview
 Comprehensive tools for agent status management, identity presentation, and multi-session coordination.
 
+## Project Discovery Tools
+
+### preflight-check.sh
+Comprehensive pre-flight check that agents run before starting work.
+
+**Usage:**
+```bash
+./agents/tools/preflight-check.sh          # Standard output
+./agents/tools/preflight-check.sh --json   # JSON output (future)
+```
+
+**Scan Categories:**
+1. **Project Structure**: Checks for `.agent-context/`, `agents/`, `delegation/`, `docs/`, loose files
+2. **Prerequisites**: Verifies Git, Python, Aider, Bash versions
+3. **Configuration**: Validates `.adversarial/config.yml`, `.env`, `.aider.conf.yml`
+4. **Active Work**: Lists active tasks, checks agent status freshness
+
+**Features:**
+- Color-coded output (✅ pass, ⚠️ warning, ❌ error, ℹ️ info)
+- Prioritized recommendations (HIGH > MEDIUM > LOW > INFO)
+- Exit codes: 0 (pass), 1 (critical errors), 2 (major issues)
+- Security checks (e.g., .env in .gitignore)
+- Completes in < 5 seconds
+- macOS and Linux compatible
+
+**Example Output:**
+```
+🔍 Project Pre-flight Check
+==========================
+
+Project Structure:
+  ✅ .agent-context/ exists
+  ✅ agents/ directory exists
+  ⚠️  Loose documentation files in root
+
+Prerequisites:
+  ✅ Git: 2.39.2 (working tree clean)
+  ✅ Python: 3.13.7
+  ✅ Aider: 0.86.1
+
+Configuration:
+  ✅ .adversarial/config.yml - Valid YAML
+  ✅ .env file exists (3 API keys detected)
+  ✅ .env in .gitignore
+
+Active Work:
+  ℹ️  5 active tasks in delegation/tasks/active/
+
+📋 Recommendations:
+  1. MEDIUM: Organize loose files into docs/ directory
+
+Summary: ✅ 11 checks passed, ⚠️  1 warnings, ❌ 0 errors
+```
+
 ## Status Management Tools
 
 ### update-status.sh
@@ -101,6 +155,7 @@ Context sync events logged to:
 
 # Terminal 2: Agent
 ./agents/ca 3                           # Launch agent
+./agents/tools/preflight-check.sh       # Run pre-flight check FIRST
 ./agents/tools/sync-context.sh pull     # Sync context before work
 # ... work with identity headers ...
 ./agents/tools/update-status.sh media-processor completed TASK-P3-001.md "Precision fix done"

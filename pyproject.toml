@@ -53,7 +53,7 @@ adversarial = "adversarial_workflow.cli:main"
 packages = ["adversarial_workflow"]
 
 [tool.setuptools.package-data]
-adversarial_workflow = ["templates/*", "templates/.*"]
+adversarial_workflow = ["templates/*", "templates/.*", "templates/agent-context/*"]
 
 [tool.black]
 line-length = 100

@@ -225,6 +225,38 @@ test_command: "pytest tests/ --verbose"  # Quoted
 
 ## API & Authentication Errors
 
+### Issue: `adversarial check` reports API keys as missing (but they're in .env)
+
+**Symptoms**:
+```bash
+$ adversarial check
+⚠️  OPENAI_API_KEY not set
+⚠️  ANTHROPIC_API_KEY not set
+```
+
+But your .env file contains valid API keys.
+
+**Solution**:
+This issue was fixed in version 0.2.4+. The `adversarial check` command now properly loads .env files before checking for API keys.
+
+**Upgrade to fix**:
+```bash
+pip install --upgrade adversarial-workflow
+adversarial check
+```
+
+**Expected output (v0.2.4+)**:
+```bash
+✅ .env file found and loaded (2 variables)
+✅ ANTHROPIC_API_KEY configured (from .env) [sk-ant-a...xyzA]
+✅ OPENAI_API_KEY configured (from .env) [sk-proj-...xyzA]
+```
+
+The check now shows:
+- Whether .env file was loaded
+- Source of each key: `(from .env)` or `(from environment)`
+- Partial key preview for verification (first 8 + last 4 chars)
+
 ### Issue: "OpenAI API key not found"
 
 **Symptoms**:
@@ -238,13 +270,13 @@ Error: OpenAI API key not found. Set OPENAI_API_KEY environment variable.
 1. **Set in .env file** (recommended)
    ```bash
    # Copy template
-   cp .adversarial/.env.example .env
-   
+   cp .env.example .env
+
    # Edit .env
    echo "OPENAI_API_KEY=sk-your-key-here" > .env
-   
+
    # Verify
-   cat .env
+   adversarial check
    ```
 
 2. **Set as environment variable**

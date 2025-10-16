@@ -706,6 +706,22 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
             os.path.join(project_path, ".env.example"),
         )
 
+        # Copy AGENT-SYSTEM-GUIDE.md if available (for agent coordination setup)
+        agent_guide_template = templates_dir / "agent-context" / "AGENT-SYSTEM-GUIDE.md"
+        agent_context_dir = Path(project_path) / ".agent-context"
+        agent_guide_dest = agent_context_dir / "AGENT-SYSTEM-GUIDE.md"
+
+        if agent_guide_template.exists() and not agent_guide_dest.exists():
+            try:
+                agent_context_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copy(str(agent_guide_template), str(agent_guide_dest))
+                if interactive:
+                    print("  ✓ Agent coordination guide installed")
+            except (IOError, OSError) as e:
+                # Non-critical failure - agent guide is optional
+                if interactive:
+                    print(f"  ⚠️  Could not install agent guide: {e}")
+
         # Update .gitignore
         gitignore_path = os.path.join(project_path, ".gitignore")
         gitignore_entries = [
@@ -753,6 +769,31 @@ def check() -> int:
     issues: List[Dict] = []
     good_checks: List[str] = []
 
+    # Check for .env file first (before loading environment variables)
+    env_file = Path(".env")
+    env_loaded = False
+    env_keys_before = set(os.environ.keys())
+
+    if env_file.exists():
+        try:
+            load_dotenv(env_file)
+            env_keys_after = set(os.environ.keys())
+            new_keys = env_keys_after - env_keys_before
+            env_loaded = True
+            good_checks.append(f".env file found and loaded ({len(new_keys)} variables)")
+        except Exception as e:
+            issues.append({
+                "severity": "WARNING",
+                "message": f".env file found but could not be loaded: {e}",
+                "fix": "Check .env file format and permissions",
+            })
+    else:
+        issues.append({
+            "severity": "INFO",
+            "message": ".env file not found (optional - can use environment variables)",
+            "fix": "Create .env file: cp .env.example .env (or run: adversarial init --interactive)",
+        })
+
     # Check 1: Git repository
     if os.path.exists(".git"):
         good_checks.append("Git repository detected")
@@ -784,13 +825,34 @@ def check() -> int:
             "fix": "Install: pip install aider-chat",
         })
 
-    # Check 3: API keys
-    load_dotenv()
+    # Check 3: API keys (with source tracking)
+    # Track which keys existed before and after .env loading
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
     openai_key = os.getenv("OPENAI_API_KEY")
 
+    # Determine source of each key
+    def get_key_source(key_name: str, env_was_loaded: bool) -> str:
+        """Determine if key came from .env or environment."""
+        if not env_was_loaded:
+            return "from environment"
+        # Check if key was in environment before loading .env
+        # If .env was loaded and key exists, it likely came from .env
+        # This is a heuristic since we can't definitively know the source
+        return "from .env" if env_file.exists() else "from environment"
+
+    # Helper function to format partial key
+    def format_key_preview(key: str) -> str:
+        """Format API key showing first 8 and last 4 characters."""
+        if len(key) > 12:
+            return f"{key[:8]}...{key[-4:]}"
+        else:
+            return "***"
+
+    # Check Anthropic API key
     if anthropic_key and not anthropic_key.startswith("your-"):
-        good_checks.append("ANTHROPIC_API_KEY configured")
+        source = get_key_source("ANTHROPIC_API_KEY", env_loaded)
+        preview = format_key_preview(anthropic_key)
+        good_checks.append(f"ANTHROPIC_API_KEY configured ({source}) [{preview}]")
     elif anthropic_key:
         issues.append({
             "severity": "WARNING",
@@ -798,8 +860,11 @@ def check() -> int:
             "fix": "Edit .env with real API key from https://console.anthropic.com/settings/keys",
         })
 
+    # Check OpenAI API key
     if openai_key and not openai_key.startswith("your-"):
-        good_checks.append("OPENAI_API_KEY configured")
+        source = get_key_source("OPENAI_API_KEY", env_loaded)
+        preview = format_key_preview(openai_key)
+        good_checks.append(f"OPENAI_API_KEY configured ({source}) [{preview}]")
     elif openai_key:
         issues.append({
             "severity": "WARNING",
@@ -807,6 +872,7 @@ def check() -> int:
             "fix": "Edit .env with real API key from https://platform.openai.com/api-keys",
         })
 
+    # Check if at least one API key is configured
     if not anthropic_key and not openai_key:
         issues.append({
             "severity": "ERROR",
@@ -870,7 +936,13 @@ def check() -> int:
     if issues:
         print()
         for issue in issues:
-            icon = f"{RED}❌{RESET}" if issue["severity"] == "ERROR" else f"{YELLOW}⚠️{RESET}"
+            # Choose icon based on severity
+            if issue["severity"] == "ERROR":
+                icon = f"{RED}❌{RESET}"
+            elif issue["severity"] == "WARNING":
+                icon = f"{YELLOW}⚠️{RESET}"
+            else:  # INFO
+                icon = f"{CYAN}ℹ️{RESET}"
             print(f"{icon} [{issue['severity']}] {issue['message']}")
             print(f"   Fix: {issue['fix']}")
 
@@ -878,7 +950,11 @@ def check() -> int:
     print()
 
     # Summary
-    if not issues:
+    error_count = sum(1 for i in issues if i["severity"] == "ERROR")
+    warning_count = sum(1 for i in issues if i["severity"] == "WARNING")
+    info_count = sum(1 for i in issues if i["severity"] == "INFO")
+
+    if error_count == 0 and warning_count == 0:
         print(f"{GREEN}✅ All checks passed! Your setup is ready.{RESET}")
         print()
         print("Estimated cost per workflow: $0.02-0.10")
@@ -886,14 +962,20 @@ def check() -> int:
         print(f"Try it: {CYAN}adversarial quickstart{RESET}")
         return 0
     else:
-        error_count = sum(1 for i in issues if i["severity"] == "ERROR")
-        warning_count = len(issues) - error_count
+        status_parts = []
+        if error_count > 0:
+            status_parts.append(f"{error_count} error" + ("s" if error_count != 1 else ""))
+        if warning_count > 0:
+            status_parts.append(f"{warning_count} warning" + ("s" if warning_count != 1 else ""))
+        if info_count > 0:
+            status_parts.append(f"{info_count} info")
 
-        status = f"{error_count} error" + ("s" if error_count != 1 else "")
-        if warning_count:
-            status += f", {warning_count} warning" + ("s" if warning_count != 1 else "")
+        status = ", ".join(status_parts)
 
-        print(f"{RED}❌ Setup incomplete ({status}){RESET}")
+        if error_count > 0:
+            print(f"{RED}❌ Setup incomplete ({status}){RESET}")
+        else:
+            print(f"{YELLOW}⚠️ Setup has warnings ({status}){RESET}")
         print()
         print("Quick fix: adversarial init --interactive")
 

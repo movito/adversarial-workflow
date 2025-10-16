@@ -54,7 +54,7 @@ aider \
   --model "$EVALUATOR_MODEL" \
   --yes \
   --no-gitignore \
-  --read "$TASK_FILE" \
+  --read-only "$TASK_FILE" \
   --message "You are a REVIEWER performing critical design review.
 
 **Your Role:**
@@ -139,7 +139,9 @@ Be thorough, be critical, but be constructive. Your goal is to improve the plan,
 
 If the plan is fundamentally sound but has minor issues, mark as APPROVED with caveats.
 If the plan has significant gaps or risks, mark as NEEDS_REVISION with specific fixes.
-Only use REJECT if the entire approach is flawed." \
+Only use REJECT if the entire approach is flawed.
+
+**IMPORTANT**: You are ONLY evaluating. Do NOT implement any code. Do NOT edit any files. Do NOT suggest file changes with SEARCH/REPLACE blocks. Only provide your written evaluation following the format above." \
   --no-auto-commits
 
 echo ""

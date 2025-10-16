@@ -53,3 +53,5 @@ release-*.diff
 
 # Audit results (documentation, keep in repo)
 # audit-results/
+.env
+.aider*
