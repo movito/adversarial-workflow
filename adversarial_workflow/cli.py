@@ -594,6 +594,45 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
         print("   New to git? https://git-scm.com/book/en/v2/Getting-Started-Installing-Git")
         return 1
 
+    # Pre-flight validation: Check package integrity
+    package_dir = Path(__file__).parent
+    templates_dir = package_dir / "templates"
+
+    required_templates = [
+        "config.yml.template",
+        "evaluate_plan.sh.template",
+        "review_implementation.sh.template",
+        "validate_tests.sh.template",
+        ".aider.conf.yml.template",
+        ".env.example.template",
+    ]
+
+    missing_templates = []
+    for template in required_templates:
+        if not (templates_dir / template).exists():
+            missing_templates.append(template)
+
+    if missing_templates:
+        print(f"{RED}❌ ERROR: Package installation incomplete{RESET}")
+        print()
+        print(f"{BOLD}WHY:{RESET}")
+        print("   Required template files are missing from the package distribution.")
+        print("   This is a package bug, not a user configuration error.")
+        print()
+        print(f"{BOLD}MISSING TEMPLATES:{RESET}")
+        for template in missing_templates:
+            print(f"   • {template}")
+        print()
+        print(f"{BOLD}FIX:{RESET}")
+        print("   1. Report this issue: https://github.com/movito/adversarial-workflow/issues")
+        print("   2. Or try reinstalling: pip install --upgrade --force-reinstall adversarial-workflow")
+        print()
+        print(f"{BOLD}WORKAROUND:{RESET}")
+        print("   Create missing files manually:")
+        print("   - .aider.conf.yml: See https://aider.chat/docs/config.html")
+        print("   - .env.example: Create with API key placeholders")
+        return 1
+
     # Error 2: Already initialized
     adversarial_dir = os.path.join(project_path, ".adversarial")
     if os.path.exists(adversarial_dir):

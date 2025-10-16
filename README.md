@@ -16,9 +16,35 @@ Prevent "phantom work" (AI claiming to implement but not delivering) through adv
 - 🎯 **Tool-agnostic**: Use with Claude Code, Cursor, Aider, manual coding, or any workflow
 - ✨ **Interactive onboarding**: Guided setup wizard gets you started in <5 minutes
 
+## Prerequisites
+
+Before installing, ensure you have:
+
+### Required
+- **Python 3.8+** (Python 3.12 recommended)
+- **Git repository** (workflow analyzes git diff)
+- **Aider** - AI pair programming tool
+  ```bash
+  pip install aider-chat
+  ```
+  Verify: `aider --version`
+
+- **API Keys** - At least one of:
+  - **Anthropic Claude** (recommended): Get at https://console.anthropic.com/settings/keys
+  - **OpenAI GPT-4o**: Get at https://platform.openai.com/api-keys
+  - **Best results**: Both APIs (~$0.02-0.10 per workflow)
+  - **Works with one**: Either API (~$0.05-0.15 per workflow)
+
+### Platform Requirements
+- **✅ macOS / Linux**: Fully supported
+- **✅ Windows WSL**: Fully supported (recommended for Windows users)
+- **❌ Native Windows**: Not supported (requires Bash scripts)
+
+[See detailed platform support](#platform-support)
+
 ## Quick Start
 
-> **⚠️ Platform Requirements**: This package requires Unix-like systems (macOS/Linux) or **WSL** on Windows. Native Windows (PowerShell/CMD) is not supported. [Platform details →](#platform-support)
+> **⚠️ New Users**: Run the [Prerequisites](#prerequisites) checklist above first!
 
 ### Interactive Setup (Recommended)
 
