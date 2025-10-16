@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2025-10-16
+
+### Added
+- **Prerequisites Documentation**: Prominent Prerequisites section in README before Quick Start
+  - Explicitly lists all required dependencies (Python, Git, aider-chat, API keys)
+  - Platform requirements clearly stated (macOS/Linux/WSL)
+  - Installation commands and verification steps provided
+  - Addresses agent confusion about undocumented aider-chat dependency
+- **Python Module Execution**: `__main__.py` enables `python -m adversarial_workflow` execution
+  - Provides alternative execution method for agents
+  - 5-line module that imports and calls `cli.main()`
+- **Pre-flight Template Validation**: Validates package integrity before initialization
+  - Checks all 6 required templates exist before attempting to copy
+  - Clear error message structure (WHY/MISSING/FIX/WORKAROUND)
+  - Distinguishes package bugs from user configuration errors
+  - Prevents cryptic "template rendering failed" errors
+
+### Changed
+- README.md: Reorganized with Prerequisites section before Quick Start (+28 lines)
+- init() function: Added validation logic at start of execution (+39 lines)
+
+### Fixed
+- **Agent Experience**: Agents can now discover all prerequisites upfront instead of through trial-and-error
+- **Error Messages**: Missing template errors now provide helpful guidance instead of cryptic failures
+- **Execution Methods**: Both `adversarial` CLI and `python -m adversarial_workflow` now supported
+
+### Documentation
+- Created tasks/agent-experience-improvements.md with full specification
+- Addresses issues identified in .agent-context/AGENT_EXPERIENCE_ADVERSARIAL_WORKFLOW.md
+
+### For AI Agents
+This release specifically improves the agent integration experience by:
+- Making all prerequisites explicit and discoverable upfront
+- Providing multiple execution methods (CLI + python -m)
+- Catching package integrity issues early with helpful error messages
+- Following the ERROR/WHY/FIX/HELP pattern consistently
+
 ## [0.2.1] - 2025-10-16
 
 ### Fixed
