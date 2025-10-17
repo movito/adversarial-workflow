@@ -1,0 +1,81 @@
+{
+  "project": "{{PROJECT_NAME}}",
+  "version": "0.1.0",
+  "status": "Agent coordination system initialized",
+  "development_phase": {
+    "current_phase": "Initial Setup",
+    "phase_status": "Agent coordination ready",
+    "next_phase": "Task assignment and development",
+    "documentation": "See .agent-context/README.md for getting started"
+  },
+  "active_tasks": {
+    "total": 0,
+    "location": "delegation/tasks/active/",
+    "tasks": []
+  },
+  "project_metrics": {
+    "initialization_date": "{{DATE}}",
+    "python_version": "{{PYTHON_VERSION}}",
+    "agent_count": 7
+  },
+  "technology_stack": {
+    "language": "Python {{PYTHON_VERSION}}",
+    "dependencies": [],
+    "platforms": [
+      "macOS",
+      "Linux",
+      "Windows WSL"
+    ]
+  },
+  "agent_system": {
+    "version": "1.0.0",
+    "total_agents": 7,
+    "agents_available": 7,
+    "agents_working": 0,
+    "agents_blocked": 0,
+    "coordination_directory": ".agent-context/",
+    "roles": [
+      "coordinator",
+      "api-developer",
+      "format-developer",
+      "media-processor",
+      "test-runner",
+      "document-reviewer",
+      "feature-developer"
+    ]
+  },
+  "git_status": {
+    "branch": "main",
+    "status": "Agent coordination initialized"
+  },
+  "key_documentation": {
+    "agent_guide": ".agent-context/AGENT-SYSTEM-GUIDE.md",
+    "agent_status": ".agent-context/agent-handoffs.json",
+    "project_state": ".agent-context/current-state.json"
+  },
+  "next_steps": {
+    "immediate": [
+      "Review agent coordination guide: .agent-context/AGENT-SYSTEM-GUIDE.md",
+      "Create task files in delegation/tasks/active/",
+      "Assign tasks to appropriate agents in agent-handoffs.json"
+    ],
+    "short_term": [
+      "Set up agent-specific workflows",
+      "Configure project-specific coordination patterns",
+      "Document custom agent behaviors"
+    ],
+    "long_term": [
+      "Scale agent coordination as project grows",
+      "Refine agent specializations",
+      "Optimize handoff patterns"
+    ]
+  },
+  "context_files": {
+    "agent_handoffs": ".agent-context/agent-handoffs.json",
+    "current_state": ".agent-context/current-state.json",
+    "session_logs": ".agent-context/session-logs/",
+    "readme": ".agent-context/README.md"
+  },
+  "last_updated": "{{DATE}} 00:00:00 UTC",
+  "updated_by": "agent-onboard-wizard"
+}

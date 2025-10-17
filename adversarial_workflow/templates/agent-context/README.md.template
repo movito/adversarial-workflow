@@ -1,0 +1,204 @@
+# Agent Coordination System
+
+**Project**: {{PROJECT_NAME}}
+**Initialized**: {{DATE}}
+**Python Version**: {{PYTHON_VERSION}}
+
+## Overview
+
+This directory contains the agent coordination system for {{PROJECT_NAME}}. It enables multiple AI agents to work together on complex development tasks with clear handoffs, status tracking, and coordination patterns.
+
+## Directory Structure
+
+```
+.agent-context/
+├── README.md                    # This file
+├── AGENT-SYSTEM-GUIDE.md       # Comprehensive agent coordination guide
+├── agent-handoffs.json         # Current agent status and assignments
+├── current-state.json          # Project state and metrics
+└── session-logs/               # Agent session logs (optional)
+```
+
+## Quick Start
+
+### 1. Review the System Guide
+
+Read `AGENT-SYSTEM-GUIDE.md` for detailed information about:
+- Agent roles and responsibilities
+- Coordination patterns and handoff protocols
+- Task management best practices
+- Status update procedures
+
+### 2. Check Agent Status
+
+View current agent assignments:
+```bash
+cat .agent-context/agent-handoffs.json | jq '.coordinator.current_focus'
+```
+
+Or use the health check command:
+```bash
+adversarial health
+```
+
+### 3. Create and Assign Tasks
+
+1. Create task files in `delegation/tasks/active/`
+2. Follow the task template format (see AGENT-SYSTEM-GUIDE.md)
+3. Update `agent-handoffs.json` to assign tasks to specific agents
+
+### 4. Monitor Progress
+
+Check agent progress regularly:
+```bash
+# View all agent status
+cat .agent-context/agent-handoffs.json | jq -r '.[] | select(.status) | "\(.status): \(.current_focus)"'
+
+# View project state
+cat .agent-context/current-state.json | jq '.development_phase'
+```
+
+## Available Agents
+
+This system includes 7 specialized agents:
+
+1. **coordinator** - Task coordination and project management
+2. **api-developer** - API integration and backend development
+3. **format-developer** - File formats and data export systems
+4. **media-processor** - Media processing and validation
+5. **test-runner** - Test execution and quality assurance
+6. **document-reviewer** - Documentation review and improvement
+7. **feature-developer** - Feature implementation and architecture
+
+## Agent Status Workflow
+
+Agents follow this status cycle:
+- **available** - Ready for new task assignment
+- **working** - Currently executing assigned task
+- **blocked** - Waiting on dependencies or external input
+- **completed** - Task finished, ready for handoff
+
+## Task Management
+
+### Creating Tasks
+
+Tasks should be placed in `delegation/tasks/active/` with clear:
+- Objective and scope
+- Acceptance criteria
+- Technical requirements
+- Dependencies and blockers
+
+### Assigning Tasks
+
+Update the agent's entry in `agent-handoffs.json`:
+```json
+{
+  "agent-name": {
+    "current_focus": "Brief task description",
+    "task_file": "delegation/tasks/active/TASK-ID.md",
+    "status": "working",
+    "priority": "high|medium|low",
+    "dependencies": "List any dependencies",
+    "deliverables": ["Item 1", "Item 2"]
+  }
+}
+```
+
+### Completing Tasks
+
+When an agent completes a task:
+1. Update `deliverables` with completion details
+2. Move task file to `delegation/tasks/completed/`
+3. Set `status` to `available`
+4. Update `current_focus` to "Available for assignment"
+
+## Integration with Adversarial Workflow
+
+This agent coordination system extends the adversarial-workflow core:
+
+**Core (adversarial-workflow)**:
+- Multi-stage AI code review
+- Plan evaluation, code review, test validation
+- Located in `.adversarial/`
+
+**Extension (agent coordination)**:
+- Multi-agent task management
+- Specialized agent roles
+- Located in `.agent-context/` and `delegation/`
+
+Both systems work together - use adversarial workflow for code quality, use agent coordination for task management.
+
+## Configuration
+
+### Update Task Directory
+
+If using delegation structure, update `.adversarial/config.yml`:
+```yaml
+task_directory: delegation/tasks/
+```
+
+### Session Logging
+
+Enable session logging (optional):
+```bash
+mkdir -p .agent-context/session-logs
+```
+
+Agents can log their sessions here for debugging and audit trails.
+
+## Health Checking
+
+Run the health check command to validate agent coordination setup:
+```bash
+adversarial health --verbose
+```
+
+This checks:
+- Agent coordination files (JSON validity)
+- Directory structure
+- Integration with core workflow
+- Agent status freshness
+
+## Best Practices
+
+1. **Regular Updates**: Update agent-handoffs.json frequently (daily for active development)
+2. **Clear Communication**: Use descriptive task files with acceptance criteria
+3. **Task Decomposition**: Break large features into smaller agent-sized tasks
+4. **Handoff Protocol**: Always document why and what when handing off tasks
+5. **Status Accuracy**: Keep agent status current to avoid coordination issues
+
+## Troubleshooting
+
+### Agent handoffs.json is invalid JSON
+```bash
+# Validate JSON
+python3 -m json.tool .agent-context/agent-handoffs.json
+```
+
+### Can't find task files
+```bash
+# Check task directory configuration
+cat .adversarial/config.yml | grep task_directory
+```
+
+### Agents appear stale
+Update the `last_updated` field in agent-handoffs.json with current date/time.
+
+## Learn More
+
+- **Full Guide**: `.agent-context/AGENT-SYSTEM-GUIDE.md`
+- **Project Status**: `.agent-context/current-state.json`
+- **Adversarial Workflow**: `https://github.com/movito/adversarial-workflow`
+
+## Support
+
+For issues with agent coordination:
+1. Check `.agent-context/AGENT-SYSTEM-GUIDE.md`
+2. Run `adversarial health --verbose`
+3. Review `delegation/tasks/active/` for task clarity
+4. Open an issue: `https://github.com/movito/adversarial-workflow/issues`
+
+---
+
+**Last Updated**: {{DATE}}
+**System Version**: 1.0.0

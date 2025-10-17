@@ -8,6 +8,7 @@ Commands:
     quickstart - Quick start with example task
     check - Validate setup and dependencies
     health - Comprehensive system health check
+    agent onboard - Set up agent coordination system
     evaluate - Run Phase 1: Plan evaluation
     review - Run Phase 3: Code review
     validate - Run Phase 4: Test validation
@@ -1689,6 +1690,361 @@ def validate(test_command: Optional[str] = None) -> int:
     return 0
 
 
+def agent_onboard(project_path: str = ".") -> int:
+    """
+    Set up agent coordination system (Extension Layer).
+
+    Prerequisites:
+        - adversarial-workflow init must be run first
+
+    Creates:
+        - .agent-context/ (agent coordination)
+        - agents/ (agent tools and launchers)
+        - delegation/ (task management)
+
+    Updates:
+        - .adversarial/config.yml (task_directory → delegation/tasks/)
+
+    Returns:
+        0 on success, 1 on failure
+    """
+    import json
+    from datetime import datetime
+    import glob
+
+    # 1. Check prerequisite (Layer 1 must exist)
+    if not os.path.exists(".adversarial/config.yml"):
+        print(f"\n{RED}✗ Adversarial workflow not initialized{RESET}")
+        print()
+        print(f"{BOLD}WHY:{RESET}")
+        print("   Agent coordination extends the adversarial-workflow core system.")
+        print("   You must initialize the core workflow first.")
+        print()
+        print(f"{BOLD}FIX:{RESET}")
+        print("   1. Run: adversarial init")
+        print("   2. Or run: adversarial init --interactive (guided setup)")
+        print("   3. Then run: adversarial agent onboard")
+        print()
+        return 1
+
+    print(f"\n{BOLD}{CYAN}🤖 Agent Coordination System Setup{RESET}")
+    print(f"{CYAN}ℹ️{RESET}  Extends adversarial-workflow with agent coordination")
+    print()
+
+    # 2. Pre-flight discovery
+    existing_agent_context = os.path.exists(".agent-context")
+    existing_delegation = os.path.exists("delegation")
+    existing_tasks = os.path.exists("tasks")
+    existing_agents = os.path.exists("agents")
+
+    print(f"{BOLD}Current project structure:{RESET}")
+    print(f"  {'✓' if existing_agent_context else '○'} .agent-context/")
+    print(f"  {'✓' if existing_delegation else '○'} delegation/")
+    print(f"  {'✓' if existing_agents else '○'} agents/")
+    print(f"  {'✓' if existing_tasks else '○'} tasks/")
+    print()
+
+    # Check if already set up
+    if existing_agent_context and existing_delegation:
+        print(f"{YELLOW}⚠️  Agent coordination appears to be already set up{RESET}")
+        overwrite = prompt_user("Overwrite existing setup?", default="n")
+        if overwrite.lower() not in ["y", "yes"]:
+            print("Setup cancelled.")
+            return 0
+
+    # 3. Interactive questions (4 max)
+    use_delegation = prompt_user(
+        "Use delegation/tasks/ structure? (recommended)", "Y"
+    ).lower() in ["y", "yes", ""]
+
+    organize_docs = prompt_user(
+        "Organize root docs into docs/?", "n"
+    ).lower() in ["y", "yes"]
+
+    print()
+    print(f"{BOLD}Setting up agent coordination...{RESET}")
+    print()
+
+    # 4. Create extension structure
+    try:
+        # Create .agent-context/
+        os.makedirs(".agent-context/session-logs", exist_ok=True)
+        print(f"  {GREEN}✅{RESET} Created .agent-context/ directory")
+
+        # Create delegation/ structure if requested
+        if use_delegation:
+            os.makedirs("delegation/tasks/active", exist_ok=True)
+            os.makedirs("delegation/tasks/completed", exist_ok=True)
+            os.makedirs("delegation/tasks/analysis", exist_ok=True)
+            os.makedirs("delegation/tasks/logs", exist_ok=True)
+            os.makedirs("delegation/handoffs", exist_ok=True)
+            print(f"  {GREEN}✅{RESET} Created delegation/ directory structure")
+
+        # Create agents/ structure
+        os.makedirs("agents/tools", exist_ok=True)
+        os.makedirs("agents/launchers", exist_ok=True)
+        print(f"  {GREEN}✅{RESET} Created agents/ directory structure")
+
+    except Exception as e:
+        print(f"\n{RED}❌ ERROR: Failed to create directories: {e}{RESET}")
+        return 1
+
+    # 5. Migrate tasks if needed
+    if use_delegation and existing_tasks:
+        print()
+        print(f"{BOLD}Task Migration:{RESET}")
+
+        # Count task files
+        task_files = glob.glob("tasks/**/*.md", recursive=True)
+
+        if len(task_files) > 0:
+            print(f"  Found {len(task_files)} task file(s) in tasks/")
+            print(f"  Backup will be created at: tasks.backup/")
+            print()
+
+            migrate = prompt_user("Migrate tasks/ → delegation/tasks/active/?", "Y")
+
+            if migrate.lower() in ["y", "yes", ""]:
+                try:
+                    # Create backup
+                    if not os.path.exists("tasks.backup"):
+                        shutil.copytree("tasks", "tasks.backup")
+                        print(f"  {GREEN}✅{RESET} Backup created: tasks.backup/")
+
+                    # Move task files to delegation/tasks/active/
+                    for task_file in task_files:
+                        dest_file = os.path.join("delegation/tasks/active", os.path.basename(task_file))
+                        shutil.copy2(task_file, dest_file)
+
+                    print(f"  {GREEN}✅{RESET} Migrated {len(task_files)} task(s) to delegation/tasks/active/")
+                    print(f"  {CYAN}ℹ️{RESET}  Original tasks/ preserved (remove manually if desired)")
+                    print(f"  {CYAN}ℹ️{RESET}  Rollback: rm -rf tasks && mv tasks.backup tasks")
+
+                except Exception as e:
+                    print(f"  {RED}❌{RESET} Migration failed: {e}")
+                    print(f"  {YELLOW}⚠️{RESET}  Continuing without migration...")
+        else:
+            print(f"  {CYAN}ℹ️{RESET}  No task files found in tasks/")
+
+    # 6. Organize documentation
+    if organize_docs:
+        print()
+        print(f"{BOLD}Documentation Organization:{RESET}")
+
+        # Find markdown files in root
+        root_docs = [f for f in os.listdir(".") if f.endswith(".md") and not f.startswith(".")]
+
+        if len(root_docs) > 0:
+            print(f"  Found {len(root_docs)} markdown file(s) in root")
+
+            try:
+                os.makedirs("docs", exist_ok=True)
+                moved_count = 0
+
+                for doc in root_docs:
+                    # Skip README.md
+                    if doc.upper() == "README.MD":
+                        continue
+
+                    dest = os.path.join("docs", doc)
+                    if not os.path.exists(dest):
+                        shutil.move(doc, dest)
+                        moved_count += 1
+
+                if moved_count > 0:
+                    print(f"  {GREEN}✅{RESET} Organized {moved_count} doc(s) into docs/")
+                else:
+                    print(f"  {CYAN}ℹ️{RESET}  No docs needed organizing")
+
+            except Exception as e:
+                print(f"  {YELLOW}⚠️{RESET}  Could not organize docs: {e}")
+
+    # 7. Render agent coordination templates
+    print()
+    print(f"{BOLD}Installing agent coordination files...{RESET}")
+
+    try:
+        package_dir = Path(__file__).parent
+        templates_dir = package_dir / "templates" / "agent-context"
+
+        # Get template variables
+        project_name = os.path.basename(os.path.abspath(project_path))
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+        template_vars = {
+            "PROJECT_NAME": project_name,
+            "DATE": current_date,
+            "PYTHON_VERSION": python_version,
+        }
+
+        # Render agent-handoffs.json
+        agent_handoffs_template = templates_dir / "agent-handoffs.json.template"
+        if agent_handoffs_template.exists():
+            render_template(
+                str(agent_handoffs_template),
+                ".agent-context/agent-handoffs.json",
+                template_vars
+            )
+            print(f"  {GREEN}✅{RESET} Created .agent-context/agent-handoffs.json")
+
+        # Render current-state.json
+        current_state_template = templates_dir / "current-state.json.template"
+        if current_state_template.exists():
+            render_template(
+                str(current_state_template),
+                ".agent-context/current-state.json",
+                template_vars
+            )
+            print(f"  {GREEN}✅{RESET} Created .agent-context/current-state.json")
+
+        # Render README.md
+        readme_template = templates_dir / "README.md.template"
+        if readme_template.exists():
+            render_template(
+                str(readme_template),
+                ".agent-context/README.md",
+                template_vars
+            )
+            print(f"  {GREEN}✅{RESET} Created .agent-context/README.md")
+
+        # Copy AGENT-SYSTEM-GUIDE.md if it exists and isn't already there
+        guide_template = templates_dir / "AGENT-SYSTEM-GUIDE.md"
+        guide_dest = Path(".agent-context/AGENT-SYSTEM-GUIDE.md")
+
+        if guide_template.exists() and not guide_dest.exists():
+            shutil.copy(str(guide_template), str(guide_dest))
+            print(f"  {GREEN}✅{RESET} Installed .agent-context/AGENT-SYSTEM-GUIDE.md")
+        elif guide_dest.exists():
+            print(f"  {CYAN}ℹ️{RESET}  AGENT-SYSTEM-GUIDE.md already exists")
+
+    except Exception as e:
+        print(f"\n{RED}❌ ERROR: Failed to render templates: {e}{RESET}")
+        return 1
+
+    # 8. Update core config to use delegation
+    if use_delegation:
+        print()
+        print(f"{BOLD}Updating configuration...{RESET}")
+
+        try:
+            config_path = ".adversarial/config.yml"
+            with open(config_path, "r") as f:
+                config = yaml.safe_load(f)
+
+            # Update task_directory
+            old_task_dir = config.get("task_directory", "tasks/")
+            config["task_directory"] = "delegation/tasks/"
+
+            with open(config_path, "w") as f:
+                yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+
+            print(f"  {GREEN}✅{RESET} Updated .adversarial/config.yml")
+            print(f"     task_directory: {old_task_dir} → delegation/tasks/")
+
+        except Exception as e:
+            print(f"  {YELLOW}⚠️{RESET}  Could not update config: {e}")
+            print(f"     Manually set task_directory: delegation/tasks/ in .adversarial/config.yml")
+
+    # 9. Update .gitignore
+    print()
+    print(f"{BOLD}Updating .gitignore...{RESET}")
+
+    try:
+        gitignore_path = ".gitignore"
+        gitignore_entries = [
+            ".agent-context/session-logs/",
+            "tasks.backup/",
+        ]
+
+        existing_content = ""
+        if os.path.exists(gitignore_path):
+            with open(gitignore_path, "r") as f:
+                existing_content = f.read()
+
+        with open(gitignore_path, "a") as f:
+            if existing_content and not existing_content.endswith("\n"):
+                f.write("\n")
+
+            f.write("\n# Agent Coordination System\n")
+            for entry in gitignore_entries:
+                if entry not in existing_content:
+                    f.write(f"{entry}\n")
+
+        print(f"  {GREEN}✅{RESET} Updated .gitignore")
+
+    except Exception as e:
+        print(f"  {YELLOW}⚠️{RESET}  Could not update .gitignore: {e}")
+
+    # 10. Verify setup
+    print()
+    print(f"{BOLD}Verifying setup...{RESET}")
+
+    verification_checks = []
+
+    # Check JSON files are valid
+    try:
+        with open(".agent-context/agent-handoffs.json") as f:
+            json.load(f)
+        verification_checks.append(("agent-handoffs.json valid", True))
+    except Exception as e:
+        verification_checks.append((f"agent-handoffs.json invalid: {e}", False))
+
+    try:
+        with open(".agent-context/current-state.json") as f:
+            json.load(f)
+        verification_checks.append(("current-state.json valid", True))
+    except Exception as e:
+        verification_checks.append((f"current-state.json invalid: {e}", False))
+
+    # Check directories exist
+    verification_checks.append((".agent-context/ exists", os.path.exists(".agent-context")))
+
+    if use_delegation:
+        verification_checks.append(("delegation/tasks/active/ exists", os.path.exists("delegation/tasks/active")))
+
+    # Print verification results
+    all_passed = True
+    for check, passed in verification_checks:
+        if passed:
+            print(f"  {GREEN}✅{RESET} {check}")
+        else:
+            print(f"  {RED}❌{RESET} {check}")
+            all_passed = False
+
+    if not all_passed:
+        print()
+        print(f"{YELLOW}⚠️  Some verification checks failed{RESET}")
+        print("   Review errors above and run 'adversarial health' for details")
+        return 1
+
+    # 11. Success message
+    print()
+    print(f"{GREEN}✅ Agent coordination setup complete!{RESET}")
+    print()
+    print(f"{BOLD}What was created:{RESET}")
+    print("  ✓ .agent-context/ - Agent coordination files")
+    print("  ✓ agent-handoffs.json - 7 agents initialized")
+    print("  ✓ current-state.json - Project state tracking")
+    print("  ✓ AGENT-SYSTEM-GUIDE.md - Comprehensive guide")
+    if use_delegation:
+        print("  ✓ delegation/ - Task management structure")
+        print("  ✓ Updated .adversarial/config.yml → delegation/tasks/")
+    print("  ✓ agents/ - Agent tools and launchers")
+    print()
+    print(f"{BOLD}Next steps:{RESET}")
+    print("  1. Review: .agent-context/AGENT-SYSTEM-GUIDE.md")
+    print("  2. Check status: adversarial health")
+    print("  3. Create tasks in: delegation/tasks/active/")
+    print("  4. Assign agents in: .agent-context/agent-handoffs.json")
+    print()
+    print(f"{CYAN}ℹ️{RESET}  Agent coordination extends adversarial-workflow core")
+    print(f"   Use both systems together for optimal development workflow")
+    print()
+
+    return 0
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -1700,6 +2056,7 @@ Examples:
   adversarial init --interactive        # Interactive setup wizard
   adversarial quickstart                # Quick start with example
   adversarial check                     # Validate setup
+  adversarial agent onboard             # Set up agent coordination
   adversarial evaluate tasks/feat.md    # Evaluate plan
   adversarial review                    # Review implementation
   adversarial validate "npm test"       # Validate with tests
@@ -1741,6 +2098,16 @@ For more information: https://github.com/movito/adversarial-workflow
         "--json", action="store_true", help="Output in JSON format"
     )
 
+    # agent command (with subcommands)
+    agent_parser = subparsers.add_parser("agent", help="Agent coordination commands")
+    agent_subparsers = agent_parser.add_subparsers(dest="agent_subcommand", help="Agent subcommand")
+
+    # agent onboard subcommand
+    onboard_parser = agent_subparsers.add_parser("onboard", help="Set up agent coordination system")
+    onboard_parser.add_argument(
+        "--path", default=".", help="Project path (default: current directory)"
+    )
+
     # evaluate command
     eval_parser = subparsers.add_parser("evaluate", help="Run Phase 1: Plan evaluation")
     eval_parser.add_argument("task_file", help="Task file to evaluate")
@@ -1774,6 +2141,14 @@ For more information: https://github.com/movito/adversarial-workflow
         return check()
     elif args.command == "health":
         return health(verbose=args.verbose, json_output=args.json)
+    elif args.command == "agent":
+        if args.agent_subcommand == "onboard":
+            return agent_onboard(args.path)
+        else:
+            # No subcommand provided
+            print(f"{RED}Error: agent command requires a subcommand{RESET}")
+            print("Usage: adversarial agent onboard")
+            return 1
     elif args.command == "evaluate":
         return evaluate(args.task_file)
     elif args.command == "review":

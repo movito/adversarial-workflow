@@ -825,7 +825,262 @@ test_command: pytest tests/ -v
 adversarial evaluate docs/tasks/active/TASK-001.md
 ```
 
-### Example 11: Multiple Test Environments
+### Example 11: Multi-Agent Workflows
+
+If you're using multiple AI agents for development (Claude Code, Cursor, Aider, etc.), you can set up **agent coordination** to manage tasks across agents:
+
+#### Setup Agent Coordination
+
+```bash
+# Initialize adversarial workflow first
+cd my-project/
+adversarial init --interactive
+
+# Then set up agent coordination (optional)
+adversarial agent onboard
+
+# Follow the prompts:
+# Q1: Use delegation/tasks/ structure? (Y/n) → Y
+# Q2: Organize root docs into docs/? (y/N) → n
+```
+
+**What gets created**:
+
+```
+my-project/
+├── .adversarial/           # Core workflow (code review)
+├── .agent-context/         # NEW: Agent coordination
+│   ├── agent-handoffs.json # Agent status tracking
+│   ├── current-state.json  # Project state
+│   ├── README.md           # Quick guide
+│   └── AGENT-SYSTEM-GUIDE.md  # Full documentation
+├── delegation/             # NEW: Structured task management
+│   ├── tasks/
+│   │   ├── active/         # Current tasks
+│   │   ├── completed/      # Done tasks
+│   │   └── analysis/       # Research/planning
+│   └── handoffs/           # Agent transitions
+├── agents/                 # NEW: Agent tools/scripts
+│   ├── tools/              # Shared utilities
+│   └── launchers/          # Agent startup scripts
+└── src/                    # Your code (unchanged)
+```
+
+#### Agent Roles
+
+The system initializes 7 specialized agents in `agent-handoffs.json`:
+
+1. **coordinator** - Task planning and project management
+2. **api-developer** - Backend API integration
+3. **format-developer** - Data format and export systems
+4. **media-processor** - Media processing (if applicable)
+5. **test-runner** - Test execution and QA
+6. **document-reviewer** - Documentation quality
+7. **feature-developer** - Feature implementation
+
+**Each agent has**:
+- `current_focus`: What they're working on
+- `task_file`: Path to their active task
+- `status`: available | working | blocked | completed
+- `deliverables`: Track completed work
+
+#### Usage Pattern 1: Solo Developer with AI Assistants
+
+Use different AI tools for different phases:
+
+```bash
+# Phase 1: Planning (you + coordinator)
+cat > delegation/tasks/active/TASK-001-add-auth.md <<'EOF'
+# TASK-001: Add User Authentication
+
+## Requirements
+- JWT-based auth
+- Login/logout endpoints
+- Password hashing
+
+## Assigned: feature-developer
+## Reviewer: api-developer
+EOF
+
+# Phase 2: Implementation (Claude Code / Aider)
+# Open task in your AI assistant, implement
+# The assistant reads: delegation/tasks/active/TASK-001-add-auth.md
+
+# Phase 3: Review (adversarial workflow)
+adversarial review  # Independent code review
+
+# Phase 4: Testing (test-runner role)
+adversarial validate "pytest tests/"
+
+# Phase 5: Documentation (document-reviewer)
+# Update agent-handoffs.json to track completion
+```
+
+#### Usage Pattern 2: Multi-Agent Team
+
+Coordinate between multiple AI agents working in parallel:
+
+```bash
+# Coordinator creates tasks
+cat > delegation/tasks/active/TASK-001-api.md <<'EOF'
+# TASK-001: API Endpoints
+**Assigned**: api-developer
+**Blocks**: TASK-003 (frontend needs API first)
+EOF
+
+cat > delegation/tasks/active/TASK-002-tests.md <<'EOF'
+# TASK-002: Test Infrastructure
+**Assigned**: test-runner
+**Parallel**: Can work alongside TASK-001
+EOF
+
+# Agent 1: API Developer (Aider session)
+aider --read delegation/tasks/active/TASK-001-api.md --architect-mode
+# ... implements API endpoints ...
+adversarial review  # Code review
+
+# Agent 2: Test Runner (separate session)
+aider --read delegation/tasks/active/TASK-002-tests.md
+# ... writes tests ...
+adversarial validate "pytest tests/"
+
+# Coordinator: Update agent-handoffs.json
+# Track progress, dependencies, blockers
+```
+
+#### Check System Health
+
+Monitor overall project and agent coordination health:
+
+```bash
+adversarial health --verbose
+
+# Output:
+# 🏥 Adversarial Workflow Health Check
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# Configuration:
+#   ✅ .adversarial/config.yml - Valid YAML
+#   ✅ evaluator_model: gpt-4o
+#   ✅ task_directory: delegation/tasks/ (exists)
+#
+# Dependencies:
+#   ✅ Git: 2.42.0 (working tree clean)
+#   ✅ Python: 3.11.5 (compatible)
+#   ✅ Aider: 0.37.0 (functional)
+#
+# API Keys:
+#   ✅ OPENAI_API_KEY: Set (from .env) [sk-proj-...Xy4z]
+#   ✅ ANTHROPIC_API_KEY: Set (from .env) [sk-ant-...Ab1c]
+#
+# Agent Coordination:
+#   ✅ .agent-context/ directory exists
+#   ✅ agent-handoffs.json - Valid JSON (7 agents)
+#   ✅ current-state.json - Valid JSON
+#   ✅ AGENT-SYSTEM-GUIDE.md - Present (34KB)
+#   ℹ️  Last updated: 2025-10-17
+#
+# Workflow Scripts:
+#   ✅ evaluate_plan.sh - Executable, valid
+#   ✅ review_implementation.sh - Executable, valid
+#   ✅ validate_tests.sh - Executable, valid
+#
+# Tasks:
+#   ℹ️  3 active tasks in delegation/tasks/active/
+#
+# Permissions:
+#   ✅ .env - Secure (600)
+#   ✅ All 3 scripts executable
+#
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# ✅ System is healthy! (Health: 95%)
+#    42 checks passed, 2 warnings, 0 errors
+```
+
+#### Integration with Adversarial Workflow
+
+The two systems work together:
+
+| System | Purpose | Commands |
+|--------|---------|----------|
+| **Adversarial Workflow** | Code quality gates | `adversarial evaluate/review/validate` |
+| **Agent Coordination** | Task management | `adversarial agent onboard`, `adversarial health` |
+
+**Combined workflow**:
+
+```bash
+# 1. Coordinator plans task (agent coordination)
+vim delegation/tasks/active/TASK-005-refactor.md
+
+# 2. Evaluate plan (adversarial workflow)
+adversarial evaluate delegation/tasks/active/TASK-005-refactor.md
+
+# 3. Feature developer implements (agent coordination)
+# Update agent-handoffs.json: feature-developer status = working
+
+# 4. Review implementation (adversarial workflow)
+adversarial review
+
+# 5. Test runner validates (agent coordination)
+adversarial validate "pytest tests/"
+
+# 6. Move to completed (agent coordination)
+mv delegation/tasks/active/TASK-005-refactor.md delegation/tasks/completed/
+```
+
+#### Benefits
+
+**Without agent coordination**:
+- Tasks scattered across `tasks/`, unclear structure
+- No visibility into agent status or blockers
+- Manual tracking in separate docs
+- Difficult to coordinate parallel work
+
+**With agent coordination**:
+- ✅ Structured task management (`active/`, `completed/`)
+- ✅ Clear agent assignments and status
+- ✅ Dependency tracking between tasks
+- ✅ Health monitoring across the system
+- ✅ Coordination guide at `.agent-context/AGENT-SYSTEM-GUIDE.md`
+
+#### When to Use Agent Coordination
+
+**✅ Use it when**:
+- Working with multiple AI agents/assistants
+- Need structured task assignment
+- Managing complex projects with dependencies
+- Want visibility into development status
+
+**❌ Skip it when**:
+- Solo development without agents
+- Simple projects with few tasks
+- Already have robust task management
+- Just want code review (adversarial workflow alone is enough)
+
+#### Configuration
+
+Agent coordination updates `.adversarial/config.yml` to use delegation structure:
+
+```yaml
+# Before: adversarial init
+task_directory: tasks/
+
+# After: adversarial agent onboard (if you chose delegation)
+task_directory: delegation/tasks/
+```
+
+This makes both systems work with the same structured task directory.
+
+#### Learn More
+
+- **Quick guide**: `.agent-context/README.md`
+- **Full documentation**: `.agent-context/AGENT-SYSTEM-GUIDE.md`
+- **Health check**: `adversarial health --verbose`
+
+---
+
+### Example 12: Multiple Test Environments
 
 **Configuration for different environments**:
 
@@ -854,7 +1109,7 @@ adversarial validate "$ADVERSARIAL_TEST_COMMAND"
 adversarial validate "pytest tests/integration/ -v"
 ```
 
-### Example 12: Custom Reviewer Model
+### Example 13: Custom Reviewer Model
 
 **For different use cases**:
 
@@ -889,7 +1144,7 @@ test_command: pytest tests/ -v
 
 ## Advanced Patterns
 
-### Example 13: Task Templates
+### Example 14: Task Templates
 
 **Create task template** (`tasks/TEMPLATE.md`):
 
@@ -946,7 +1201,7 @@ cp tasks/TEMPLATE.md tasks/TASK-042-fix-validation.md
 adversarial evaluate tasks/TASK-042-fix-validation.md
 ```
 
-### Example 14: Batch Processing
+### Example 15: Batch Processing
 
 **Process multiple tasks**:
 
@@ -973,7 +1228,7 @@ echo "Batch evaluation complete."
 echo "Approved tasks moved to tasks/approved/"
 ```
 
-### Example 15: Custom Review Criteria
+### Example 16: Custom Review Criteria
 
 **Add project-specific checks** by extending the review script:
 
@@ -1007,7 +1262,7 @@ fi
 echo "Custom checks complete."
 ```
 
-### Example 16: Integration with Task Management
+### Example 17: Integration with Task Management
 
 **Sync with GitHub Issues**:
 

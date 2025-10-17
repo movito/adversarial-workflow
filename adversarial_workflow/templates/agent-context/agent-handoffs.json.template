@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "project": "{{PROJECT_NAME}}",
+    "purpose": "Universal agent coordination system for multi-role development",
+    "last_checked": "{{DATE}}",
+    "coordinator_last_check": "{{DATE}} 00:00:00 UTC"
+  },
+  "coordinator": {
+    "current_focus": "Project initialized - Ready for task assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "high",
+    "dependencies": "None",
+    "deliverables": [
+      "✅ Agent coordination system initialized",
+      "✅ All 7 agents registered and available"
+    ],
+    "technical_notes": "Project: {{PROJECT_NAME}}. Python {{PYTHON_VERSION}}. Agent coordination initialized on {{DATE}}. Ready to assign tasks and coordinate multi-agent development work.",
+    "coordination_role": "Task coordination and project management",
+    "last_updated": "{{DATE}} Agent coordination system initialized"
+  },
+  "api-developer": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "medium",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Ready for API integration and backend development work.",
+    "coordination_role": "API integration specialist",
+    "last_updated": "{{DATE}} Initialized"
+  },
+  "format-developer": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "medium",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Ready for file format and data export systems work.",
+    "coordination_role": "Format and export specialist",
+    "last_updated": "{{DATE}} Initialized"
+  },
+  "media-processor": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "medium",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Ready for media processing and validation work.",
+    "coordination_role": "Media processing specialist",
+    "last_updated": "{{DATE}} Initialized"
+  },
+  "test-runner": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "medium",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Ready for test execution and quality assurance work.",
+    "coordination_role": "Quality assurance and testing",
+    "last_updated": "{{DATE}} Initialized"
+  },
+  "document-reviewer": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "medium",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Ready for documentation review and improvement work.",
+    "coordination_role": "Documentation quality assurance",
+    "last_updated": "{{DATE}} Initialized"
+  },
+  "feature-developer": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "medium",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Ready for feature implementation and code architecture work.",
+    "coordination_role": "Feature implementation specialist",
+    "last_updated": "{{DATE}} Initialized"
+  }
+}

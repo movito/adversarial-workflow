@@ -84,6 +84,39 @@ adversarial review                     # Phase 3: Code review
 adversarial validate "npm test"        # Phase 4: Test validation
 ```
 
+## Quick Setup for AI Agents
+
+If you're using AI agents for multi-agent development workflows, adversarial-workflow includes an optional **agent coordination system**:
+
+```bash
+# After running adversarial init, optionally set up agent coordination
+adversarial agent onboard
+
+# This creates:
+# - .agent-context/        # Agent coordination files
+# - delegation/tasks/      # Structured task management
+# - agents/                # Agent tools and scripts
+```
+
+**What you get**:
+- 📋 **Structured task management** with `delegation/tasks/active/` and `completed/`
+- 🤝 **Agent handoff tracking** in `agent-handoffs.json` (7 specialized agents)
+- 📊 **Project state tracking** in `current-state.json`
+- 📖 **Comprehensive guide** at `.agent-context/AGENT-SYSTEM-GUIDE.md`
+- 🔧 **Health monitoring** with `adversarial health` command
+
+**When to use it**:
+- ✅ Working with multiple AI agents (Claude Code, Cursor, Aider, etc.)
+- ✅ Need structured task assignment and tracking
+- ✅ Want coordination between different development roles
+- ❌ Solo development without agents (not needed)
+
+The agent coordination system **extends** adversarial-workflow - both work together:
+- **Adversarial workflow** = Code quality gates (review, validation)
+- **Agent coordination** = Task management for multi-agent teams
+
+See [Example 11: Multi-Agent Workflows](#example-11-multi-agent-workflows) for usage patterns.
+
 ## The Adversarial Pattern
 
 Traditional AI coding suffers from "phantom work" - where AI claims implementation is complete but only adds comments or TODOs. This workflow prevents that through **multiple independent verification gates**:
@@ -208,14 +241,20 @@ log_directory: .adversarial/logs/
 ## Commands
 
 ```bash
-adversarial init              # Initialize in current project
-adversarial init --path /other/project  # Initialize elsewhere
+# Setup
+adversarial init                        # Initialize in current project
+adversarial init --interactive          # Interactive setup wizard
+adversarial quickstart                  # Quick start with example
+adversarial check                       # Validate setup (aider, API keys, config)
+adversarial health                      # Comprehensive system health check
 
-adversarial check             # Validate setup (aider, API keys, config)
+# Agent Coordination (optional)
+adversarial agent onboard               # Set up agent coordination system
 
-adversarial evaluate task.md  # Phase 1: Evaluate plan
-adversarial review            # Phase 3: Review implementation
-adversarial validate "pytest" # Phase 4: Validate with tests
+# Workflow
+adversarial evaluate task.md            # Phase 1: Evaluate plan
+adversarial review                      # Phase 3: Review implementation
+adversarial validate "pytest"           # Phase 4: Validate with tests
 ```
 
 ## Configuration
