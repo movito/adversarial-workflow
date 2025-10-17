@@ -5,6 +5,95 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-10-17
+
+### Added
+- **Agent Coordination System**: New `adversarial agent onboard` command for multi-agent workflow management
+  - Optional extension layer on top of core adversarial-workflow
+  - Creates `.agent-context/` directory with agent-handoffs.json, current-state.json, README.md
+  - Initializes 7 specialized agent roles (coordinator, api-developer, format-developer, media-processor, test-runner, document-reviewer, feature-developer)
+  - Safe task migration from `tasks/` → `delegation/tasks/active/` with automatic backup
+  - Interactive questionnaire for delegation structure and documentation organization
+  - Template rendering with variable substitution (PROJECT_NAME, DATE, PYTHON_VERSION)
+  - JSON validation and comprehensive verification
+  - Integration with adversarial-workflow config.yml (task_directory update)
+- **Health Check Command**: Comprehensive `adversarial health` command for system diagnostics
+  - 7 check categories: Configuration, Dependencies, API Keys, Agent Coordination, Scripts, Tasks, Permissions
+  - Health scoring system: (passed/total)*100 with 3-tier classification (>90% healthy, 70-90% degraded, <70% critical)
+  - Color-coded output: ✅ (pass), ⚠️ (warn), ❌ (fail), ℹ️ (info)
+  - `--verbose` flag for detailed diagnostics with fix recommendations
+  - `--json` flag for machine-readable output (CI/CD integration)
+  - Git status integration showing modified/untracked file counts
+  - Exit codes: 0 (healthy), 1 (errors present)
+  - Performance: <2 seconds execution, no network calls
+- **AGENT-SYSTEM-GUIDE.md Packaging**: Comprehensive agent coordination guide now packaged with distribution
+  - Automatically copied to `.agent-context/` during `adversarial init`
+  - 34KB guide covering agent roles, task management, coordination patterns
+  - Fully offline-capable, no network dependency
+- **Pre-flight Check Script**: Optional `agents/tools/preflight-check.sh` for project validation (Bash 3.2+ compatible)
+  - 4 scan categories: Project Structure, Prerequisites, Configuration, Active Work
+  - Validates Git, Python, Aider, Bash, jq versions
+  - Checks YAML configuration validity and .env security
+  - Prioritized recommendations (HIGH > MEDIUM > LOW > INFO)
+  - Exit codes: 0 (pass), 1 (critical errors), 2 (major issues)
+  - Completes in <5 seconds
+
+### Changed
+- **Documentation Structure**: All root-level markdown files organized into `docs/` directory
+  - `docs/project-history/` for historical completion summaries
+  - Cleaner root directory focused on essential files (README, CHANGELOG, LICENSE)
+- **README.md**: Added "Quick Setup for AI Agents" section and updated Commands reference
+  - Explains when to use agent coordination (optional extension)
+  - Integration benefits and setup workflow documented
+- **EXAMPLES.md**: Added Example 11: Multi-Agent Workflows (~250 lines)
+  - Comprehensive guide for agent coordination setup
+  - 7 agent roles explained with real-world usage patterns
+  - Health monitoring and troubleshooting examples
+  - Integration patterns between adversarial workflow and agent coordination
+- **QUICK_START.md**: Added sections for health check and agent coordination
+  - Health check usage examples with verbose and JSON modes
+  - Agent onboard setup workflow documentation
+  - Pre-flight check script usage (optional)
+- **API Key Detection**: `adversarial check` command now loads .env before validation
+  - Shows API key source: "(from .env)" or "(from environment)"
+  - Displays partial API key preview (first 8 + last 4 chars)
+  - Properly handles INFO severity level (doesn't cause failures)
+
+### Fixed
+- **Workflow Script Safety**: `evaluate_plan.sh` now prevents runaway code implementation
+  - Ensures Reviewer stays in planning mode and doesn't implement code
+  - Explicit instructions to avoid TodoWrite and Task tools
+  - Clearer boundary between plan evaluation and implementation phases
+
+### Documentation
+- New: `.agent-context/AGENT-SYSTEM-GUIDE.md` (34KB comprehensive agent guide)
+- New: `docs/EXAMPLES.md` Example 11 (Multi-Agent Workflows, ~250 lines)
+- Enhanced: `README.md` with agent coordination quick setup section
+- Enhanced: `QUICK_START.md` with health check and agent onboard sections
+- Enhanced: `TROUBLESHOOTING.md` with .env detection issue and fix
+- New: `agents/tools/README.md` with preflight-check.sh documentation
+
+### Quality & Testing
+- All 5 setup tasks completed and moved to `delegation/tasks/completed/`
+  - TASK-SETUP-001: Agent onboard command (~10h implementation + documentation)
+  - TASK-SETUP-002: Pre-flight check script (~4h)
+  - TASK-SETUP-003: Fix adversarial check command (1.5h)
+  - TASK-SETUP-004: Health check command (~4-5h)
+  - TASK-SETUP-005: Package AGENT-SYSTEM-GUIDE.md (~2h)
+- Total development effort: ~21.5-22.5 hours
+- All acceptance criteria met (Must Have + Should Have)
+- Python syntax validation via ast.parse for all new code
+- Comprehensive testing in adversarial-workflow v0.2.3 → v0.3.0 transition
+
+### For AI Agents
+This release adds an **optional agent coordination system** as an extension layer on top of adversarial-workflow core. Key features:
+- **Extension pattern**: Agent coordination extends (not replaces) core workflow
+- **Prerequisite check**: Ensures core workflow initialized before agent onboard
+- **Safe migration**: Backs up existing tasks/ before moving to delegation/
+- **Health monitoring**: `adversarial health` validates both core and agent coordination setup
+- **Flexible adoption**: Use agent coordination when managing multi-agent projects, skip it for single-agent workflows
+- **Decision guide**: Clear documentation on when to use vs. when to skip agent coordination
+
 ## [0.2.3] - 2025-10-16
 
 ### Fixed

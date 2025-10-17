@@ -27,7 +27,7 @@ from typing import Dict, List, Optional, Tuple
 import yaml
 from dotenv import load_dotenv
 
-__version__ = "0.2.3"
+__version__ = "0.3.0"
 
 # ANSI color codes for better output
 RESET = "\033[0m"
@@ -318,8 +318,8 @@ def init_interactive(project_path: str = ".") -> int:
             "  ✓ .aider.conf.yml (aider configuration)",
             "",
             "Your configuration:" if (anthropic_key or openai_key) else "Configuration (no API keys yet):",
-            f"  Implementation: {'Claude 3.5 Sonnet (Anthropic)' if anthropic_key else 'GPT-4o (OpenAI)' if openai_key else 'Not configured'}",
-            f"  Evaluator: {'GPT-4o (OpenAI)' if openai_key else 'Claude 3.5 Sonnet (Anthropic)' if anthropic_key else 'Not configured'}",
+            f"  Author (implementation): {'Claude 3.5 Sonnet (Anthropic)' if anthropic_key else 'GPT-4o (OpenAI)' if openai_key else 'Not configured'}",
+            f"  Reviewer: {'GPT-4o (OpenAI)' if openai_key else 'Claude 3.5 Sonnet (Anthropic)' if anthropic_key else 'Not configured'}",
             f"  Cost per workflow: {'~$0.02-0.10' if (anthropic_key and openai_key) else '~$0.05-0.15' if (anthropic_key or openai_key) else 'N/A'}",
             "",
             "Next steps:",

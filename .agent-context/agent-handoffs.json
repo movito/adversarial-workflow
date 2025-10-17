@@ -7,11 +7,11 @@
     "coordinator_last_check": "2025-10-16 00:00:00 UTC"
   },
   "coordinator": {
-    "current_focus": "✅ All 5 Setup Tasks Approved - TASK-SETUP-001 revised with architectural clarity, ready for implementation",
-    "task_file": "delegation/tasks/active/TASK-SETUP-001 through TASK-SETUP-005 (all approved)",
+    "current_focus": "✅ v0.3.0 Release Ready - All setup tasks complete, active tasks reorganized",
+    "task_file": "None - Ready for v0.3.0 release (pending commit & tag)",
     "status": "available",
     "priority": "high",
-    "dependencies": "Feature-developer working on TASK-SETUP-002 (preflight check)",
+    "dependencies": "None - All setup work complete",
     "deliverables": [
       "✅ Comprehensive project structure analysis (adversarial-workflow v0.2.3)",
       "✅ .agent-context/ created with agent-handoffs.json, current-state.json, README.md, INTEGRATION-VERIFICATION.md",
@@ -29,10 +29,10 @@
       "✅ TASK-SETUP-001 revised with architectural clarity - extension layer pattern",
       "✅ Strategic planning: Package separation roadmap (v0.4.0), Aider install improvements, Documentation strategy"
     ],
-    "technical_notes": "Session continuation: Created, reviewed, and approved all 5 setup improvement tasks. TASK-SETUP-001 revised after architectural discussion - clarified adversarial-workflow as core layer with agent coordination as extension layer (not parallel system). Command: 'adversarial-workflow agent onboard' (namespace + verb pattern). All 5 tasks approved: TASK-SETUP-003 (fix check, 2.5h - COMPLETED by feature-dev), TASK-SETUP-002 (preflight script, 5h - IN PROGRESS), TASK-SETUP-001 (agent onboard, 8h - revised and approved), TASK-SETUP-005 (package guide, 3-5h), TASK-SETUP-004 (health check, 8h). Total effort: ~26.5-28.5 hours. Strategic planning complete: package separation (v0.4.0+), smoother aider install (combination approach), documentation standards (verbified command format).",
-    "coordination_role": "Managing adversarial-workflow v0.2.3 → v0.3.0 release. Planning v0.4.0 modular package architecture.",
-    "next_critical_path": "Implementation: TASK-SETUP-002 (in progress) → TASK-SETUP-005 → TASK-SETUP-004 → TASK-SETUP-001. Strategic: Package separation roadmap documented for v0.4.0.",
-    "last_updated": "2025-10-16 All tasks approved, architectural clarity achieved, strategic planning complete"
+    "technical_notes": "v0.3.0 Release Preparation (2025-10-17): All 5 setup tasks complete (SETUP-001 through SETUP-005). Task cleanup: 4 active PACKAGING-001 tasks reorganized - 2 archived (Phase 4 test plan, Phase 6 fixes - both obsolete), 1 to backlog (Phase 5 enhancements), 1 to decisions/ (Phase 6 terminology decision record). Critical path executed: Version bumps (0.3.0), CHANGELOG written, terminology audit (1 fix in cli.py), smoke tests passed (health 83%, all commands functional). Release ready pending final commit & tag.",
+    "coordination_role": "v0.3.0 Release - Agent coordination system complete, package ready for publication",
+    "next_critical_path": "Create v0.3.0 release commit and tag. Post-release: Return to thematic-cuts for Phase 2A tasks.",
+    "last_updated": "2025-10-17 v0.3.0 release preparation complete, ready for commit & tag"
   },
   "api-developer": {
     "current_focus": "Available for assignment",
@@ -68,34 +68,33 @@
     "last_updated": "2025-10-16 Initialized"
   },
   "test-runner": {
-    "current_focus": "🚀 Ready for Phase 4 test plan assignment",
-    "task_file": "delegation/tasks/active/TASK-PACKAGING-001-PHASE-4-TEST-PLAN.md",
-    "status": "available",
-    "priority": "high",
-    "dependencies": "None - Test plan ready for execution",
-    "deliverables": [
-      "🚀 Phase 4 test plan reviewed: 47 tests across 9 categories",
-      "🚀 Scope: macOS + Linux testing (6-10 hours estimated)",
-      "🚀 Categories: Installation, CLI, Templates, Scripts, Config, Errors, E2E, Cross-platform, Docs"
-    ],
-    "technical_notes": "Test plan status: updated-for-unix-platforms. Comprehensive testing covering package installation, CLI functionality, template rendering, workflow execution, and cross-platform compatibility. Awaiting assignment to execute.",
-    "coordination_role": "Quality assurance for adversarial-workflow package before v0.3.0 release",
-    "last_updated": "2025-10-16 Ready for assignment"
-  },
-  "document-reviewer": {
-    "current_focus": "🚀 Ready for Phase 6 terminology standardization",
-    "task_file": "delegation/tasks/active/TASK-PACKAGING-001-PHASE-6-EVALUATOR-FIXES.md",
+    "current_focus": "Available for assignment",
+    "task_file": "None - Phase 4 test plan archived (production validation complete)",
     "status": "available",
     "priority": "medium",
-    "dependencies": "delegation/tasks/active/TASK-PACKAGING-001-PHASE-6-TERMINOLOGY-DECISION.md (APPROVED)",
+    "dependencies": "None",
     "deliverables": [
-      "🚀 Phase 6 terminology task identified",
-      "🚀 Decision: Author/Reviewer terminology (APPROVED)",
-      "🚀 Scope: ~16 files requiring updates (docs + templates + code)"
+      "✅ Phase 4 test plan archived: Excessive scope (47 tests) for production-validated package",
+      "✅ v0.3.0 smoke tests passed: version, health check (83%), agent onboard"
     ],
-    "technical_notes": "Phase 6 task ready for execution. Terminology standardization from Coordinator/Evaluator → Author/Reviewer across all documentation, templates, and user-facing code. Decision record completed and approved. Estimated effort: comprehensive documentation audit.",
-    "coordination_role": "Documentation quality for adversarial-workflow package - ensuring clarity and consistency",
-    "last_updated": "2025-10-16 Ready for Phase 6 assignment"
+    "technical_notes": "Phase 4 test plan moved to delegation/tasks/archived/ per Reviewer assessment. Package already validated in production (thematic-cuts dogfooding). Smoke tests sufficient for v0.3.0 release.",
+    "coordination_role": "Quality assurance - Available for test execution assignments",
+    "last_updated": "2025-10-17 Phase 4 plan archived, smoke tests complete"
+  },
+  "document-reviewer": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - Phase 6 terminology work archived (90% complete in v0.2.0)",
+    "status": "available",
+    "priority": "low",
+    "dependencies": "None",
+    "deliverables": [
+      "✅ Phase 6 terminology fixes: 90% complete in v0.2.0 (73 fixes)",
+      "✅ v0.3.0 terminology audit: 1 remaining fix in cli.py (completed)",
+      "✅ Decision record moved to delegation/decisions/"
+    ],
+    "technical_notes": "Phase 6 terminology task moved to delegation/tasks/archived/ per Reviewer assessment. v0.2.0 already completed 73 Author/Reviewer terminology fixes across 11 files. v0.3.0 audit found 1 straggler (cli.py:322 'Evaluator:' → 'Reviewer:') which was fixed. Remaining occurrences are in agent coordination files (where 'Coordinator' refers to agent role) or audit history.",
+    "coordination_role": "Documentation quality - Available for documentation assignments",
+    "last_updated": "2025-10-17 Phase 6 archived, terminology audit complete"
   },
   "feature-developer": {
     "current_focus": "✅ TASK-SETUP-001 100% COMPLETE - Agent onboard command + documentation (~10h)",
@@ -182,8 +181,8 @@
       "  - Updated QUICK_START.md with optional pre-flight check section",
       "  - Completes in < 5 seconds as required"
     ],
-    "technical_notes": "TASK-SETUP-001 100% COMPLETE (2025-10-17, ~10h total): Implementation (8h) + Documentation (2h). Code: 350 lines agent_onboard() function in cli.py, 3 templates (agent-handoffs.json, current-state.json, README.md), CLI integration, safe migration with backups, verification. Documentation: Added 'Quick Setup for AI Agents' section to README.md, updated Commands section, added Example 11 to EXAMPLES.md (~250 lines). All Must Have acceptance criteria met (12/12). Task moved to delegation/tasks/completed/. All 5 SETUP tasks now complete: TASK-SETUP-001 (10h), TASK-SETUP-002 (4h), TASK-SETUP-003 (1.5h), TASK-SETUP-004 (4-5h), TASK-SETUP-005 (2h). Total setup effort: ~21.5-22.5 hours. Active directory now contains 5 PACKAGING-001 phase tasks.",
-    "coordination_role": "Code implementation specialist - All setup tasks complete, available for new assignments",
-    "last_updated": "2025-10-17 TASK-SETUP-001 100% complete with documentation, moved to completed/"
+    "technical_notes": "v0.3.0 Release Work Complete (2025-10-17): All 5 SETUP tasks complete (~21.5-22.5h total). Release critical path executed (~2h): Version bumps (pyproject.toml, cli.py → 0.3.0), CHANGELOG written (88 lines documenting all v0.3.0 features), terminology audit (1 fix: cli.py:322 'Evaluator' → 'Reviewer'), smoke tests passed (version, health 83%, agent onboard command), task cleanup (4 PACKAGING-001 tasks reorganized: 2 archived, 1 backlog, 1 decisions/), agent-handoffs.json updated. Ready for release commit & tag.",
+    "coordination_role": "Code implementation specialist - v0.3.0 release ready, available for new assignments",
+    "last_updated": "2025-10-17 v0.3.0 release preparation complete, ready for commit & tag"
   }
 }
