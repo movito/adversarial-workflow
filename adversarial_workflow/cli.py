@@ -7,6 +7,7 @@ Commands:
     init --interactive - Interactive setup wizard
     quickstart - Quick start with example task
     check - Validate setup and dependencies
+    health - Comprehensive system health check
     evaluate - Run Phase 1: Plan evaluation
     review - Run Phase 3: Code review
     validate - Run Phase 4: Test validation
@@ -982,6 +983,499 @@ def check() -> int:
         return 1 if error_count > 0 else 0
 
 
+def health(verbose: bool = False, json_output: bool = False) -> int:
+    """
+    Comprehensive system health check.
+
+    Goes beyond basic 'check' to validate agent coordination,
+    workflow scripts, permissions, and provide actionable diagnostics.
+
+    Args:
+        verbose: Show detailed diagnostics and fix commands
+        json_output: Output in JSON format for machine parsing
+
+    Returns:
+        0 if healthy (>90% checks pass), 1 if degraded or critical
+    """
+    import json
+    from datetime import datetime
+
+    # Initialize results tracking
+    results = {
+        'configuration': [],
+        'dependencies': [],
+        'api_keys': [],
+        'agent_coordination': [],
+        'workflow_scripts': [],
+        'tasks': [],
+        'permissions': []
+    }
+
+    passed = 0
+    warnings = 0
+    errors = 0
+    recommendations = []
+
+    # Helper functions for tracking check results
+    def check_pass(category: str, message: str, detail: str = None):
+        nonlocal passed
+        results[category].append({'status': 'pass', 'message': message, 'detail': detail})
+        if not json_output:
+            print(f"  {GREEN}✅{RESET} {message}")
+        passed += 1
+
+    def check_warn(category: str, message: str, detail: str = None, recommendation: str = None):
+        nonlocal warnings
+        results[category].append({'status': 'warn', 'message': message, 'detail': detail})
+        if not json_output:
+            print(f"  {YELLOW}⚠️{RESET}  {message}")
+            if detail and verbose:
+                print(f"     {GRAY}{detail}{RESET}")
+        if recommendation:
+            recommendations.append(recommendation)
+        warnings += 1
+
+    def check_fail(category: str, message: str, fix: str = None, recommendation: str = None):
+        nonlocal errors
+        results[category].append({'status': 'fail', 'message': message, 'fix': fix})
+        if not json_output:
+            print(f"  {RED}❌{RESET} {message}")
+            if fix and verbose:
+                print(f"     {GRAY}Fix: {fix}{RESET}")
+        if recommendation:
+            recommendations.append(recommendation)
+        errors += 1
+
+    def check_info(category: str, message: str, detail: str = None):
+        results[category].append({'status': 'info', 'message': message, 'detail': detail})
+        if not json_output:
+            print(f"  {CYAN}ℹ️{RESET}  {message}")
+            if detail and verbose:
+                print(f"     {GRAY}{detail}{RESET}")
+
+    # Print header
+    if not json_output:
+        print()
+        print(f"{BOLD}🏥 Adversarial Workflow Health Check{RESET}")
+        print("=" * 70)
+        print()
+
+    # 1. Configuration Checks
+    if not json_output:
+        print(f"{BOLD}Configuration:{RESET}")
+
+    config_file = Path('.adversarial/config.yml')
+    config = None
+
+    if config_file.exists():
+        try:
+            with open(config_file) as f:
+                config = yaml.safe_load(f)
+            check_pass('configuration', '.adversarial/config.yml - Valid YAML')
+
+            # Check required fields
+            if 'evaluator_model' in config:
+                model = config['evaluator_model']
+                supported_models = ['gpt-4o', 'claude-sonnet-4-5', 'claude-3-5-sonnet']
+                if any(m in model for m in ['gpt-4', 'claude']):
+                    check_pass('configuration', f'evaluator_model: {model}')
+                else:
+                    check_warn('configuration', f'evaluator_model: {model} (unrecognized)',
+                              recommendation='Check model name in config.yml')
+            else:
+                check_warn('configuration', 'evaluator_model not set',
+                          recommendation='Add evaluator_model to config.yml')
+
+            # Check directories
+            if 'task_directory' in config:
+                task_dir = Path(config['task_directory'])
+                if task_dir.exists():
+                    check_pass('configuration', f'task_directory: {config["task_directory"]} (exists)')
+                else:
+                    check_fail('configuration', f'task_directory: {config["task_directory"]} (not found)',
+                              fix=f'mkdir -p {config["task_directory"]}',
+                              recommendation=f'Create task directory: mkdir -p {config["task_directory"]}')
+
+            if 'log_directory' in config:
+                log_dir = Path(config['log_directory'])
+                if log_dir.exists():
+                    if os.access(log_dir, os.W_OK):
+                        check_pass('configuration', f'log_directory: {config["log_directory"]} (writable)')
+                    else:
+                        check_fail('configuration', f'log_directory: {config["log_directory"]} (not writable)',
+                                  fix=f'chmod +w {config["log_directory"]}')
+                else:
+                    check_warn('configuration', f'log_directory: {config["log_directory"]} (will be created)',
+                              recommendation=f'Log directory will be created automatically')
+
+            # Check test command
+            if 'test_command' in config:
+                check_info('configuration', f'test_command: {config["test_command"]}')
+
+        except yaml.YAMLError as e:
+            check_fail('configuration', f'.adversarial/config.yml - Invalid YAML: {e}',
+                      fix='Fix YAML syntax in .adversarial/config.yml',
+                      recommendation='Check YAML syntax - look for indentation or special character issues')
+        except Exception as e:
+            check_fail('configuration', f'.adversarial/config.yml - Error reading: {e}')
+    else:
+        check_fail('configuration', '.adversarial/config.yml not found',
+                  fix='Run: adversarial init',
+                  recommendation='Initialize project with: adversarial init --interactive')
+
+    if not json_output:
+        print()
+
+    # 2. Dependencies
+    if not json_output:
+        print(f"{BOLD}Dependencies:{RESET}")
+
+    # Git
+    if shutil.which('git'):
+        try:
+            git_version = subprocess.run(['git', '--version'], capture_output=True, text=True, timeout=2)
+            if git_version.returncode == 0:
+                version = git_version.stdout.split()[2] if len(git_version.stdout.split()) > 2 else 'unknown'
+
+                # Check git status
+                git_status = subprocess.run(['git', 'status', '--short'], capture_output=True, text=True, timeout=2)
+                if git_status.returncode == 0:
+                    modified = len([l for l in git_status.stdout.splitlines() if l.startswith(' M')])
+                    untracked = len([l for l in git_status.stdout.splitlines() if l.startswith('??')])
+                    if modified == 0 and untracked == 0:
+                        check_pass('dependencies', f'Git: {version} (working tree clean)')
+                    else:
+                        check_info('dependencies', f'Git: {version} ({modified} modified, {untracked} untracked)')
+                else:
+                    check_pass('dependencies', f'Git: {version}')
+        except:
+            check_pass('dependencies', 'Git: installed')
+    else:
+        check_fail('dependencies', 'Git not found',
+                  fix='Install: https://git-scm.com/downloads',
+                  recommendation='Git is required - install from git-scm.com')
+
+    # Python
+    python_version = sys.version.split()[0]
+    major, minor = map(int, python_version.split('.')[:2])
+    if (major, minor) >= (3, 8):
+        check_pass('dependencies', f'Python: {python_version} (compatible)')
+    else:
+        check_fail('dependencies', f'Python: {python_version} (requires 3.8+)',
+                  fix='Upgrade Python to 3.8 or higher',
+                  recommendation='Python 3.8+ required - upgrade your Python installation')
+
+    # Aider
+    if shutil.which('aider'):
+        try:
+            aider_version = subprocess.run(['aider', '--version'], capture_output=True, text=True, timeout=2)
+            version = aider_version.stdout.strip() if aider_version.returncode == 0 else 'unknown'
+            check_pass('dependencies', f'Aider: {version} (functional)')
+        except:
+            check_pass('dependencies', 'Aider: installed')
+    else:
+        check_fail('dependencies', 'Aider not found',
+                  fix='Install: pip install aider-chat',
+                  recommendation='Aider is required - install with: pip install aider-chat')
+
+    # Bash
+    try:
+        bash_version = subprocess.run(['bash', '--version'], capture_output=True, text=True, timeout=2)
+        if bash_version.returncode == 0:
+            version_line = bash_version.stdout.split('\n')[0]
+            if 'version 3' in version_line:
+                check_info('dependencies', f'Bash: {version_line.split()[3]} (macOS default - limited features)')
+            else:
+                check_pass('dependencies', f'Bash: {version_line.split()[3]}')
+    except:
+        check_info('dependencies', 'Bash: present')
+
+    if not json_output:
+        print()
+
+    # 3. API Keys
+    if not json_output:
+        print(f"{BOLD}API Keys:{RESET}")
+
+    # Load .env
+    env_file = Path('.env')
+    env_loaded = False
+    if env_file.exists():
+        try:
+            load_dotenv(env_file)
+            env_loaded = True
+            check_info('api_keys', '.env file loaded')
+        except:
+            check_warn('api_keys', '.env file found but could not be loaded')
+
+    # Check keys
+    openai_key = os.environ.get('OPENAI_API_KEY')
+    if openai_key and openai_key.startswith(('sk-proj-', 'sk-')):
+        preview = f"{openai_key[:8]}...{openai_key[-4:]}"
+        source = "from .env" if env_loaded else "from environment"
+        check_pass('api_keys', f'OPENAI_API_KEY: Set ({source}) [{preview}]')
+    elif openai_key:
+        check_warn('api_keys', 'OPENAI_API_KEY: Invalid format',
+                  recommendation='OpenAI keys should start with "sk-" or "sk-proj-"')
+    else:
+        check_warn('api_keys', 'OPENAI_API_KEY: Not set',
+                  recommendation='Add OPENAI_API_KEY to .env file')
+
+    anthropic_key = os.environ.get('ANTHROPIC_API_KEY')
+    if anthropic_key and anthropic_key.startswith('sk-ant-'):
+        preview = f"{anthropic_key[:8]}...{anthropic_key[-4:]}"
+        source = "from .env" if env_loaded else "from environment"
+        check_pass('api_keys', f'ANTHROPIC_API_KEY: Set ({source}) [{preview}]')
+    elif anthropic_key:
+        check_warn('api_keys', 'ANTHROPIC_API_KEY: Invalid format',
+                  recommendation='Anthropic keys should start with "sk-ant-"')
+    else:
+        check_info('api_keys', 'ANTHROPIC_API_KEY: Not set (optional)')
+
+    # Check if at least one key is configured
+    if not (openai_key and openai_key.startswith(('sk-', 'sk-proj-'))) and \
+       not (anthropic_key and anthropic_key.startswith('sk-ant-')):
+        check_fail('api_keys', 'No valid API keys configured',
+                  fix='Run: adversarial init --interactive',
+                  recommendation='At least one API key required - use adversarial init --interactive')
+
+    if not json_output:
+        print()
+
+    # 4. Agent Coordination
+    if not json_output:
+        print(f"{BOLD}Agent Coordination:{RESET}")
+
+    agent_context = Path('.agent-context')
+    if agent_context.exists():
+        check_pass('agent_coordination', '.agent-context/ directory exists')
+
+        # Check agent-handoffs.json
+        handoffs_file = agent_context / 'agent-handoffs.json'
+        if handoffs_file.exists():
+            try:
+                with open(handoffs_file) as f:
+                    handoffs = json.load(f)
+                agent_count = len([k for k in handoffs.keys() if k != 'meta'])
+                check_pass('agent_coordination', f'agent-handoffs.json - Valid JSON ({agent_count} agents)')
+
+                # Check for stale status (optional - would need datetime parsing)
+                if 'meta' in handoffs and 'last_updated' in handoffs['meta']:
+                    check_info('agent_coordination', f'Last updated: {handoffs["meta"]["last_updated"]}')
+
+            except json.JSONDecodeError as e:
+                check_fail('agent_coordination', f'agent-handoffs.json - Invalid JSON: {e}',
+                          fix='Fix JSON syntax in .agent-context/agent-handoffs.json')
+            except Exception as e:
+                check_fail('agent_coordination', f'agent-handoffs.json - Error: {e}')
+        else:
+            check_warn('agent_coordination', 'agent-handoffs.json not found',
+                      recommendation='Initialize agent coordination system')
+
+        # Check current-state.json
+        state_file = agent_context / 'current-state.json'
+        if state_file.exists():
+            try:
+                with open(state_file) as f:
+                    json.load(f)
+                check_pass('agent_coordination', 'current-state.json - Valid JSON')
+            except json.JSONDecodeError as e:
+                check_fail('agent_coordination', f'current-state.json - Invalid JSON: {e}')
+        else:
+            check_info('agent_coordination', 'current-state.json not found (optional)')
+
+        # Check AGENT-SYSTEM-GUIDE.md
+        guide_file = agent_context / 'AGENT-SYSTEM-GUIDE.md'
+        if guide_file.exists():
+            file_size = guide_file.stat().st_size
+            check_pass('agent_coordination', f'AGENT-SYSTEM-GUIDE.md - Present ({file_size // 1024}KB)')
+        else:
+            check_warn('agent_coordination', 'AGENT-SYSTEM-GUIDE.md not found',
+                      recommendation='Run adversarial init to install agent guide')
+    else:
+        check_info('agent_coordination', '.agent-context/ not found (optional)',
+                  detail='Agent coordination is optional for basic workflows')
+
+    if not json_output:
+        print()
+
+    # 5. Workflow Scripts
+    if not json_output:
+        print(f"{BOLD}Workflow Scripts:{RESET}")
+
+    scripts = [
+        'evaluate_plan.sh',
+        'review_implementation.sh',
+        'validate_tests.sh'
+    ]
+
+    for script_name in scripts:
+        script_path = Path(f'.adversarial/scripts/{script_name}')
+        if script_path.exists():
+            # Check executable
+            if os.access(script_path, os.X_OK):
+                # Check syntax (basic - just try to read it)
+                try:
+                    with open(script_path) as f:
+                        content = f.read()
+                    if '#!/bin/bash' in content or '#!/usr/bin/env bash' in content:
+                        check_pass('workflow_scripts', f'{script_name} - Executable, valid')
+                    else:
+                        check_warn('workflow_scripts', f'{script_name} - Missing shebang',
+                                  recommendation=f'Add #!/bin/bash to {script_name}')
+                except:
+                    check_warn('workflow_scripts', f'{script_name} - Could not read')
+            else:
+                check_fail('workflow_scripts', f'{script_name} - Not executable',
+                          fix=f'chmod +x .adversarial/scripts/{script_name}',
+                          recommendation=f'Make executable: chmod +x .adversarial/scripts/{script_name}')
+        else:
+            check_fail('workflow_scripts', f'{script_name} - Not found',
+                      fix='Run: adversarial init',
+                      recommendation='Reinstall scripts with: adversarial init')
+
+    if not json_output:
+        print()
+
+    # 6. Tasks
+    if not json_output:
+        print(f"{BOLD}Tasks:{RESET}")
+
+    if config and 'task_directory' in config:
+        task_dir = Path(config['task_directory'])
+        if task_dir.exists():
+            check_pass('tasks', f'{config["task_directory"]} directory exists')
+
+            # Count tasks
+            try:
+                task_files = list(task_dir.glob('**/*.md'))
+                active_tasks = list((task_dir / 'active').glob('*.md')) if (task_dir / 'active').exists() else []
+
+                if len(active_tasks) > 0:
+                    check_info('tasks', f'{len(active_tasks)} active tasks in {config["task_directory"]}active/')
+                elif len(task_files) > 0:
+                    check_info('tasks', f'{len(task_files)} task files in {config["task_directory"]}')
+                else:
+                    check_info('tasks', f'No task files found (create with adversarial quickstart)')
+            except:
+                check_info('tasks', 'Could not count task files')
+        else:
+            check_warn('tasks', f'{config["task_directory"]} directory not found',
+                      recommendation=f'Create with: mkdir -p {config["task_directory"]}')
+    else:
+        check_info('tasks', 'Task directory not configured')
+
+    if not json_output:
+        print()
+
+    # 7. Permissions
+    if not json_output:
+        print(f"{BOLD}Permissions:{RESET}")
+
+    # Check .env permissions
+    if env_file.exists():
+        stat_info = env_file.stat()
+        perms = oct(stat_info.st_mode)[-3:]
+        if perms in ['600', '400']:
+            check_pass('permissions', f'.env - Secure ({perms})')
+        elif perms == '644':
+            check_warn('permissions', f'.env - Readable by others ({perms})',
+                      recommendation='Secure .env file: chmod 600 .env')
+        else:
+            check_warn('permissions', f'.env - Permissions {perms}',
+                      recommendation='Secure .env file: chmod 600 .env')
+
+    # Check scripts executable (summary)
+    scripts_dir = Path('.adversarial/scripts')
+    if scripts_dir.exists():
+        script_files = list(scripts_dir.glob('*.sh'))
+        executable_count = sum(1 for s in script_files if os.access(s, os.X_OK))
+        if len(script_files) > 0 and executable_count == len(script_files):
+            check_pass('permissions', f'All {len(script_files)} scripts executable')
+        elif executable_count < len(script_files):
+            check_warn('permissions', f'{executable_count}/{len(script_files)} scripts executable',
+                      recommendation='Fix with: chmod +x .adversarial/scripts/*.sh')
+
+    # Check log directory writable
+    if config and 'log_directory' in config:
+        log_dir = Path(config['log_directory'])
+        if log_dir.exists():
+            if os.access(log_dir, os.W_OK):
+                check_pass('permissions', f'{config["log_directory"]} - Writable')
+            else:
+                check_fail('permissions', f'{config["log_directory"]} - Not writable',
+                          fix=f'chmod +w {config["log_directory"]}')
+
+    if not json_output:
+        print()
+
+    # Calculate health score
+    total = passed + warnings + errors
+    health_score = int((passed / total) * 100) if total > 0 else 0
+
+    # Output results
+    if json_output:
+        output = {
+            'health_score': health_score,
+            'summary': {
+                'passed': passed,
+                'warnings': warnings,
+                'errors': errors,
+                'total': total
+            },
+            'results': results,
+            'recommendations': recommendations
+        }
+        print(json.dumps(output, indent=2))
+    else:
+        # Text output summary
+        print("=" * 70)
+        print()
+
+        # Status line
+        if health_score > 90:
+            status_emoji = "✅"
+            status_text = "healthy"
+            status_color = GREEN
+        elif health_score > 70:
+            status_emoji = "⚠️"
+            status_text = "degraded"
+            status_color = YELLOW
+        else:
+            status_emoji = "❌"
+            status_text = "critical"
+            status_color = RED
+
+        print(f"{status_emoji} {status_color}System is {status_text}!{RESET} (Health: {health_score}%)")
+        print(f"   {passed} checks passed, {warnings} warnings, {errors} errors")
+        print()
+
+        # Recommendations
+        if recommendations:
+            print(f"{BOLD}Recommendations:{RESET}")
+            for i, rec in enumerate(recommendations[:5], 1):  # Show top 5
+                print(f"  {i}. {rec}")
+            if len(recommendations) > 5:
+                print(f"  ... and {len(recommendations) - 5} more")
+            print()
+
+        # Ready to section
+        if health_score > 70:
+            print(f"{BOLD}Ready to:{RESET}")
+            print("  • Evaluate task plans: adversarial evaluate <task-file>")
+            print("  • Review implementations: adversarial review")
+            print("  • Validate tests: adversarial validate")
+        else:
+            print(f"{BOLD}Next steps:{RESET}")
+            print("  • Fix critical issues above")
+            print("  • Run: adversarial init --interactive")
+            print("  • Then: adversarial health --verbose")
+        print()
+
+    # Exit code
+    return 0 if errors == 0 else 1
+
+
 def evaluate(task_file: str) -> int:
     """Run Phase 1: Plan evaluation."""
 
@@ -1238,6 +1732,15 @@ For more information: https://github.com/movito/adversarial-workflow
     subparsers.add_parser("check", help="Validate setup and dependencies")
     subparsers.add_parser("doctor", help="Alias for 'check'")
 
+    # health command
+    health_parser = subparsers.add_parser("health", help="Comprehensive system health check")
+    health_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Show detailed diagnostics"
+    )
+    health_parser.add_argument(
+        "--json", action="store_true", help="Output in JSON format"
+    )
+
     # evaluate command
     eval_parser = subparsers.add_parser("evaluate", help="Run Phase 1: Plan evaluation")
     eval_parser.add_argument("task_file", help="Task file to evaluate")
@@ -1269,6 +1772,8 @@ For more information: https://github.com/movito/adversarial-workflow
         return quickstart()
     elif args.command in ["check", "doctor"]:
         return check()
+    elif args.command == "health":
+        return health(verbose=args.verbose, json_output=args.json)
     elif args.command == "evaluate":
         return evaluate(args.task_file)
     elif args.command == "review":

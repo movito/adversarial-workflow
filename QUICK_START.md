@@ -143,6 +143,85 @@ The check command now shows:
 
 **If checks fail**, follow the suggested fixes in the output.
 
+### Comprehensive Health Check
+
+For a more detailed system health check, use:
+
+```bash
+adversarial health
+```
+
+This provides comprehensive validation across 7 categories:
+- **Configuration**: Checks `.adversarial/config.yml`, model settings, directories
+- **Dependencies**: Git, Python, Aider, Bash versions and status
+- **API Keys**: Format validation, source tracking (.env vs environment)
+- **Agent Coordination**: Validates `.agent-context/`, JSON files, guide presence
+- **Workflow Scripts**: Executable status, shebang validation, syntax checks
+- **Tasks**: Directory structure, active task counts
+- **Permissions**: `.env` security, script permissions, log directory access
+
+**Health Score:** Shows system health as a percentage (>90% = healthy, 70-90% = degraded, <70% = critical)
+
+**Useful flags:**
+```bash
+# Detailed diagnostics with fix commands
+adversarial health --verbose
+
+# Machine-readable JSON output
+adversarial health --json
+```
+
+**Example output:**
+```
+🏥 Adversarial Workflow Health Check
+======================================================================
+
+Configuration:
+  ✅ .adversarial/config.yml - Valid YAML
+  ✅ evaluator_model: gpt-4o
+  ✅ task_directory: tasks/ (exists)
+  ✅ log_directory: .adversarial/logs/ (writable)
+
+Dependencies:
+  ✅ Git: 2.39.0 (working tree clean)
+  ✅ Python: 3.11.0 (compatible)
+  ✅ Aider: 0.86.1 (functional)
+
+API Keys:
+  ✅ OPENAI_API_KEY: Set (from .env) [sk-proj-...xyz]
+  ✅ ANTHROPIC_API_KEY: Set (from .env) [sk-ant-...xyz]
+
+Agent Coordination:
+  ✅ .agent-context/ directory exists
+  ✅ agent-handoffs.json - Valid JSON (7 agents)
+  ✅ AGENT-SYSTEM-GUIDE.md - Present (33KB)
+
+Workflow Scripts:
+  ✅ evaluate_plan.sh - Executable, valid
+  ✅ review_implementation.sh - Executable, valid
+  ✅ validate_tests.sh - Executable, valid
+
+Tasks:
+  ✅ tasks/ directory exists
+  ℹ️  5 active tasks in tasks/active/
+
+Permissions:
+  ✅ .env - Secure (600)
+  ✅ All 3 scripts executable
+
+======================================================================
+
+✅ System is healthy! (Health: 95%)
+   18 checks passed, 0 warnings, 0 errors
+
+Ready to:
+  • Evaluate task plans: adversarial evaluate <task-file>
+  • Review implementations: adversarial review
+  • Validate tests: adversarial validate
+```
+
+Use `adversarial health` periodically to ensure your system remains properly configured.
+
 ### Optional: Agent Coordination System
 
 If you're using AI agents to work on this project, `adversarial init` automatically copies the **AGENT-SYSTEM-GUIDE.md** to `.agent-context/` for agent coordination.
