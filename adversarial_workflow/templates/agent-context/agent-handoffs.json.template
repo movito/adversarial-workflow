@@ -14,7 +14,7 @@
     "dependencies": "None",
     "deliverables": [
       "✅ Agent coordination system initialized",
-      "✅ All 7 agents registered and available"
+      "✅ All 8 agents registered and available"
     ],
     "technical_notes": "Project: {{PROJECT_NAME}}. Python {{PYTHON_VERSION}}. Agent coordination initialized on {{DATE}}. Ready to assign tasks and coordinate multi-agent development work.",
     "coordination_role": "Task coordination and project management",
@@ -73,6 +73,17 @@
     "deliverables": [],
     "technical_notes": "Ready for documentation review and improvement work.",
     "coordination_role": "Documentation quality assurance",
+    "last_updated": "{{DATE}} Initialized"
+  },
+  "security-reviewer": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "high",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Ready for security audits, vulnerability assessments, and code security review. Focuses on authentication, authorization, input validation, injection prevention, and dependency security.",
+    "coordination_role": "Security and vulnerability assessment",
     "last_updated": "{{DATE}} Initialized"
   },
   "feature-developer": {

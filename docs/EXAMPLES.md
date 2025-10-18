@@ -840,8 +840,13 @@ adversarial init --interactive
 adversarial agent onboard
 
 # Follow the prompts:
-# Q1: Use delegation/tasks/ structure? (Y/n) → Y
-# Q2: Organize root docs into docs/? (y/N) → n
+# Q1: Customize agent roles? (y/N) → N (press Enter for standard template)
+#    - Standard: 8 specialized agents (recommended for complex projects)
+#    - Minimal: 3 essential agents (coordinator, developer, reviewer)
+#    - Custom URL: Load from your own template repository
+#    - Skip: Set up manually later
+# Q2: Use delegation/tasks/ structure? (Y/n) → Y
+# Q3: Organize root docs into docs/? (y/N) → n
 ```
 
 **What gets created**:
@@ -866,23 +871,41 @@ my-project/
 └── src/                    # Your code (unchanged)
 ```
 
-#### Agent Roles
+#### Agent Templates
 
-The system initializes 7 specialized agents in `agent-handoffs.json`:
+Choose the right template for your project:
 
+**Standard Template (8 roles)** - Best for complex projects:
 1. **coordinator** - Task planning and project management
 2. **api-developer** - Backend API integration
 3. **format-developer** - Data format and export systems
 4. **media-processor** - Media processing (if applicable)
 5. **test-runner** - Test execution and QA
 6. **document-reviewer** - Documentation quality
-7. **feature-developer** - Feature implementation
+7. **security-reviewer** - Security audits and vulnerability assessment
+8. **feature-developer** - Feature implementation
+
+**Minimal Template (3 roles)** - Best for simple projects:
+1. **coordinator** - Task planning and coordination
+2. **developer** - General implementation work
+3. **reviewer** - Code and documentation review
+
+**Custom Template (URL)** - Load your own:
+```bash
+# Example: Load from your GitHub repository
+# URL: https://raw.githubusercontent.com/your-org/your-template/main/agent-handoffs.json
+```
 
 **Each agent has**:
 - `current_focus`: What they're working on
 - `task_file`: Path to their active task
 - `status`: available | working | blocked | completed
 - `deliverables`: Track completed work
+
+**When to use each template**:
+- **Standard**: Multi-faceted projects (APIs, media, docs, testing)
+- **Minimal**: Simple projects, getting started, maximum flexibility
+- **Custom**: Share templates across organization, specialized roles
 
 #### Usage Pattern 1: Solo Developer with AI Assistants
 
@@ -975,7 +998,7 @@ adversarial health --verbose
 #
 # Agent Coordination:
 #   ✅ .agent-context/ directory exists
-#   ✅ agent-handoffs.json - Valid JSON (7 agents)
+#   ✅ agent-handoffs.json - Valid JSON (8 agents)
 #   ✅ current-state.json - Valid JSON
 #   ✅ AGENT-SYSTEM-GUIDE.md - Present (34KB)
 #   ℹ️  Last updated: 2025-10-17

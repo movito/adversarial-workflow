@@ -92,6 +92,12 @@ If you're using AI agents for multi-agent development workflows, adversarial-wor
 # After running adversarial init, optionally set up agent coordination
 adversarial agent onboard
 
+# Choose your agent template:
+# 1. Standard (8 roles) - Recommended for complex projects [DEFAULT - press Enter]
+# 2. Minimal (3 roles) - Simple projects or getting started
+# 3. Custom URL - Load from your own template repository
+# 4. Skip - Set up manually later
+
 # This creates:
 # - .agent-context/        # Agent coordination files
 # - delegation/tasks/      # Structured task management
@@ -100,7 +106,10 @@ adversarial agent onboard
 
 **What you get**:
 - 📋 **Structured task management** with `delegation/tasks/active/` and `completed/`
-- 🤝 **Agent handoff tracking** in `agent-handoffs.json` (7 specialized agents)
+- 🤝 **Agent handoff tracking** in `agent-handoffs.json`
+  - **Standard template**: 8 specialized agents (coordinator, feature-developer, api-developer, format-developer, test-runner, document-reviewer, security-reviewer, media-processor)
+  - **Minimal template**: 3 essential agents (coordinator, developer, reviewer)
+  - **Custom template**: Load from your own GitHub repository or URL
 - 📊 **Project state tracking** in `current-state.json`
 - 📖 **Comprehensive guide** at `.agent-context/AGENT-SYSTEM-GUIDE.md`
 - 🔧 **Health monitoring** with `adversarial health` command
@@ -110,6 +119,33 @@ adversarial agent onboard
 - ✅ Need structured task assignment and tracking
 - ✅ Want coordination between different development roles
 - ❌ Solo development without agents (not needed)
+
+**Template Selection Guide**:
+- **Standard (8 roles)**: Best for complex projects with multiple specialized tasks (API development, media processing, testing, documentation, security)
+- **Minimal (3 roles)**: Perfect for simple projects, getting started, or when you want maximum flexibility
+- **Custom URL**: Use your own template from `github.com/your-org/your-template` or any URL serving a JSON template
+
+**Customizing Agents After Onboarding**:
+
+The templates provide a solid starting point, but you can easily add more specialized agents:
+
+```bash
+# After running adversarial agent onboard, edit the agent-handoffs.json
+vim .agent-context/agent-handoffs.json
+
+# Add project-specific agents:
+# - code-reviewer: General code review specialist
+# - performance-optimizer: Performance tuning and profiling
+# - database-architect: Database design and optimization
+# - devops-engineer: CI/CD, deployment, infrastructure
+# - ux-designer: User experience and interface design
+# ... or any role your project needs
+```
+
+**Available agent launcher scripts** (reference for creating custom agents):
+- See `agents/*.sh` for examples (security-reviewer, code-reviewer, etc.)
+- Copy and adapt existing launchers for your project-specific needs
+- Each agent definition includes: focus, status, deliverables, technical notes
 
 The agent coordination system **extends** adversarial-workflow - both work together:
 - **Adversarial workflow** = Code quality gates (review, validation)

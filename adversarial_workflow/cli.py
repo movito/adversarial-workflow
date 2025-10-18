@@ -1690,6 +1690,119 @@ def validate(test_command: Optional[str] = None) -> int:
     return 0
 
 
+def select_agent_template() -> Dict[str, str]:
+    """
+    Prompt user for agent template selection.
+
+    Returns:
+        Dict with 'type' ('standard', 'minimal', 'custom', 'skip') and 'url' (if custom)
+    """
+    print(f"{BOLD}Agent Roles:{RESET}")
+    print("  Standard setup includes 8 agent roles:")
+    print("    • coordinator (task management)")
+    print("    • feature-developer, api-developer, format-developer")
+    print("    • test-runner, document-reviewer, security-reviewer, media-processor")
+    print()
+    print("  Minimal setup includes 3 agent roles:")
+    print("    • coordinator, developer, reviewer")
+    print()
+
+    customize = prompt_user("Customize agent roles?", default="n")
+
+    if customize.lower() not in ["y", "yes"]:
+        return {'type': 'standard', 'url': None}
+
+    # Show customization options
+    print()
+    print(f"{BOLD}Agent Template Options:{RESET}")
+    print("  1. Standard (8 roles) - Recommended for complex projects")
+    print("  2. Minimal (3 roles) - Simple projects or getting started")
+    print("  3. Custom URL - Load from your own template repository")
+    print("  4. Skip - Set up manually later")
+    print()
+
+    choice = prompt_user("Your choice", default="1")
+
+    if choice == "2":
+        return {'type': 'minimal', 'url': None}
+    elif choice == "3":
+        print()
+        print(f"{CYAN}Custom Template URL:{RESET}")
+        print("  Example: https://raw.githubusercontent.com/user/repo/main/agent-handoffs.json")
+        print()
+        url = prompt_user("Template URL")
+        if url:
+            return {'type': 'custom', 'url': url}
+        else:
+            print(f"{YELLOW}No URL provided, using standard template{RESET}")
+            return {'type': 'standard', 'url': None}
+    elif choice == "4":
+        return {'type': 'skip', 'url': None}
+    else:  # Default to standard
+        return {'type': 'standard', 'url': None}
+
+
+def fetch_agent_template(url: str, template_type: str = 'standard') -> Optional[str]:
+    """
+    Fetch agent template from URL or package templates.
+
+    Args:
+        url: URL to fetch from (if custom), or None for package template
+        template_type: 'standard', 'minimal', or 'custom'
+
+    Returns:
+        Template content as string, or None on failure
+    """
+    if template_type in ['standard', 'minimal']:
+        # Load from package templates
+        package_dir = Path(__file__).parent
+        template_name = "agent-handoffs.json.template" if template_type == 'standard' else "agent-handoffs-minimal.json.template"
+        template_path = package_dir / "templates" / "agent-context" / template_name
+
+        if template_path.exists():
+            try:
+                with open(template_path, 'r') as f:
+                    return f.read()
+            except Exception as e:
+                print(f"{RED}❌ ERROR: Could not read {template_type} template: {e}{RESET}")
+                return None
+        else:
+            print(f"{RED}❌ ERROR: {template_type} template not found in package{RESET}")
+            return None
+
+    elif template_type == 'custom' and url:
+        # Fetch from custom URL
+        try:
+            import urllib.request
+
+            print(f"  Fetching template from: {url}")
+
+            with urllib.request.urlopen(url, timeout=10) as response:
+                content = response.read().decode('utf-8')
+
+            # Validate it's JSON
+            import json
+            json.loads(content)
+
+            print(f"  {GREEN}✅{RESET} Template fetched successfully")
+            return content
+
+        except urllib.error.URLError as e:
+            print(f"{RED}❌ ERROR: Could not fetch template: {e}{RESET}")
+            print("  Using standard template instead")
+            return fetch_agent_template(None, 'standard')
+        except json.JSONDecodeError as e:
+            print(f"{RED}❌ ERROR: Template is not valid JSON: {e}{RESET}")
+            print("  Using standard template instead")
+            return fetch_agent_template(None, 'standard')
+        except Exception as e:
+            print(f"{RED}❌ ERROR: Unexpected error: {e}{RESET}")
+            print("  Using standard template instead")
+            return fetch_agent_template(None, 'standard')
+
+    return None
+
+
 def agent_onboard(project_path: str = ".") -> int:
     """
     Set up agent coordination system (Extension Layer).
@@ -1760,6 +1873,13 @@ def agent_onboard(project_path: str = ".") -> int:
     organize_docs = prompt_user(
         "Organize root docs into docs/?", "n"
     ).lower() in ["y", "yes"]
+
+    print()
+
+    # 3a. Template selection (optional)
+    template_config = select_agent_template()
+    template_type = template_config['type']
+    template_url = template_config['url']
 
     print()
     print(f"{BOLD}Setting up agent coordination...{RESET}")
@@ -1878,15 +1998,28 @@ def agent_onboard(project_path: str = ".") -> int:
             "PYTHON_VERSION": python_version,
         }
 
-        # Render agent-handoffs.json
-        agent_handoffs_template = templates_dir / "agent-handoffs.json.template"
-        if agent_handoffs_template.exists():
-            render_template(
-                str(agent_handoffs_template),
-                ".agent-context/agent-handoffs.json",
-                template_vars
-            )
-            print(f"  {GREEN}✅{RESET} Created .agent-context/agent-handoffs.json")
+        # Render agent-handoffs.json with selected template
+        if template_type != 'skip':
+            # Fetch the selected template
+            template_content = fetch_agent_template(template_url, template_type)
+
+            if template_content:
+                # Perform variable substitution
+                for key, value in template_vars.items():
+                    placeholder = f"{{{{{key}}}}}"
+                    template_content = template_content.replace(placeholder, str(value))
+
+                # Write to file
+                with open(".agent-context/agent-handoffs.json", "w") as f:
+                    f.write(template_content)
+
+                template_name = {'standard': '8 agents', 'minimal': '3 agents', 'custom': 'custom template'}[template_type]
+                print(f"  {GREEN}✅{RESET} Created .agent-context/agent-handoffs.json ({template_name})")
+            else:
+                print(f"  {RED}❌{RESET} Failed to fetch agent template")
+                return 1
+        else:
+            print(f"  {CYAN}ℹ️{RESET}  Skipped agent-handoffs.json (manual setup requested)")
 
         # Render current-state.json
         current_state_template = templates_dir / "current-state.json.template"
@@ -2024,7 +2157,13 @@ def agent_onboard(project_path: str = ".") -> int:
     print()
     print(f"{BOLD}What was created:{RESET}")
     print("  ✓ .agent-context/ - Agent coordination files")
-    print("  ✓ agent-handoffs.json - 7 agents initialized")
+
+    if template_type != 'skip':
+        agent_count = {'standard': '8 agents', 'minimal': '3 agents', 'custom': 'custom agents'}[template_type]
+        print(f"  ✓ agent-handoffs.json - {agent_count} initialized")
+    else:
+        print(f"  ○ agent-handoffs.json - Manual setup required")
+
     print("  ✓ current-state.json - Project state tracking")
     print("  ✓ AGENT-SYSTEM-GUIDE.md - Comprehensive guide")
     if use_delegation:

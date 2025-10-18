@@ -193,7 +193,7 @@ API Keys:
 
 Agent Coordination:
   ✅ .agent-context/ directory exists
-  ✅ agent-handoffs.json - Valid JSON (7 agents)
+  ✅ agent-handoffs.json - Valid JSON (8 agents)
   ✅ AGENT-SYSTEM-GUIDE.md - Present (33KB)
 
 Workflow Scripts:
@@ -224,10 +224,34 @@ Use `adversarial health` periodically to ensure your system remains properly con
 
 ### Optional: Agent Coordination System
 
-If you're using AI agents to work on this project, `adversarial init` automatically copies the **AGENT-SYSTEM-GUIDE.md** to `.agent-context/` for agent coordination.
+If you're using AI agents to work on this project, you can set up a comprehensive agent coordination system:
+
+```bash
+adversarial agent onboard
+```
+
+This interactive command will:
+1. **Choose agent template** (optional - default: standard):
+   - **Standard (8 roles)**: coordinator, feature-developer, api-developer, format-developer, test-runner, document-reviewer, security-reviewer, media-processor
+   - **Minimal (3 roles)**: coordinator, developer, reviewer
+   - **Custom URL**: Load from `https://raw.githubusercontent.com/your-org/your-template/main/agent-handoffs.json`
+   - **Skip**: Set up manually later
+
+2. **Create directory structure**:
+   - `.agent-context/` - Agent coordination files (agent-handoffs.json, current-state.json, README.md, AGENT-SYSTEM-GUIDE.md)
+   - `delegation/` - Task management (tasks/active/, tasks/completed/, handoffs/)
+   - `agents/` - Agent tools and scripts
+
+3. **Configure task management**:
+   - Optionally migrate existing tasks from `tasks/` → `delegation/tasks/active/`
+   - Updates `.adversarial/config.yml` to use new task directory
+   - Creates backup before migration
 
 **What's included:**
-- `.agent-context/AGENT-SYSTEM-GUIDE.md` - Comprehensive agent coordination guide (~34KB)
+- **agent-handoffs.json** - Agent role definitions, current status, task assignments
+- **current-state.json** - Project state tracking (version, tasks, metrics, git status)
+- **AGENT-SYSTEM-GUIDE.md** - Comprehensive agent coordination guide (~34KB)
+- **README.md** - Quick reference for the agent coordination system
 - Agent roles, handoff protocols, task management patterns
 - Production-ready methodology validated through real projects
 
@@ -250,6 +274,14 @@ This provides agents with:
 - Provides complete project context upfront
 - Catches configuration issues before starting work
 - Security checks (e.g., .env in .gitignore)
+- Structured handoff tracking between different agent roles
+- Clear task assignment and completion tracking
+
+**Template Selection Guide:**
+- **Use standard** if your project has specialized needs (API development, media processing, comprehensive testing)
+- **Use minimal** if you're just getting started or want a simpler structure (3 roles covers 90% of use cases)
+- **Use custom URL** if you have your own template repository or want to share templates across multiple projects
+- **Skip** if you want to manually create the agent coordination files yourself
 
 See `agents/tools/README.md` and `.agent-context/AGENT-SYSTEM-GUIDE.md` for full details.
 
