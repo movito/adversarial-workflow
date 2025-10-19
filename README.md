@@ -42,6 +42,37 @@ Before installing, ensure you have:
 
 [See detailed platform support](#platform-support)
 
+## Installation
+
+> **📚 For detailed integration instructions**: See [docs/INTEGRATION-GUIDE.md](docs/INTEGRATION-GUIDE.md)
+
+### From PyPI (Coming Soon)
+
+```bash
+pip install adversarial-workflow
+```
+
+### From GitHub (Current - Pre-release)
+
+**For stable use in production:**
+```bash
+# Add to your pyproject.toml:
+# [project.optional-dependencies]
+# adversarial = [
+#     "adversarial-workflow @ git+https://github.com/movito/adversarial-workflow.git@v0.3.0",
+# ]
+
+pip install git+https://github.com/movito/adversarial-workflow.git@v0.3.0
+```
+
+**For active development:**
+```bash
+git clone https://github.com/movito/adversarial-workflow.git
+pip install -e adversarial-workflow/
+```
+
+See [docs/INTEGRATION-GUIDE.md](docs/INTEGRATION-GUIDE.md) for detailed integration strategies.
+
 ## Quick Start
 
 > **⚠️ New Users**: Run the [Prerequisites](#prerequisites) checklist above first!
