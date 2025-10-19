@@ -50,6 +50,9 @@ EVAL_OUTPUT="${LOG_DIR}${TASK_NUM}-PLAN-EVALUATION.md"
 echo "=== REVIEWER ($EVALUATOR_MODEL) ANALYZING PLAN ==="
 echo ""
 
+# Ensure log directory exists
+mkdir -p "$LOG_DIR"
+
 aider \
   --model "$EVALUATOR_MODEL" \
   --yes \
@@ -142,7 +145,7 @@ If the plan has significant gaps or risks, mark as NEEDS_REVISION with specific 
 Only use REJECT if the entire approach is flawed.
 
 **IMPORTANT**: You are ONLY evaluating. Do NOT implement any code. Do NOT edit any files. Do NOT suggest file changes with SEARCH/REPLACE blocks. Only provide your written evaluation following the format above." \
-  --no-auto-commits
+  --no-auto-commits 2>&1 | tee "$EVAL_OUTPUT"
 
 echo ""
 echo "=== Plan evaluation complete ==="
