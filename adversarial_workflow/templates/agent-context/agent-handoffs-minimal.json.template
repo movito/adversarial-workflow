@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "template": "minimal",
+    "project": "{{PROJECT_NAME}}",
+    "purpose": "Minimal agent coordination for Claude Code workflows",
+    "last_checked": "{{DATE}}",
+    "coordinator_last_check": "{{DATE}}"
+  },
+  "coordinator": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "high",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Task planning, coordination, and project management.",
+    "coordination_role": "Task planning and agent coordination",
+    "last_updated": "{{DATE}} Initialized"
+  },
+  "developer": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "high",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Feature implementation, bug fixes, and code development.",
+    "coordination_role": "Code implementation and development",
+    "last_updated": "{{DATE}} Initialized"
+  },
+  "reviewer": {
+    "current_focus": "Available for assignment",
+    "task_file": "None - No active tasks",
+    "status": "available",
+    "priority": "medium",
+    "dependencies": "None",
+    "deliverables": [],
+    "technical_notes": "Code review, documentation review, and quality assurance.",
+    "coordination_role": "Code and documentation review",
+    "last_updated": "{{DATE}} Initialized"
+  }
+}
