@@ -113,19 +113,20 @@
     "last_updated": "2025-10-17 Phase 4 plan archived, smoke tests complete"
   },
   "document-reviewer": {
-    "current_focus": "Available for assignment",
-    "task_file": "None - Phase 6 terminology work archived (90% complete in v0.2.0)",
-    "status": "available",
-    "priority": "low",
-    "dependencies": "None",
+    "current_focus": "TASK-TERMINOLOGY-001: Revert 'Reviewer' → 'Evaluator' terminology",
+    "task_file": "delegation/tasks/active/TASK-TERMINOLOGY-001-REVERT-TO-EVALUATOR.md",
+    "status": "assigned",
+    "priority": "medium",
+    "dependencies": "None - Ready to start",
     "deliverables": [
       "✅ Phase 6 terminology fixes: 90% complete in v0.2.0 (73 fixes)",
       "✅ v0.3.0 terminology audit: 1 remaining fix in cli.py (completed)",
-      "✅ Decision record moved to delegation/decisions/"
+      "✅ Decision record moved to delegation/decisions/",
+      "⏳ TASK-TERMINOLOGY-001: Revert Author/Reviewer → Author/Evaluator (2-3h)"
     ],
-    "technical_notes": "Phase 6 terminology task moved to delegation/tasks/archived/ per Reviewer assessment. v0.2.0 already completed 73 Author/Reviewer terminology fixes across 11 files. v0.3.0 audit found 1 straggler (cli.py:322 'Evaluator:' → 'Reviewer:') which was fixed. Remaining occurrences are in agent coordination files (where 'Coordinator' refers to agent role) or audit history.",
-    "coordination_role": "Documentation quality - Available for documentation assignments",
-    "last_updated": "2025-10-17 Phase 6 archived, terminology audit complete"
+    "technical_notes": "Phase 6 terminology task moved to delegation/tasks/archived/ per Reviewer assessment. v0.2.0 already completed 73 Author/Reviewer terminology fixes across 11 files. v0.3.0 audit found 1 straggler (cli.py:322 'Evaluator:' → 'Reviewer:') which was fixed. NEW TASK (2025-10-19): Reverting to 'Evaluator' terminology to eliminate ambiguity with 'document-reviewer' agent role. Ironic: document-reviewer is fixing confusion about its own name!",
+    "coordination_role": "Documentation quality - Currently assigned TASK-TERMINOLOGY-001",
+    "last_updated": "2025-10-19 Assigned TASK-TERMINOLOGY-001 terminology reversion"
   },
   "feature-developer": {
     "current_focus": "✅ TASK-SETUP-001 100% COMPLETE - Agent onboard command + documentation (~10h)",
