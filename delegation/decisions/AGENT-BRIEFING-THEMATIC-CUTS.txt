@@ -1,0 +1,93 @@
+AGENT BRIEFING: Integrate adversarial-workflow v0.3.0 into thematic-cuts
+
+CONTEXT:
+The adversarial-workflow package has reached v0.3.0 with a new agent coordination system. It's ready to integrate back into thematic-cuts for Phase 2 development and dogfooding.
+
+YOUR MISSION:
+1. Install adversarial-workflow v0.3.0 in thematic-cuts
+2. Verify health and configuration
+3. Continue Phase 2A tasks using the workflow
+4. Provide feedback for package improvements
+
+QUICK START:
+```bash
+cd /Users/broadcaster_three/Github/thematic-cuts
+pip install /Users/broadcaster_three/Github/adversarial-workflow/dist/adversarial_workflow-0.3.0-py3-none-any.whl
+adversarial --version  # Should show: 0.3.0
+adversarial health --verbose
+```
+
+KEY CHANGES IN v0.3.0:
+- New: 'adversarial health' command (system diagnostics)
+- New: 'adversarial agent onboard' command (agent coordination setup)
+- Improved: API key detection (loads .env automatically)
+- Improved: Error messages (ERROR/WHY/FIX/HELP pattern)
+- Packaged: AGENT-SYSTEM-GUIDE.md included in distribution
+
+CURRENT STATE:
+- thematic-cuts: v1.0.2, Phase 2A 25% complete
+- Location: /Users/broadcaster_three/Github/thematic-cuts
+- Already has: .agent-context/, delegation/, agents/ (agent coordination)
+- Has old: adversarial-workflow/ directory (needs cleanup)
+- Active tasks: 10+ in delegation/tasks/active/
+
+INTEGRATION STEPS:
+
+1. INSTALL v0.3.0
+   cd /Users/broadcaster_three/Github/thematic-cuts
+   pip install /Users/broadcaster_three/Github/adversarial-workflow/dist/adversarial_workflow-0.3.0-py3-none-any.whl
+
+2. VERIFY HEALTH
+   adversarial health
+   Expected: >70% health score, all critical checks passing
+
+3. CHECK CONFIGURATION
+   cat .adversarial/config.yml
+   Ensure task_directory points to: delegation/tasks/
+
+4. TEST WITH A TASK
+   adversarial evaluate delegation/tasks/active/TASK-2025-006-semantic-parser-compound-instructions.md
+
+5. CLEAN UP OLD DIRECTORY
+   rm -rf adversarial-workflow/  # (the nested directory, NOT the package!)
+
+WORKFLOW FOR PHASE 2 TASKS:
+- Phase 1: adversarial evaluate delegation/tasks/active/TASK-XXX.md
+- Phase 2: Implement (Claude Code, Cursor, manual)
+- Phase 3: adversarial review
+- Phase 4: adversarial validate pytest
+- Phase 5: Commit and move to completed/
+
+SUCCESS CRITERIA:
+✓ adversarial --version shows 0.3.0
+✓ adversarial health shows >70%
+✓ Can evaluate, review, validate tasks
+✓ Agent coordination intact (.agent-context/ valid)
+✓ Complete at least 1 Phase 2 task using workflow
+
+TROUBLESHOOTING:
+- "command not found" → Package not installed, run pip install again
+- "Not initialized" → Run: adversarial init --interactive
+- "No API keys" → Check .env file exists and has valid keys
+- Health "degraded" → Run: adversarial health --verbose for details
+
+FULL DOCUMENTATION:
+See: /Users/broadcaster_three/Github/adversarial-workflow/HANDOFF-TO-THEMATIC-CUTS.md
+
+QUESTIONS?
+- Check: adversarial health --verbose
+- Read: .agent-context/AGENT-SYSTEM-GUIDE.md
+- Docs: README.md, QUICK_START.md, docs/EXAMPLES.md
+
+FEEDBACK WANTED:
+As you use v0.3.0, note:
+- UX friction points
+- Confusing error messages
+- Missing features
+- Performance issues
+- Documentation gaps
+
+File issues at: https://github.com/movito/adversarial-workflow/issues
+
+---
+Ready to proceed! Start with the Quick Start commands above.
