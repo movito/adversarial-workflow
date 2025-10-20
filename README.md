@@ -1,8 +1,8 @@
 # Adversarial Workflow
 
-**Multi-stage AI code review system preventing phantom work**
+**A multi-stage AI code review system that makes your code better**
 
-Prevent "phantom work" (AI claiming to implement but not delivering) through adversarial verification using independent review stages. A battle-tested workflow from the [thematic-cuts](https://github.com/movito/thematic-cuts) project that achieved 96.9% test pass rate improvement.
+Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to implement but not delivering) through adversarial verification using independent review stages. A battle-tested workflow from the [thematic-cuts](https://github.com/movito/thematic-cuts) project that achieved 96.9% test pass rate improvement.
 
 **🎯 100% Standalone** - No special IDE or agent system required. Works with any development workflow.
 
