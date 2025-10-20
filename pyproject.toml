@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "adversarial-workflow"
 version = "0.3.2"
-description = "Multi-stage AI code review system preventing phantom work - Author/Reviewer pattern"
+description = "Multi-stage AI code review system preventing phantom work - Author/Evaluator pattern"
 readme = "README.md"
 authors = [
     {name = "Fredrik Matheson"}
