@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2025-10-19
+
+### Changed
+
+**Terminology Reversion: "Reviewer" → "Evaluator"**
+
+Reverted the v0.2.0 terminology change to eliminate ambiguity with agent roles:
+
+- **Author-Evaluator workflow** (was: Author-Reviewer in v0.2.0-v0.3.1)
+- Updated ~20-30 occurrences across documentation and user-facing messages
+- **Rationale**:
+  - "Reviewer" created ambiguity with "document-reviewer" agent role in multi-agent systems
+  - "Evaluator" is more precise: evaluates quality and correctness (not generic "review")
+  - Aligns with technical naming (`EVALUATOR_MODEL` environment variable)
+  - Users naturally refer to it as "Evaluator"
+
+**Files Updated**:
+- Core docs: README.md, QUICK_START.md, docs/TERMINOLOGY.md, docs/EXAMPLES.md
+- Workflow docs: docs/WORKFLOW_PHASES.md, docs/INTERACTION_PATTERNS.md, docs/TROUBLESHOOTING.md
+- Code: adversarial_workflow/__init__.py, adversarial_workflow/cli.py (line 322 output message)
+- Templates: README.template, script templates
+
+**Backward Compatibility**: ✅ No breaking changes
+- Config keys unchanged (`evaluator_model`)
+- Environment variables unchanged (`EVALUATOR_MODEL`)
+- Command names unchanged (`adversarial evaluate`)
+- Users can upgrade without any configuration changes
+
+### Added
+
+- **New Section in docs/TERMINOLOGY.md**: "Evaluator vs document-reviewer"
+  - Clear distinction between Evaluator (aider-powered QA) and document-reviewer (agent role)
+  - Explains these are completely separate concepts in different systems
+  - Prevents future confusion in multi-agent contexts
+
+- **Decision Document**: `delegation/decisions/TASK-TERMINOLOGY-001-REVERT-DECISION.md`
+  - Full rationale for the terminology reversion
+  - Lessons learned from v0.2.0 change
+  - Migration strategy and success criteria
+
+### Updated
+
+- **docs/TERMINOLOGY.md** to v2.0:
+  - Updated version history: v0.1 (Coordinator/Evaluator) → v0.2 (Author/Reviewer) → v0.3.2 (Author/Evaluator)
+  - Moved "Reviewer" (for QA role) to deprecated terms
+  - Updated all examples and usage patterns
+  - Effective date: 2025-10-19
+
+---
+
 ## [0.3.0] - 2025-10-17
 
 ### Added

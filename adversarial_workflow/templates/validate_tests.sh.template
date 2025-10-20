@@ -1,5 +1,5 @@
 #!/bin/bash
-# Phase 4: Test Validation - Reviewer validates implementation
+# Phase 4: Test Validation - Evaluator validates implementation
 
 # ANSI color codes
 RED='\033[91m'

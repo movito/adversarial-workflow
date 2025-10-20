@@ -1,5 +1,5 @@
 #!/bin/bash
-# Phase 3: Implementation Review - Reviewer analyzes actual code changes
+# Phase 3: Implementation Review - Evaluator analyzes actual code changes
 
 # ANSI color codes
 RED='\033[91m'

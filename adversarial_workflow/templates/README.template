@@ -1,6 +1,6 @@
 # Adversarial Workflow
 
-This project uses the **Author-Reviewer adversarial workflow** for quality-controlled development.
+This project uses the **Author-Evaluator adversarial workflow** for quality-controlled development.
 
 ## Quick Start
 
@@ -40,7 +40,7 @@ git add . && git commit -m "feat: Implement TASK-001"
 ## Configuration
 
 Edit `.adversarial/config.yml` to customize:
-- Reviewer model (evaluator_model: GPT-4, Claude, etc.)
+- Evaluator model (evaluator_model: GPT-4, Claude, etc.)
 - Task directory location
 - Test command
 - Output directories

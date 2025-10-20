@@ -21,10 +21,10 @@ This document provides a **detailed phase-by-phase guide** to the adversarial wo
 | Phase | Who | Input | Output | Duration | Command |
 |-------|-----|-------|--------|----------|---------|
 | 0 | Author | Task spec | Investigation doc | 15-60min | Manual research |
-| 1 | Reviewer | Task + Plan | Evaluation | 5-15min | `adversarial evaluate` |
+| 1 | Evaluator | Task + Plan | Evaluation | 5-15min | `adversarial evaluate` |
 | 2 | Author | Approved plan | Git commits | 30-120min | Manual implementation |
-| 3 | Reviewer | Git diff + Plan | Code review | 5-15min | `adversarial review` |
-| 4 | Reviewer | Test results | Validation | 5-10min | `adversarial validate` |
+| 3 | Evaluator | Git diff + Plan | Code review | 5-15min | `adversarial review` |
+| 4 | Evaluator | Test results | Validation | 5-10min | `adversarial validate` |
 | 5 | Author | All artifacts | Final commit | 10-20min | Manual finalization |
 
 **Typical total time**: 1.5-4 hours per task
@@ -238,7 +238,7 @@ See real example: [TASK-2025-015-INVESTIGATION-FINDINGS.md](https://github.com/m
 
 **Required for**: All tasks except trivial fixes (<5 lines)
 
-**Who**: Reviewer (aider + GPT-4o)
+**Who**: Evaluator (aider + GPT-4o)
 
 **Goal**: Catch design flaws BEFORE coding begins
 
@@ -623,7 +623,7 @@ Will address in Phase 3 review."
 
 ## Phase 3: Code Review
 
-**Who**: Reviewer (aider + GPT-4o)
+**Who**: Evaluator (aider + GPT-4o)
 
 **Input**: Git diff + approved plan + task file
 
@@ -797,7 +797,7 @@ DO NOT proceed to testing. No real code was delivered.
 
 ### Review Criteria
 
-Reviewer checks for:
+Evaluator checks for:
 
 1. **Phantom Work** (CRITICAL)
    - TODOs instead of code?
@@ -871,7 +871,7 @@ def validate_clip(clip):
 
 ## Phase 4: Test Validation
 
-**Who**: Reviewer (aider + GPT-4o)
+**Who**: Evaluator (aider + GPT-4o)
 
 **Input**: Test output + implementation + task requirements
 

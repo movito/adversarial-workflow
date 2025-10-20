@@ -517,7 +517,7 @@ kill -9 <PID>
 
 ## Workflow-Specific Problems
 
-### Issue: Reviewer always says "NEEDS_REVISION"
+### Issue: Evaluator always says "NEEDS_REVISION"
 
 **Symptoms**: Plan gets rejected repeatedly, unclear what to fix
 
@@ -556,7 +556,7 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
 
 ### Issue: Code review detects phantom work (but code is real!)
 
-**Symptoms**: Reviewer says "TODOs only" but you wrote real code
+**Symptoms**: Evaluator says "TODOs only" but you wrote real code
 
 **Causes & Solutions**:
 

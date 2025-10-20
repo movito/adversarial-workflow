@@ -1,7 +1,7 @@
 # Adversarial Workflow Terminology
 
-**Version**: 1.0 (Author/Reviewer)
-**Last Updated**: 2025-10-15
+**Version**: 2.0 (Author/Evaluator)
+**Last Updated**: 2025-10-19
 **Status**: Official Standards
 
 ---
@@ -39,19 +39,19 @@ This document defines the official terminology for the adversarial-workflow pack
 
 ---
 
-#### Reviewer
+#### Evaluator
 
-**Definition**: The independent analysis stage that critiques the Author's work.
+**Definition**: The independent analysis stage that evaluates the Author's work for quality and correctness.
 
 **Use When**:
-- Describing the code review function
+- Describing the quality evaluation function
 - Describing plan evaluation
 - Describing test validation
 
 **Examples**:
-- ✅ "The Reviewer (aider + GPT-4o) analyzes the plan"
-- ✅ "Aider reviews your git diff for completeness"
-- ✅ "The Reviewer validates test results"
+- ✅ "The Evaluator (aider + GPT-4o) analyzes the plan"
+- ✅ "Aider evaluates your git diff for completeness"
+- ✅ "The Evaluator validates test results"
 
 **Technical Reality**:
 - This is aider running with a specific prompt
@@ -62,9 +62,9 @@ This document defines the official terminology for the adversarial-workflow pack
 
 ---
 
-#### Author-Reviewer Workflow
+#### Author-Evaluator Workflow
 
-**Definition**: The multi-stage verification pattern where the Author creates work and the Reviewer independently analyzes it.
+**Definition**: The multi-stage verification pattern where the Author creates work and the Evaluator independently analyzes it.
 
 **Use When**:
 - Describing the overall pattern
@@ -72,15 +72,86 @@ This document defines the official terminology for the adversarial-workflow pack
 - Documenting workflow phases
 
 **Examples**:
-- ✅ "The Author-Reviewer workflow prevents phantom work"
-- ✅ "Multi-stage Author-Reviewer verification"
-- ✅ "Independent review at each stage"
+- ✅ "The Author-Evaluator workflow prevents phantom work"
+- ✅ "Multi-stage Author-Evaluator verification"
+- ✅ "Independent evaluation at each stage"
 
 **Why "Adversarial"**:
-- The Reviewer is incentivized to find problems
+- The Evaluator is incentivized to find problems
 - Independent perspective catches issues the Author might miss
 - Multiple verification stages prevent incomplete work
 - "Adversarial" describes the relationship, not hostility
+
+---
+
+## Evaluator vs document-reviewer
+
+**CRITICAL DISTINCTION**: These are completely separate concepts in different systems!
+
+### Evaluator (adversarial-workflow QA role)
+
+**What it is**:
+- The aider-powered quality check in adversarial-workflow
+- A simple CLI command: `aider --model gpt-4o --message "review prompt"`
+- Provides critical feedback on plans, implementations, and tests
+
+**What it is NOT**:
+- NOT an agent or infrastructure
+- NOT a persistent system
+- NOT related to multi-agent coordination
+- NOT the same as "document-reviewer" agent
+
+**When to use this term**:
+- Describing the adversarial-workflow QA phases
+- Explaining plan evaluation, code review, test validation
+- Technical documentation about the package
+
+**Examples**:
+- ✅ "The Evaluator analyzes your plan for completeness"
+- ✅ "Run `adversarial evaluate` to get Evaluator feedback"
+- ✅ "Evaluator uses GPT-4o to critique your implementation"
+
+---
+
+### document-reviewer (agent coordination role)
+
+**What it is**:
+- An agent role in the multi-agent coordination system
+- Entry in agent-handoffs.json (one of 8 roles)
+- Handles documentation quality and consistency in agent-based projects
+
+**What it is NOT**:
+- NOT part of adversarial-workflow QA
+- NOT related to the Evaluator role
+- NOT the same as "code review" or "plan evaluation"
+
+**When to use this term**:
+- Referring to agent coordination context
+- Describing agent roles in agent-handoffs.json
+- Discussing multi-agent task delegation
+
+**Examples**:
+- ✅ "Assign this task to the document-reviewer agent"
+- ✅ "document-reviewer specializes in documentation quality"
+- ✅ "Update agent-handoffs.json with document-reviewer status"
+
+---
+
+### Why This Distinction Matters
+
+**The Problem (v0.2.0-v0.3.1)**:
+- Used "Reviewer" for aider QA role
+- Created ambiguity: "Reviewer" vs "document-reviewer" agent
+- Users confused about which "reviewer" was being discussed
+- Generic "Reviewer" term lacked precision
+
+**The Solution (v0.3.2+)**:
+- Use "Evaluator" for aider QA (specific, precise)
+- Keep "document-reviewer" for agent role (unchanged)
+- Clear separation between concepts
+- Aligns with technical naming (EVALUATOR_MODEL)
+
+**Key Point**: If you see "Evaluator" in adversarial-workflow docs, it means the aider-powered QA. If you see "document-reviewer", it means the agent role. Never confuse them!
 
 ---
 
@@ -92,17 +163,19 @@ This document defines the official terminology for the adversarial-workflow pack
 |----------------|--------------|----------------|
 | Coordinator | Author or You | Implied agent system |
 | Coordinator agent | Author | Explicitly referenced agents |
-| Evaluator | Reviewer | Lacked clarity (evaluating what?) |
-| Evaluator agent | Reviewer | Explicitly referenced agents |
+| Reviewer (for QA role) | Evaluator | Ambiguous with document-reviewer agent |
 | Feature-developer | Author or Developer | Implied agent system |
 | Implementation agent | Author | Explicitly referenced agents |
-| Coordinator-Evaluator pattern | Author-Reviewer workflow | Used deprecated terms |
+| Coordinator-Evaluator pattern | Author-Evaluator workflow | Used deprecated Coordinator term |
+| Author-Reviewer workflow | Author-Evaluator workflow | Ambiguous with agent roles |
 
 **Historical Context**:
 - v0.1.0 and earlier used "Coordinator" and "Evaluator"
-- User feedback indicated confusion (thought these were agents)
-- Evaluator QA (2025-10-15) flagged as critical issue
-- Updated to "Author/Reviewer" for universal clarity
+- v0.2.0-v0.3.1 used "Author" and "Reviewer"
+- User feedback indicated confusion (thought Coordinator/Evaluator were agents)
+- v0.2.0 changed to "Author/Reviewer" for universal clarity
+- v0.3.2 reverted to "Author/Evaluator" to avoid conflict with "document-reviewer" agent role
+- "Evaluator" is more precise: evaluates quality/correctness vs generic "review"
 
 ---
 
@@ -117,13 +190,13 @@ When introducing a role for the first time in a document, always clarify what it
 ✅ **GOOD** (clear on first mention):
 ```markdown
 The Author (you, or your AI assistant) creates an implementation plan.
-The Reviewer (aider with GPT-4o) analyzes it critically.
+The Evaluator (aider with GPT-4o) analyzes it critically.
 ```
 
 ❌ **BAD** (assumes understanding):
 ```markdown
 The Author creates an implementation plan.
-The Reviewer analyzes it.
+The Evaluator analyzes it.
 ```
 
 ---
@@ -138,7 +211,7 @@ After roles are introduced, you can use them without qualification if context is
 ```markdown
 # After introducing roles above:
 The Author implements according to the approved plan.
-The Reviewer checks for phantom work in the git diff.
+The Evaluator checks for phantom work in the git diff.
 The Author addresses any issues found.
 ```
 
@@ -160,7 +233,7 @@ This executes: aider --model gpt-4o --read tasks/feature.md --message "review...
 ❌ **BAD** (too abstract):
 ```markdown
 The Author creates a task.
-The Reviewer evaluates it.
+The Evaluator evaluates it.
 ```
 
 ---
@@ -196,7 +269,7 @@ The Reviewer analyzes the implementation.
 **Pattern 1: Role Introduction**
 ```markdown
 The Author (you, or your AI assistant) creates something.
-The Reviewer (aider + GPT-4o) analyzes it.
+The Evaluator (aider + GPT-4o) analyzes it.
 ```
 
 **Pattern 2: Direct Instruction**
@@ -207,11 +280,11 @@ Run `adversarial evaluate tasks/feature.md` to get feedback.
 
 **Pattern 3: Workflow Description**
 ```markdown
-The Author-Reviewer workflow consists of five phases:
+The Author-Evaluator workflow consists of five phases:
 1. Author creates plan
-2. Reviewer critiques plan
+2. Evaluator critiques plan
 3. Author implements code
-4. Reviewer analyzes implementation
+4. Evaluator analyzes implementation
 5. You (Author) finalize and commit
 ```
 
@@ -244,15 +317,15 @@ When you run `adversarial review`, the package executes:
 **Anti-Pattern 3: Mixing Old and New**
 ```markdown
 ❌ The Coordinator (Author) creates a plan
-❌ The Evaluator now called Reviewer analyzes it
+❌ The Reviewer now called Evaluator analyzes it
    (Don't reference deprecated terms)
 ```
 
 **Anti-Pattern 4: Implying Persistence**
 ```markdown
-❌ Configure your Reviewer agent
+❌ Configure your Evaluator agent
 ❌ The Author agent needs setup
-❌ Start the Reviewer service
+❌ Start the Evaluator service
    (These are not agents, services, or persistent systems)
 ```
 
@@ -273,12 +346,12 @@ These technical identifiers remain unchanged to preserve backward compatibility 
 
 **In Documentation**:
 - When referencing these config keys, use them as-is
-- Add clarification: "evaluator_model (the Reviewer's AI model)"
+- Add clarification: "evaluator_model (the Evaluator's AI model)"
 
 **Example**:
 ```yaml
 # .adversarial/config.yml
-evaluator_model: gpt-4o  # AI model for Reviewer (aider)
+evaluator_model: gpt-4o  # AI model for Evaluator (aider)
 ```
 
 ---
@@ -289,11 +362,11 @@ evaluator_model: gpt-4o  # AI model for Reviewer (aider)
 
 **Preferred Terms**:
 - "Plan evaluation" or "Plan review"
-- "The Reviewer analyzes your plan"
+- "The Evaluator analyzes your plan"
 - "Aider critiques the implementation plan"
 
 **Avoid**:
-- ❌ "Evaluator reviews plan"
+- ❌ "Reviewer reviews plan" (ambiguous with agent roles)
 - ❌ "Coordinator's plan is evaluated"
 
 ---
@@ -315,11 +388,11 @@ evaluator_model: gpt-4o  # AI model for Reviewer (aider)
 
 **Preferred Terms**:
 - "Code review" or "Implementation review"
-- "The Reviewer analyzes your git diff"
+- "The Evaluator analyzes your git diff"
 - "Aider checks for phantom work"
 
 **Avoid**:
-- ❌ "Evaluator reviews code"
+- ❌ "Reviewer reviews code" (ambiguous with agent roles)
 - ❌ "Coordinator's implementation is reviewed"
 
 ---
@@ -328,12 +401,12 @@ evaluator_model: gpt-4o  # AI model for Reviewer (aider)
 
 **Preferred Terms**:
 - "Test validation" or "Test analysis"
-- "The Reviewer validates test results"
+- "The Evaluator validates test results"
 - "Aider analyzes your test output"
 
 **Avoid**:
 - ❌ "Test-runner agent validates"
-- ❌ "Evaluator checks tests"
+- ❌ "Reviewer checks tests" (ambiguous with agent roles)
 
 ---
 
@@ -355,14 +428,14 @@ evaluator_model: gpt-4o  # AI model for Reviewer (aider)
 ### Scenario 1: Explaining the Package
 
 **Good**:
-> This package provides an Author-Reviewer workflow for code quality.
-> You (the Author) create plans and code. Aider (the Reviewer) independently
+> This package provides an Author-Evaluator workflow for code quality.
+> You (the Author) create plans and code. Aider (the Evaluator) independently
 > analyzes your work at each stage. This prevents phantom work through
 > multiple verification gates.
 
 **Bad**:
-> This package provides a Coordinator-Evaluator pattern. The Coordinator
-> agent creates code and the Evaluator agent reviews it.
+> This package provides a Coordinator-Reviewer pattern. The Coordinator
+> agent creates code and the Reviewer agent reviews it.
 
 ---
 
@@ -380,16 +453,16 @@ evaluator_model: gpt-4o  # AI model for Reviewer (aider)
 ### Scenario 3: Troubleshooting
 
 **Good**:
-> **Issue**: Reviewer says "NEEDS_REVISION" but I think my plan is complete.
+> **Issue**: Evaluator says "NEEDS_REVISION" but I think my plan is complete.
 >
-> **Solution**: The Reviewer (aider) uses a critical analysis prompt. Review
+> **Solution**: The Evaluator (aider) uses a critical analysis prompt. Review
 > the feedback carefully - it often catches real issues. Address the concerns
 > and run evaluation again.
 
 **Bad**:
-> **Issue**: Evaluator agent always rejects my plan.
+> **Issue**: Reviewer agent always rejects my plan.
 >
-> **Solution**: The Evaluator agent is configured to be critical. Fix issues.
+> **Solution**: The Reviewer agent is configured to be critical. Fix issues.
 
 ---
 
@@ -399,7 +472,7 @@ evaluator_model: gpt-4o  # AI model for Reviewer (aider)
 ```python
 def evaluate_plan(task_file: str) -> ReviewResult:
     """
-    Runs plan evaluation using aider (the Reviewer).
+    Runs plan evaluation using aider (the Evaluator).
 
     Args:
         task_file: Path to implementation plan created by you (the Author)
@@ -413,7 +486,7 @@ def evaluate_plan(task_file: str) -> ReviewResult:
 ```python
 def evaluate_plan(task_file: str) -> ReviewResult:
     """
-    Evaluator agent reviews Coordinator's plan.
+    Reviewer agent reviews Coordinator's plan.
     """
 ```
 
@@ -427,11 +500,11 @@ def evaluate_plan(task_file: str) -> ReviewResult:
 ```bash
 # Find all occurrences
 grep -rn "Coordinator" docs/
-grep -rn "Evaluator" docs/
+grep -rn "Reviewer" docs/
 
 # Replace following the rules above
 # "Coordinator" → "Author" or "You" (context dependent)
-# "Evaluator" → "Reviewer" (most cases)
+# "Reviewer" → "Evaluator" (when referring to aider QA role)
 ```
 
 **Step 2**: Verify first mentions have clarification
@@ -445,13 +518,13 @@ grep -rn "Evaluator" docs/
 **Before**:
 ```python
 # Coordinator creates implementation plan
-# Evaluator analyzes for completeness
+# Reviewer analyzes for completeness
 ```
 
 **After**:
 ```python
 # Author creates implementation plan
-# Reviewer (aider) analyzes for completeness
+# Evaluator (aider) analyzes for completeness
 ```
 
 ---
@@ -460,12 +533,12 @@ grep -rn "Evaluator" docs/
 
 **Before**:
 ```python
-print("Coordinator-Evaluator workflow initialized")
+print("Coordinator-Reviewer workflow initialized")
 ```
 
 **After**:
 ```python
-print("Author-Reviewer workflow initialized")
+print("Author-Evaluator workflow initialized")
 ```
 
 ---
@@ -478,21 +551,21 @@ print("Author-Reviewer workflow initialized")
 
 ---
 
-### Q: Why "Reviewer" instead of "Evaluator"?
+### Q: Why "Evaluator" instead of "Reviewer"?
 
-**A**: "Reviewer" is universally understood (code reviews, pull request reviews). "Evaluator" was ambiguous (evaluating what? performance? quality?). "Reviewer" clearly indicates code review function.
-
----
-
-### Q: Can I still use "Evaluator" in technical contexts?
-
-**A**: Only for backward compatibility (config keys like `evaluator_model`). In prose, documentation, and user-facing text, always use "Reviewer".
+**A**: "Evaluator" is more precise and specific - it evaluates quality and correctness. "Reviewer" is generic and creates ambiguity with the "document-reviewer" agent role in multi-agent systems. "Evaluator" also aligns with technical naming (EVALUATOR_MODEL environment variable).
 
 ---
 
-### Q: What about "Coordinator" in historical documents?
+### Q: Can I still use "Reviewer" to refer to the QA role?
 
-**A**: Historical documents can keep old terminology with a note: "Historical: This document predates the Author/Reviewer terminology update (2025-10-15)."
+**A**: Only when the context is crystal clear (e.g., "code review" as a generic term). In prose, documentation, and user-facing text referring to the adversarial-workflow QA role, always use "Evaluator" to avoid ambiguity with agent roles.
+
+---
+
+### Q: What about "Coordinator" or "Reviewer" in historical documents?
+
+**A**: Historical documents can keep old terminology with a note: "Historical: This document predates the Author/Evaluator terminology update (2025-10-19)."
 
 ---
 
@@ -506,7 +579,24 @@ print("Author-Reviewer workflow initialized")
 
 ## Version History
 
-### Version 1.0 (2025-10-15) - Author/Reviewer
+### Version 2.0 (2025-10-19) - Author/Evaluator (Current)
+
+**Changes**:
+- Reverted from "Reviewer" back to "Evaluator" for QA role
+- Added "Evaluator vs document-reviewer" distinction section
+- Updated all documentation to use Author/Evaluator pattern
+- Deprecated "Reviewer" (when referring to QA role)
+
+**Rationale**:
+- "Reviewer" created ambiguity with "document-reviewer" agent role
+- "Evaluator" is more precise: evaluates quality/correctness
+- Aligns with technical naming (EVALUATOR_MODEL environment variable)
+- User feedback: people naturally refer to it as "Evaluator"
+- Multi-agent systems need clear distinction between roles
+
+---
+
+### Version 1.0 (2025-10-15) - Author/Reviewer (Historical)
 
 **Changes**:
 - Established "Author" and "Reviewer" as official terms
@@ -516,7 +606,9 @@ print("Author-Reviewer workflow initialized")
 **Rationale**:
 - Evaluator QA (2025-10-15) identified terminology confusion as critical issue
 - User feedback indicated "Coordinator/Evaluator" implied agent infrastructure
-- "Author/Reviewer" provides universal clarity without tool assumptions
+- "Author/Reviewer" provided universal clarity without tool assumptions
+
+**Deprecated**: 2025-10-19 (v2.0 reverted to "Evaluator")
 
 ---
 
@@ -524,8 +616,8 @@ print("Author-Reviewer workflow initialized")
 
 **Terms Used**:
 - Coordinator (now: Author)
-- Evaluator (now: Reviewer)
-- Coordinator-Evaluator pattern (now: Author-Reviewer workflow)
+- Evaluator (v0.1), then Reviewer (v1.0), now Evaluator again (v2.0)
+- Coordinator-Evaluator pattern (now: Author-Evaluator workflow)
 
 **Deprecated**: 2025-10-15
 
@@ -534,8 +626,8 @@ print("Author-Reviewer workflow initialized")
 ## Enforcement
 
 **Required**:
-- All new documentation MUST use Author/Reviewer terminology
-- All updated documentation SHOULD migrate to Author/Reviewer
+- All new documentation MUST use Author/Evaluator terminology
+- All updated documentation SHOULD migrate to Author/Evaluator
 - All user-facing strings MUST use new terminology
 
 **Optional**:
@@ -543,20 +635,21 @@ print("Author-Reviewer workflow initialized")
 - Internal code MAY keep old variable names (not user-facing)
 
 **Validation**:
-- Phase 6F will validate terminology consistency
 - Automated grep checks for deprecated terms in docs
-- Second Evaluator review will verify improvements
+- Terminology audits will verify consistency
+- "Evaluator" used for aider QA, "document-reviewer" for agent role
 
 ---
 
 ## References
 
-- **Decision Record**: `delegation/tasks/active/TASK-PACKAGING-001-PHASE-6-TERMINOLOGY-DECISION.md`
-- **Terminology Audit**: `adversarial-workflow/audit-results/6A2-TERMINOLOGY-AUDIT.md`
-- **Evaluator QA**: `adversarial-workflow/EVALUATOR-QA-RESPONSE.txt`
+- **v0.3.2 Decision Record**: `delegation/decisions/TASK-TERMINOLOGY-001-REVERT-DECISION.md`
+- **v0.2.0 Decision Record**: `delegation/decisions/TASK-PACKAGING-001-PHASE-6-TERMINOLOGY-DECISION.md`
+- **Terminology Audit**: `audit-results/6A2-TERMINOLOGY-AUDIT.md`
+- **Evaluator QA**: `EVALUATOR-QA-RESPONSE.txt`
 
 ---
 
-**Document Status**: Official Standards v1.0
-**Effective Date**: 2025-10-15
+**Document Status**: Official Standards v2.0
+**Effective Date**: 2025-10-19
 **Next Review**: When introducing new concepts requiring terminology

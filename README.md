@@ -189,7 +189,7 @@ See [Example 11: Multi-Agent Workflows](#example-11-multi-agent-workflows) for u
 Traditional AI coding suffers from "phantom work" - where AI claims implementation is complete but only adds comments or TODOs. This workflow prevents that through **multiple independent verification gates**:
 
 ### Phase 1: Plan Evaluation
-**Reviewer** (aider + GPT-4o or Claude) reviews your implementation plan before coding begins.
+**Evaluator** (aider + GPT-4o or Claude) evaluates your implementation plan before coding begins.
 - Catches design flaws early
 - Validates completeness
 - Identifies missing edge cases
@@ -203,14 +203,14 @@ Traditional AI coding suffers from "phantom work" - where AI claims implementati
 - Deviations are intentional and documented
 
 ### Phase 3: Code Review
-**Reviewer** (aider) reviews actual git diff against plan.
+**Evaluator** (aider) analyzes actual git diff against plan.
 - **Phantom work detection**: Checks for real code vs. TODOs
 - Verifies plan adherence
 - Catches implementation bugs early
 - Provides specific, actionable feedback
 
 ### Phase 4: Test Validation
-**Reviewer** (aider) analyzes test results objectively.
+**Evaluator** (aider) analyzes test results objectively.
 - Proves functionality works (not just looks right)
 - Catches regressions immediately
 - Validates all requirements met
@@ -237,7 +237,7 @@ This package is **completely standalone** and works with any development workflo
 
 **The adversarial workflow reviews your implementation**, regardless of how you create it.
 
-### What "Author" and "Reviewer" Actually Mean
+### What "Author" and "Evaluator" Actually Mean
 
 **THESE ARE METAPHORS, NOT TECHNICAL COMPONENTS.**
 
@@ -246,15 +246,15 @@ This package is **completely standalone** and works with any development workflo
   - In practice: You, Claude Code, Cursor, Copilot, aider, manual coding
   - Technical reality: Just whoever writes the files
 
-- **"Reviewer"**: Independent analysis stage that critiques the Author's work
-  - METAPHOR for: Independent review perspective
+- **"Evaluator"**: Independent analysis stage that evaluates the Author's work for quality and correctness
+  - METAPHOR for: Independent evaluation perspective
   - Technical reality: `aider --model gpt-4o --message "review prompt"`
   - NOT a persistent agent or special software
   - Different prompt for each phase (plan evaluation, code review, test validation)
 
 **No agents, no infrastructure, no special setup** - just aider with different review prompts at each verification stage!
 
-**Historical note**: Earlier versions used "Coordinator" and "Evaluator" terminology, which caused confusion. We've updated to "Author/Reviewer" for universal clarity.
+**Historical note**: Earlier versions used "Coordinator"/"Evaluator" (v0.1), then "Author"/"Reviewer" (v0.2-v0.3.1). We've updated to "Author"/"Evaluator" to eliminate ambiguity with agent roles like "document-reviewer".
 
 ## Token Optimization
 

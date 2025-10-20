@@ -1,7 +1,7 @@
 """
 Adversarial Workflow - Multi-stage AI code review system
 
-A package for integrating Author-Reviewer adversarial code review
+A package for integrating Author-Evaluator adversarial code review
 into existing projects. Prevents "phantom work" through multi-stage verification.
 
 Usage:

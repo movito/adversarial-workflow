@@ -1,6 +1,6 @@
 # Interaction Patterns: Adversarial Workflow
 
-This document explains the **Author-Reviewer adversarial workflow** and how to use it effectively to prevent phantom work and improve AI code quality.
+This document explains the **Author-Evaluator adversarial workflow** and how to use it effectively to prevent phantom work and improve AI code quality.
 
 ## Table of Contents
 
@@ -65,7 +65,7 @@ The adversarial pattern introduces **independent verification gates** where a di
 └─────────────┘   │
                   ▼
 ┌─────────────┐   Plan
-│  Reviewer   │ ──┐ Critiques critically
+│  Evaluator  │ ──┐ Critiques critically
 └─────────────┘   │
                   ▼
                Approved?
@@ -76,14 +76,14 @@ The adversarial pattern introduces **independent verification gates** where a di
 └─────────────┘   │
                   ▼
 ┌─────────────┐   Git Diff
-│  Reviewer   │ ──┐ Reviews ACTUAL changes
+│  Evaluator  │ ──┐ Reviews ACTUAL changes
 └─────────────┘   │
                   ▼
                Real Code?
                  Yes │
                      ▼
 ┌─────────────┐   Test Results
-│  Reviewer   │ ──┐ Validates functionality
+│  Evaluator  │ ──┐ Validates functionality
 └─────────────┘   │
                   ▼
                  DONE
@@ -91,7 +91,7 @@ The adversarial pattern introduces **independent verification gates** where a di
 
 **Why This Works**:
 1. **Different models** = Different biases, blind spots
-2. **Different roles** = Reviewer incentivized to find problems
+2. **Different roles** = Evaluator incentivized to find problems
 3. **Objective artifacts** = Git diff proves real work happened
 4. **Measurable outcomes** = Tests prove functionality works
 
@@ -107,7 +107,7 @@ The adversarial pattern introduces **independent verification gates** where a di
 - Responds to feedback
 - Makes final commits
 
-**Reviewer** (aider + GPT-4o or Claude):
+**Evaluator** (aider + GPT-4o or Claude):
 - Reviews plans for completeness
 - Checks code for phantom work
 - Verifies test coverage
@@ -142,12 +142,12 @@ Each phase has **approval conditions**:
 
 ### 4. Critical Feedback Culture
 
-The Reviewer must be **adversarial**, not friendly:
+The Evaluator must be **adversarial**, not friendly:
 
-❌ **Wrong Reviewer Mindset**:
+❌ **Wrong Evaluator Mindset**:
 > "Great job! The plan looks good. Maybe consider edge cases."
 
-✅ **Right Reviewer Mindset**:
+✅ **Right Evaluator Mindset**:
 > "NEEDS_REVISION: Plan doesn't specify error handling for invalid timecodes.
 > What happens when start > end? Missing test cases for boundary conditions.
 > Implementation steps too vague - which functions need changes?"
@@ -189,14 +189,14 @@ TASK-2025-016-api-fixes.md
   - Files: test_otio_integration.py
   - Acceptance: 4 xfailed tests pass
 
-# Reviewer analyzes plan
+# Evaluator analyzes plan
 adversarial evaluate TASK-2025-016-api-fixes.md
 
-# Reviewer response saved to:
+# Evaluator response saved to:
 .adversarial/logs/TASK-2025-016-PLAN-EVALUATION.md
 ```
 
-**Reviewer checks**:
+**Evaluator checks**:
 - [ ] All requirements from task addressed?
 - [ ] Edge cases identified?
 - [ ] Files/functions specified clearly?
@@ -233,14 +233,14 @@ aider --files test_otio_integration.py --read TASK-2025-016-api-fixes.md
 git diff > .adversarial/artifacts/TASK-2025-016-implementation.diff
 git diff --stat > .adversarial/artifacts/TASK-2025-016-changes.txt
 
-# Reviewer analyzes ACTUAL changes
+# Evaluator analyzes ACTUAL changes
 adversarial review
 
 # Reads: task file, approved plan, git diff
 # Writes: .adversarial/logs/TASK-2025-016-CODE-REVIEW.md
 ```
 
-**Reviewer checks for phantom work**:
+**Evaluator checks for phantom work**:
 ```python
 # ❌ PHANTOM WORK (reject)
 def validate_clip(clip):
@@ -268,14 +268,14 @@ def validate_clip(clip):
 # Run tests and capture output
 pytest tests/test_shared/test_validation.py > .adversarial/artifacts/test-output.txt
 
-# Reviewer analyzes results
+# Evaluator analyzes results
 adversarial validate "pytest tests/test_shared/test_validation.py"
 
 # Reads: task file, test output, implementation diff
 # Writes: .adversarial/logs/TASK-2025-016-TEST-VALIDATION.md
 ```
 
-**Reviewer checks**:
+**Evaluator checks**:
 - Exit code 0 (tests passed)?
 - Specific tests mentioned in task now passing?
 - No new failures introduced (regressions)?
@@ -339,7 +339,7 @@ def validate_clip(clip):
     return ValidationResult(valid=True)  # FIXME
 ```
 
-**Reviewer verdict**: `REJECT - Phantom Work Detected`
+**Evaluator verdict**: `REJECT - Phantom Work Detected`
 
 **Feedback**:
 > This is NOT implementation. These are TODOs describing future work.
@@ -372,7 +372,7 @@ def validate_clip(clip):
     )
 ```
 
-**Reviewer verdict**: `APPROVED`
+**Evaluator verdict**: `APPROVED`
 
 **Impact**: Prevented wasted testing time, ensured real implementation delivered.
 
@@ -381,7 +381,7 @@ def validate_clip(clip):
 **Original plan** (too vague):
 > Fix the OTIO integration tests to use the correct API.
 
-**Reviewer feedback**: `NEEDS_REVISION`
+**Evaluator feedback**: `NEEDS_REVISION`
 > What is "the correct API"? Which tests? Which functions?
 > Need specific SEARCH/REPLACE blocks or file:line references.
 
@@ -395,7 +395,7 @@ def validate_clip(clip):
 > 
 > **Acceptance**: 4 xfailed tests in `test_critical_precision.py` → passing
 
-**Reviewer verdict**: `APPROVED`
+**Evaluator verdict**: `APPROVED`
 
 **Outcome**: Implementation took 10 minutes instead of 2 hours of trial-and-error.
 
@@ -413,7 +413,7 @@ pytest tests/test_consistent_assembly.py
 7 passed, 2 failed  # Wait, 2 new failures?
 ```
 
-**Reviewer analysis**: `CONDITIONAL_PASS`
+**Evaluator analysis**: `CONDITIONAL_PASS`
 > Target requirement met: 7 tests now passing ✅
 > However, 2 regressions introduced: test_empty_list, test_single_clip ⚠️
 > 
@@ -505,7 +505,7 @@ Bad: "Fix the validation logic"
 Good: "Add 3 checks to validate_clip(): name non-empty, valid timecode format, start < end"
 
 ### 4. Embrace Criticism
-If Reviewer says NEEDS_REVISION, that's **success** - you found problems before writing code.
+If Evaluator says NEEDS_REVISION, that's **success** - you found problems before writing code.
 
 ### 5. Use Real Artifacts
 Always review git diff, never trust AI's description of what it did.
@@ -524,12 +524,12 @@ If you accept a CONDITIONAL_PASS, immediately create a follow-up task for the is
 
 **Fix**: Always run Phase 1, even for "simple" tasks. Takes 5 minutes.
 
-### ❌ Arguing with Reviewer
+### ❌ Arguing with Evaluator
 > "The evaluator is wrong, my implementation is fine!"
 
 **Result**: You skip to testing, tests fail, you waste time debugging.
 
-**Fix**: Address Reviewer feedback first, THEN test. Evaluator often catches real issues.
+**Fix**: Address Evaluator feedback first, THEN test. Evaluator often catches real issues.
 
 ### ❌ Accepting TODOs
 > "I'll finish the TODOs in the next iteration."

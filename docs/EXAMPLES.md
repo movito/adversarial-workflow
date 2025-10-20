@@ -1132,7 +1132,7 @@ adversarial validate "$ADVERSARIAL_TEST_COMMAND"
 adversarial validate "pytest tests/integration/ -v"
 ```
 
-### Example 13: Custom Reviewer Model
+### Example 13: Custom Evaluator Model
 
 **For different use cases**:
 
