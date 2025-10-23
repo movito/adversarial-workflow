@@ -18,6 +18,7 @@ import argparse
 import getpass
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -1477,6 +1478,63 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     return 0 if errors == 0 else 1
 
 
+def validate_evaluation_output(log_file_path: str) -> Tuple[bool, str]:
+    """
+    Validate that evaluation log contains actual GPT-4o evaluation content.
+
+    This prevents false positives where the evaluation script runs but Aider
+    fails to produce an actual evaluation (e.g., due to git scanning errors).
+
+    Args:
+        log_file_path: Path to the evaluation log file
+
+    Returns:
+        (is_valid, message): True if valid evaluation, False if failed
+    """
+    # Check if log file exists
+    if not os.path.exists(log_file_path):
+        return False, f"Log file not found: {log_file_path}"
+
+    with open(log_file_path, "r") as f:
+        content = f.read()
+
+    # Check minimum content size (working evaluations are >1000 bytes)
+    if len(content) < 500:
+        return (
+            False,
+            f"Log file too small ({len(content)} bytes), evaluation likely failed",
+        )
+
+    # Check for required evaluation sections
+    # Note: The prompt uses "Evaluation Summary" not "OVERALL ASSESSMENT"
+    required_sections = ["Evaluation Summary", "Verdict"]
+
+    missing_sections = [s for s in required_sections if s not in content]
+    if missing_sections:
+        return (
+            False,
+            f"Missing evaluation sections: {', '.join(missing_sections)}",
+        )
+
+    # Check for known failure patterns (git errors)
+    failure_patterns = [
+        ("Unable to list files in git repo", "Git repository scanning failed"),
+        ("Is your git repo corrupted", "Git repository error"),
+        ("BadObject", "Git object error"),
+    ]
+
+    for pattern, description in failure_patterns:
+        if pattern in content and len(content) < 1000:
+            # Small file with error pattern = evaluation didn't run
+            return False, f"Aider failed: {description}"
+
+    # Check for token usage (indicates GPT-4o actually ran)
+    if "Tokens:" not in content and "tokens" not in content.lower():
+        return False, "No token usage found - GPT-4o may not have run"
+
+    return True, "Evaluation output valid"
+
+
 def evaluate(task_file: str) -> int:
     """Run Phase 1: Plan evaluation."""
 
@@ -1582,8 +1640,40 @@ def evaluate(task_file: str) -> int:
         print(f"   Details: {config['log_directory']}")
         return result.returncode
 
+    # Error 6: Validation - Check if evaluation actually ran (not just empty output)
+    # Extract task number from filename to find log file
+    task_basename = os.path.basename(task_file)
+    # Try to extract TASK-YYYY-NNN pattern, fallback to filename without extension
+    task_match = re.search(r"TASK-\d+-\d+", task_basename)
+    if task_match:
+        task_num = task_match.group(0)
+    else:
+        task_num = os.path.splitext(task_basename)[0]
+
+    log_file = os.path.join(config["log_directory"], f"{task_num}-PLAN-EVALUATION.md")
+
+    is_valid, message = validate_evaluation_output(log_file)
+    if not is_valid:
+        print()
+        print(f"{RED}❌ Evaluation failed: {message}{RESET}")
+        print()
+        print(f"{BOLD}WHY:{RESET}")
+        print("   The evaluation script ran but didn't produce valid output")
+        print("   This usually means Aider encountered an error before running GPT-4o")
+        print()
+        print(f"{BOLD}LOG FILE:{RESET}")
+        print(f"   {log_file}")
+        print()
+        print(f"{BOLD}FIX:{RESET}")
+        print("   1. Check the log file for error messages")
+        print("   2. Ensure your API keys are valid: adversarial check")
+        print("   3. Try running the evaluation again")
+        print()
+        return 1
+
     print()
     print(f"{GREEN}✅ Evaluation approved!{RESET}")
+    print(f"   Review output: {log_file}")
     return 0
 
 

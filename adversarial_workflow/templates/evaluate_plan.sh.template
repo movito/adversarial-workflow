@@ -107,6 +107,7 @@ echo ""
 aider \
   --model "$EVALUATOR_MODEL" \
   --yes \
+  --no-git \
   --no-gitignore \
   --read "$TASK_FILE" \
   --message "You are a REVIEWER performing critical design review.
