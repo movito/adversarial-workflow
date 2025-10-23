@@ -1478,22 +1478,28 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     return 0 if errors == 0 else 1
 
 
-def validate_evaluation_output(log_file_path: str) -> Tuple[bool, str]:
+def validate_evaluation_output(
+    log_file_path: str,
+) -> Tuple[bool, Optional[str], str]:
     """
     Validate that evaluation log contains actual GPT-4o evaluation content.
 
     This prevents false positives where the evaluation script runs but Aider
     fails to produce an actual evaluation (e.g., due to git scanning errors).
+    Also extracts the verdict from successful evaluations.
 
     Args:
         log_file_path: Path to the evaluation log file
 
     Returns:
-        (is_valid, message): True if valid evaluation, False if failed
+        (is_valid, verdict, message):
+            - is_valid: True if valid evaluation, False if failed
+            - verdict: "APPROVED", "NEEDS_REVISION", "REJECTED", or None if validation failed
+            - message: Descriptive message about validation result
     """
     # Check if log file exists
     if not os.path.exists(log_file_path):
-        return False, f"Log file not found: {log_file_path}"
+        return False, None, f"Log file not found: {log_file_path}"
 
     with open(log_file_path, "r") as f:
         content = f.read()
@@ -1502,6 +1508,7 @@ def validate_evaluation_output(log_file_path: str) -> Tuple[bool, str]:
     if len(content) < 500:
         return (
             False,
+            None,
             f"Log file too small ({len(content)} bytes), evaluation likely failed",
         )
 
@@ -1513,6 +1520,7 @@ def validate_evaluation_output(log_file_path: str) -> Tuple[bool, str]:
     if missing_sections:
         return (
             False,
+            None,
             f"Missing evaluation sections: {', '.join(missing_sections)}",
         )
 
@@ -1526,13 +1534,33 @@ def validate_evaluation_output(log_file_path: str) -> Tuple[bool, str]:
     for pattern, description in failure_patterns:
         if pattern in content and len(content) < 1000:
             # Small file with error pattern = evaluation didn't run
-            return False, f"Aider failed: {description}"
+            return False, None, f"Aider failed: {description}"
 
     # Check for token usage (indicates GPT-4o actually ran)
     if "Tokens:" not in content and "tokens" not in content.lower():
-        return False, "No token usage found - GPT-4o may not have run"
+        return False, None, "No token usage found - GPT-4o may not have run"
 
-    return True, "Evaluation output valid"
+    # Extract verdict from evaluation content
+    verdict = None
+    verdict_patterns = [
+        ("Verdict:** APPROVED", "APPROVED"),
+        ("Verdict: APPROVED", "APPROVED"),
+        ("Verdict:** NEEDS_REVISION", "NEEDS_REVISION"),
+        ("Verdict: NEEDS_REVISION", "NEEDS_REVISION"),
+        ("Verdict:** REJECT", "REJECTED"),
+        ("Verdict: REJECT", "REJECTED"),
+    ]
+
+    for pattern, verdict_value in verdict_patterns:
+        if pattern in content:
+            verdict = verdict_value
+            break
+
+    # If we couldn't extract a verdict, that's suspicious but not fatal
+    if verdict is None:
+        verdict = "UNKNOWN"
+
+    return True, verdict, "Evaluation output valid"
 
 
 def evaluate(task_file: str) -> int:
@@ -1652,7 +1680,7 @@ def evaluate(task_file: str) -> int:
 
     log_file = os.path.join(config["log_directory"], f"{task_num}-PLAN-EVALUATION.md")
 
-    is_valid, message = validate_evaluation_output(log_file)
+    is_valid, verdict, message = validate_evaluation_output(log_file)
     if not is_valid:
         print()
         print(f"{RED}❌ Evaluation failed: {message}{RESET}")
@@ -1671,10 +1699,27 @@ def evaluate(task_file: str) -> int:
         print()
         return 1
 
+    # Report based on actual verdict from evaluation
     print()
-    print(f"{GREEN}✅ Evaluation approved!{RESET}")
-    print(f"   Review output: {log_file}")
-    return 0
+    if verdict == "APPROVED":
+        print(f"{GREEN}✅ Evaluation APPROVED!{RESET}")
+        print(f"   Plan is ready for implementation")
+        print(f"   Review output: {log_file}")
+        return 0
+    elif verdict == "NEEDS_REVISION":
+        print(f"{YELLOW}⚠️  Evaluation NEEDS_REVISION{RESET}")
+        print(f"   Review feedback and update plan")
+        print(f"   Details: {log_file}")
+        return 1
+    elif verdict == "REJECTED":
+        print(f"{RED}❌ Evaluation REJECTED{RESET}")
+        print(f"   Plan has fundamental issues - major revision needed")
+        print(f"   Details: {log_file}")
+        return 1
+    else:  # UNKNOWN or other
+        print(f"{YELLOW}⚠️  Evaluation complete (verdict: {verdict}){RESET}")
+        print(f"   Review output: {log_file}")
+        return 0
 
 
 def review() -> int:
