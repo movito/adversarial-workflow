@@ -57,6 +57,7 @@ aider \
   --model "$EVALUATOR_MODEL" \
   --yes \
   --no-git \
+  --map-tokens 0 \
   --no-gitignore \
   --read-only "$TASK_FILE" \
   --message "You are a REVIEWER performing critical design review.
