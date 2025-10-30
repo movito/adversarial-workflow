@@ -1478,6 +1478,87 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     return 0 if errors == 0 else 1
 
 
+def estimate_file_tokens(file_path: str) -> int:
+    """
+    Estimate tokens for a file using rough approximation.
+
+    Estimation: ~1 token per 4 characters (OpenAI's rule of thumb)
+
+    Args:
+        file_path: Path to the file to estimate tokens for
+
+    Returns:
+        Estimated token count (integer)
+    """
+    with open(file_path, 'r') as f:
+        char_count = len(f.read())
+
+    return char_count // 4  # Rough estimate
+
+
+def extract_token_count_from_log(log_file_path: str) -> Optional[int]:
+    """
+    Extract tokens sent from evaluation log.
+
+    Looks for pattern: "Tokens: 15k sent, 422 received"
+    Returns tokens sent as integer, or None if not found.
+
+    Args:
+        log_file_path: Path to the evaluation log file
+
+    Returns:
+        Tokens sent as integer, or None if pattern not found
+    """
+    if not os.path.exists(log_file_path):
+        return None
+
+    with open(log_file_path, 'r') as f:
+        content = f.read()
+
+    # Pattern: "Tokens: 12k sent" or "Tokens: 12000 sent"
+    match = re.search(r'Tokens:\s+(\d+\.?\d*)k?\s+sent', content)
+    if match:
+        tokens_str = match.group(1)
+        tokens = float(tokens_str)
+        # If 'k' suffix found, multiply by 1000
+        if 'k' in match.group(0).lower():
+            tokens *= 1000
+        return int(tokens)
+
+    return None
+
+
+def verify_token_count(task_file: str, log_file: str) -> None:
+    """
+    Warn if token count is suspiciously low for file size.
+
+    This helps detect cases where large files may not be fully
+    processed by the evaluator due to API rate limits or other issues.
+
+    Args:
+        task_file: Path to the task file being evaluated
+        log_file: Path to the evaluation log file
+    """
+    expected_tokens = estimate_file_tokens(task_file)
+    actual_tokens = extract_token_count_from_log(log_file)
+
+    if actual_tokens is None:
+        # Can't verify if we can't extract token count
+        return
+
+    # 70% tolerance - warn if actual < 70% of expected
+    if actual_tokens < expected_tokens * 0.7:
+        print()
+        print(f"{YELLOW}⚠️  Token count lower than expected:{RESET}")
+        print(f"   File size estimate: ~{expected_tokens:,} tokens")
+        print(f"   Actually sent: {actual_tokens:,} tokens")
+        print(f"   Difference: {expected_tokens - actual_tokens:,} tokens ({100 - int(actual_tokens/expected_tokens*100)}% less)")
+        print()
+        print(f"{BOLD}Note:{RESET} Large files may not be fully processed by evaluator.")
+        print(f"      Consider splitting into smaller documents (<1,000 lines).")
+        print()
+
+
 def validate_evaluation_output(
     log_file_path: str,
 ) -> Tuple[bool, Optional[str], str]:
@@ -1698,6 +1779,9 @@ def evaluate(task_file: str) -> int:
         print("   3. Try running the evaluation again")
         print()
         return 1
+
+    # Verify token count (warn if suspiciously low)
+    verify_token_count(task_file, log_file)
 
     # Report based on actual verdict from evaluation
     print()
