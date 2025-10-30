@@ -224,4 +224,70 @@ Check:
 **Validated**: 85.1% → 94.0% test pass rate improvement
 **Status**: Production-ready methodology
 
+---
+
+## Non-Interactive Execution Patterns
+
+### The Interactive Prompt Blocker
+
+**Critical Issue**: When agents execute `adversarial evaluate` commands in non-interactive shells, they encounter a hard blocker with large files.
+
+**Problem**:
+- Files >700 lines trigger an interactive confirmation prompt
+- Non-interactive shells (background processes, Bash tool contexts) cannot provide keyboard input
+- Python's `input()` call blocks indefinitely - **no timeout, no automatic failure**
+- The agent process hangs until manually killed
+
+**Why This Happens**:
+```python
+# In cli.py evaluate() function
+response = input("Continue anyway? [y/N]: ").strip().lower()
+# ↑ This blocks in non-interactive shells (stdin unavailable)
+```
+
+**Solution - Prompt Bypass Pattern**:
+```bash
+# Agent execution pattern - pipe "y" to bypass interactive prompts
+echo "y" | adversarial evaluate delegation/tasks/large-task.md
+
+# This releases the blocker by providing stdin programmatically
+```
+
+**When Agents Need This**:
+- ✅ Evaluating large task specifications (>700 lines)
+- ✅ Automated batch processing of multiple tasks
+- ✅ Background evaluation workflows
+- ✅ Any non-interactive shell execution
+
+**Example - Agent Bash Command**:
+```bash
+# ❌ WRONG - Agent hangs indefinitely
+adversarial evaluate delegation/tasks/TASK-2025-0037-*.md
+
+# ✅ CORRECT - Evaluation completes successfully
+echo "y" | adversarial evaluate delegation/tasks/TASK-2025-0037-*.md
+```
+
+**Batch Processing Example**:
+```bash
+#!/bin/bash
+# Evaluate all active tasks, bypassing prompts
+
+for task in delegation/tasks/active/*.md; do
+    echo "Evaluating: $task"
+    echo "y" | adversarial evaluate "$task"
+    echo "---"
+done
+```
+
+**Important Notes**:
+- ⚠️ Bypass doesn't change OpenAI rate limits (files >1000 lines still fail)
+- ⚠️ Only bypasses the confirmation prompt, not the underlying rate limit
+- ✅ Standard Unix pattern (portable, works in CI/CD, cron, background jobs)
+- ✅ Documented in README.md and TROUBLESHOOTING.md for users
+
+**See Also**: ADR-0011 (architectural decision on non-interactive execution support)
+
+---
+
 **Start with identity headers and agent-handoffs.json updates. The rest will follow naturally!** 📋✨
