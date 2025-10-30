@@ -382,6 +382,71 @@ Error: You exceeded your current quota, please check your plan and billing detai
    - Test validation: ~$0.05-0.15
    - Typical task: ~$0.25-1.00
 
+### Issue: Large file evaluation prompts for confirmation (>700 lines)
+
+**Symptoms**:
+```bash
+$ adversarial evaluate large-task.md
+
+⚠️  WARNING: File is very large (>800 lines)
+   This will likely fail on Tier 1 OpenAI accounts (30k TPM limit)
+   Recommended: Split into files <500 lines each
+
+Continue anyway? [y/N]: _
+```
+
+**When this happens**:
+- Files over 700 lines trigger an interactive prompt
+- This is a safety check to prevent wasted API calls on files that will likely fail
+- You must respond "y" or "n" to continue
+
+**Solutions**:
+
+1. **Split the file** (recommended)
+   - See [File Size Guidelines](../README.md#file-size-guidelines) in README
+   - Keep task files under 500 lines for best results
+   - Split large specs into multiple parts
+
+2. **Bypass prompt for automation** (CI/CD, scripts, background processes)
+   ```bash
+   # Pipe "y" to automatically confirm
+   echo "y" | adversarial evaluate delegation/tasks/large-task.md
+
+   # This works in:
+   # - CI/CD pipelines (GitHub Actions, GitLab CI, etc.)
+   # - Shell scripts running in background
+   # - Non-interactive environments
+   # - Automated workflows
+   ```
+
+3. **Auto-cancel in non-interactive shells**
+   ```bash
+   # Redirect from /dev/null to automatically cancel
+   adversarial evaluate large-task.md < /dev/null
+
+   # Exits without evaluation if prompt appears
+   ```
+
+**Use cases for bypassing prompts**:
+- **CI/CD pipelines**: Automated evaluation of task specs in continuous integration
+- **Batch processing**: Evaluating multiple large files in a script loop
+- **Background jobs**: Running evaluations in detached processes
+- **Cron jobs**: Scheduled evaluations without manual intervention
+
+**Example automation script**:
+```bash
+#!/bin/bash
+# Evaluate all task files, bypassing prompts
+
+for task in delegation/tasks/active/*.md; do
+    echo "Evaluating: $task"
+    echo "y" | adversarial evaluate "$task"
+    echo "---"
+done
+```
+
+**Note**: Even with prompt bypass, files >1000 lines will still fail due to OpenAI rate limits on Tier 1 accounts (30,000 TPM). The prompt bypass just allows automation; it doesn't change the underlying rate limits.
+
 ---
 
 ## Script Execution Issues

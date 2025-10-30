@@ -206,6 +206,16 @@ When using `adversarial evaluate` to review task specifications, be aware of Ope
 2. Upgrade your OpenAI organization tier (Tier 2: 50k TPM = ~1,000 lines)
 3. Use manual review for comprehensive specifications
 
+**Bypassing interactive prompts** (automation/CI):
+```bash
+# For files >700 lines, you'll be prompted to confirm
+# In non-interactive environments (CI/CD, scripts), bypass the prompt:
+echo "y" | adversarial evaluate delegation/tasks/large-task.md
+
+# Or redirect from /dev/null to auto-cancel:
+adversarial evaluate large-task.md < /dev/null
+```
+
 For more details, see [OpenAI Rate Limits](https://platform.openai.com/docs/guides/rate-limits).
 
 ## The Adversarial Pattern
