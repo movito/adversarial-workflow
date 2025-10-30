@@ -1,0 +1,16 @@
+Warning: Input is not a terminal (fd=0).
+────────────────────────────────────────────────────────────────────────────────
+Aider v0.86.1
+Main model: gpt-4o with diff edit format
+Weak model: gpt-4o-mini
+Git repo: none
+Repo-map: disabled
+Added .adversarial/investigation/test_file_100_lines.md to the chat (read-only).
+
+In the provided test file, there is one marker line:                            
+
+ • Line 100: MARKER_LINE_100                                                    
+
+Total markers found: 1.                                                         
+
+Tokens: 6.0k sent, 32 received. Cost: $0.02 message, $0.02 session.

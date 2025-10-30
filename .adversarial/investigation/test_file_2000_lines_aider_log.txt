@@ -1,0 +1,75 @@
+Warning: Input is not a terminal (fd=0).
+────────────────────────────────────────────────────────────────────────────────
+Aider v0.86.1
+Main model: gpt-4o with diff edit format
+Weak model: gpt-4o-mini
+Git repo: none
+Repo-map: disabled
+Added .adversarial/investigation/test_file_2000_lines.md to the chat 
+(read-only).
+
+litellm.RateLimitError: RateLimitError: OpenAIException - Request too large for 
+gpt-4o in organization org-fQFwkilzwcaXaPhKxxX2rCJW on tokens per min (TPM): 
+Limit 30000, Requested 86342. The input or output tokens must be reduced in 
+order to run successfully. Visit https://platform.openai.com/account/rate-limits
+to learn more.
+The API provider has rate limited you. Try again later or check your quotas.
+Retrying in 0.2 seconds...
+litellm.RateLimitError: RateLimitError: OpenAIException - Request too large for 
+gpt-4o in organization org-fQFwkilzwcaXaPhKxxX2rCJW on tokens per min (TPM): 
+Limit 30000, Requested 86342. The input or output tokens must be reduced in 
+order to run successfully. Visit https://platform.openai.com/account/rate-limits
+to learn more.
+The API provider has rate limited you. Try again later or check your quotas.
+Retrying in 0.5 seconds...
+litellm.RateLimitError: RateLimitError: OpenAIException - Request too large for 
+gpt-4o in organization org-fQFwkilzwcaXaPhKxxX2rCJW on tokens per min (TPM): 
+Limit 30000, Requested 86342. The input or output tokens must be reduced in 
+order to run successfully. Visit https://platform.openai.com/account/rate-limits
+to learn more.
+The API provider has rate limited you. Try again later or check your quotas.
+Retrying in 1.0 seconds...
+litellm.RateLimitError: RateLimitError: OpenAIException - Request too large for 
+gpt-4o in organization org-fQFwkilzwcaXaPhKxxX2rCJW on tokens per min (TPM): 
+Limit 30000, Requested 86342. The input or output tokens must be reduced in 
+order to run successfully. Visit https://platform.openai.com/account/rate-limits
+to learn more.
+The API provider has rate limited you. Try again later or check your quotas.
+Retrying in 2.0 seconds...
+litellm.RateLimitError: RateLimitError: OpenAIException - Request too large for 
+gpt-4o in organization org-fQFwkilzwcaXaPhKxxX2rCJW on tokens per min (TPM): 
+Limit 30000, Requested 86342. The input or output tokens must be reduced in 
+order to run successfully. Visit https://platform.openai.com/account/rate-limits
+to learn more.
+The API provider has rate limited you. Try again later or check your quotas.
+Retrying in 4.0 seconds...
+litellm.RateLimitError: RateLimitError: OpenAIException - Request too large for 
+gpt-4o in organization org-fQFwkilzwcaXaPhKxxX2rCJW on tokens per min (TPM): 
+Limit 30000, Requested 86342. The input or output tokens must be reduced in 
+order to run successfully. Visit https://platform.openai.com/account/rate-limits
+to learn more.
+The API provider has rate limited you. Try again later or check your quotas.
+Retrying in 8.0 seconds...
+litellm.RateLimitError: RateLimitError: OpenAIException - Request too large for 
+gpt-4o in organization org-fQFwkilzwcaXaPhKxxX2rCJW on tokens per min (TPM): 
+Limit 30000, Requested 86342. The input or output tokens must be reduced in 
+order to run successfully. Visit https://platform.openai.com/account/rate-limits
+to learn more.
+The API provider has rate limited you. Try again later or check your quotas.
+Retrying in 16.0 seconds...
+litellm.RateLimitError: RateLimitError: OpenAIException - Request too large for 
+gpt-4o in organization org-fQFwkilzwcaXaPhKxxX2rCJW on tokens per min (TPM): 
+Limit 30000, Requested 86342. The input or output tokens must be reduced in 
+order to run successfully. Visit https://platform.openai.com/account/rate-limits
+to learn more.
+The API provider has rate limited you. Try again later or check your quotas.
+Retrying in 32.0 seconds...
+litellm.RateLimitError: RateLimitError: OpenAIException - Request too large for 
+gpt-4o in organization org-fQFwkilzwcaXaPhKxxX2rCJW on tokens per min (TPM): 
+Limit 30000, Requested 86342. The input or output tokens must be reduced in 
+order to run successfully. Visit https://platform.openai.com/account/rate-limits
+to learn more.
+The API provider has rate limited you. Try again later or check your quotas.
+
+https://platform.openai.com/account/rate-limits
+
