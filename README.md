@@ -184,6 +184,30 @@ The agent coordination system **extends** adversarial-workflow - both work toget
 
 See [Example 11: Multi-Agent Workflows](#example-11-multi-agent-workflows) for usage patterns.
 
+## File Size Guidelines
+
+### Evaluation File Size Limits
+
+When using `adversarial evaluate` to review task specifications, be aware of OpenAI API rate limits:
+
+- **✅ Recommended**: Keep task files under **500 lines** (~20,000 tokens)
+- **⚠️ Caution**: Files 500-700 lines may work but risk rate limit errors
+- **❌ Avoid**: Files over 1,000 lines will likely fail on Tier 1 OpenAI accounts
+
+**Why?** The evaluation process sends your task file to GPT-4o via Aider. OpenAI enforces Tokens Per Minute (TPM) limits based on your organization tier. Most users have Tier 1 (30,000 TPM), which supports files up to ~600 lines including system overhead.
+
+**What happens if your file is too large?**
+- You'll see a `RateLimitError` indicating tokens exceeded
+- The evaluation will fail before GPT-4o can review your plan
+- You'll need to split your task into smaller documents
+
+**Solutions for large specifications**:
+1. Split into multiple task files (recommended approach)
+2. Upgrade your OpenAI organization tier (Tier 2: 50k TPM = ~1,000 lines)
+3. Use manual review for comprehensive specifications
+
+For more details, see [OpenAI Rate Limits](https://platform.openai.com/docs/guides/rate-limits).
+
 ## The Adversarial Pattern
 
 Traditional AI coding suffers from "phantom work" - where AI claims implementation is complete but only adds comments or TODOs. This workflow prevents that through **multiple independent verification gates**:

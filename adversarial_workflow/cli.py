@@ -1683,6 +1683,37 @@ def evaluate(task_file: str) -> int:
         print("   Aider docs: https://aider.chat/docs/install.html")
         return 1
 
+    # Pre-flight check for file size
+    with open(task_file, 'r') as f:
+        line_count = len(f.readlines())
+        f.seek(0)
+        file_size = len(f.read())
+
+    # Estimate tokens (1 token ≈ 4 characters)
+    estimated_tokens = file_size // 4
+
+    # Warn if file is large (>500 lines or >20k tokens)
+    if line_count > 500 or estimated_tokens > 20000:
+        print(f"{YELLOW}⚠️  Large file detected:{RESET}")
+        print(f"   Lines: {line_count:,}")
+        print(f"   Estimated tokens: ~{estimated_tokens:,}")
+        print()
+        print(f"{BOLD}Note:{RESET} Files over 500 lines may exceed OpenAI rate limits.")
+        print(f"      If evaluation fails, consider splitting into smaller documents.")
+        print()
+
+        # Give user a chance to cancel for very large files
+        if line_count > 700:
+            print(f"{RED}⚠️  WARNING: File is very large (>{line_count} lines){RESET}")
+            print(f"   This will likely fail on Tier 1 OpenAI accounts (30k TPM limit)")
+            print(f"   Recommended: Split into files <500 lines each")
+            print()
+            response = input("Continue anyway? [y/N]: ").strip().lower()
+            if response not in ['y', 'yes']:
+                print("Evaluation cancelled.")
+                return 0
+            print()
+
     # Error 4: Script execution fails
     script = ".adversarial/scripts/evaluate_plan.sh"
     if not os.path.exists(script):
@@ -1692,8 +1723,35 @@ def evaluate(task_file: str) -> int:
 
     try:
         result = subprocess.run(
-            [script, task_file], text=True, timeout=180  # 3 minutes
+            [script, task_file], text=True, capture_output=True, timeout=180  # 3 minutes
         )
+
+        # Check for rate limit errors in output
+        output = result.stdout + result.stderr
+        if "RateLimitError" in output or "tokens per min (TPM)" in output:
+            print(f"{RED}❌ ERROR: OpenAI rate limit exceeded{RESET}")
+            print()
+            print(f"{BOLD}WHY:{RESET}")
+            print("   Your task file is too large for your OpenAI organization's rate limit")
+            print()
+
+            # Extract file size for helpful message
+            with open(task_file, 'r') as f:
+                line_count = len(f.readlines())
+
+            print(f"{BOLD}FILE SIZE:{RESET}")
+            print(f"   Lines: {line_count:,}")
+            print(f"   Recommended limit: 500 lines")
+            print()
+            print(f"{BOLD}SOLUTIONS:{RESET}")
+            print("   1. Split your task into smaller documents (<500 lines each)")
+            print("   2. Upgrade your OpenAI tier (Tier 2 supports ~1,000 lines)")
+            print("   3. Use manual review for this comprehensive specification")
+            print()
+            print(f"{BOLD}MORE INFO:{RESET}")
+            print("   https://platform.openai.com/docs/guides/rate-limits")
+            return 1
+
     except subprocess.TimeoutExpired:
         print(f"{RED}❌ ERROR: Evaluation timed out (>3 minutes){RESET}")
         print()
