@@ -64,10 +64,11 @@ ADRs use **four-digit sequential numbering** (0001, 0002, etc.) to support long-
 | [0008](0008-author-evaluator-terminology.md) | Author-Evaluator Terminology | 2025-10-19 | ✅ Accepted |
 | [0009](0009-interactive-onboarding.md) | Interactive Onboarding | 2025-10-16 | ✅ Accepted |
 | [0010](0010-platform-support-strategy.md) | Platform Support Strategy | 2025-10-15 | ✅ Accepted |
+| [0011](0011-non-interactive-execution-support.md) | Non-Interactive Execution Support | 2025-10-30 | ✅ Accepted |
 
 ### Planned ADRs
 
-None at this time. All initial architectural decisions have been documented.
+None at this time. All architectural decisions have been documented.
 
 Future ADRs will be added as new significant decisions are made.
 
