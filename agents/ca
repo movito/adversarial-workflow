@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# Quick Claude Agent Selector - Universal Version
-# Usage: ca (or ./ca)
-
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Use the universal launcher for the interactive experience
-exec "$DIR/universal-agent-launcher.sh" "$@"
