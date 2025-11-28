@@ -23,12 +23,6 @@ Before installing, ensure you have:
 ### Required
 - **Python 3.8+** (Python 3.12 recommended)
 - **Git repository** (workflow analyzes git diff)
-- **Aider** - AI pair programming tool
-  ```bash
-  pip install aider-chat
-  ```
-  Verify: `aider --version`
-
 - **API Keys** - At least one of:
   - **Anthropic Claude** (recommended): Get at https://console.anthropic.com/settings/keys
   - **OpenAI GPT-4o**: Get at https://platform.openai.com/api-keys
@@ -46,26 +40,16 @@ Before installing, ensure you have:
 
 > **📚 For detailed integration instructions**: See [docs/INTEGRATION-GUIDE.md](docs/INTEGRATION-GUIDE.md)
 
-### From PyPI (Coming Soon)
+### From PyPI
 
 ```bash
 pip install adversarial-workflow
 ```
 
-### From GitHub (Current - Pre-release)
+This installs everything you need, including aider-chat.
 
-**For stable use in production:**
-```bash
-# Add to your pyproject.toml:
-# [project.optional-dependencies]
-# adversarial = [
-#     "adversarial-workflow @ git+https://github.com/movito/adversarial-workflow.git@v0.3.0",
-# ]
+### From GitHub (Development)
 
-pip install git+https://github.com/movito/adversarial-workflow.git@v0.3.0
-```
-
-**For active development:**
 ```bash
 git clone https://github.com/movito/adversarial-workflow.git
 pip install -e adversarial-workflow/
@@ -446,8 +430,9 @@ The CLI automatically detects Windows and shows an interactive warning:
 - **Python**: 3.8 or later (Python 3.12 recommended)
 - **Bash**: 3.2 or later (included with macOS/Linux)
 - **Git**: Repository required (workflow uses git diff)
-- **Aider**: `pip install aider-chat`
 - **API Keys**: OpenAI and/or Anthropic (see interactive setup)
+
+> **Note**: Aider is now bundled with adversarial-workflow (v0.4.0+). No separate installation needed.
 
 ## Usage Examples
 
