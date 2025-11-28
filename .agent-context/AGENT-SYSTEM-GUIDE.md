@@ -3,7 +3,7 @@
 **Created**: 2025-10-16
 **Purpose**: Comprehensive guide to the agent coordination system used in this project
 **Audience**: Coordinators setting up new projects or handing off context
-**Status**: Production-ready methodology validated through thematic-cuts and adversarial-workflow
+**Status**: Production-ready methodology for adversarial-workflow projects
 
 ---
 
@@ -32,7 +32,7 @@ A **structured coordination framework** for managing complex software projects u
 
 - **Role-based agents** with specific responsibilities (coordinator, feature-developer, test-runner, etc.)
 - **Context persistence** across sessions via `.agent-context/` directory
-- **Task tracking** with active/completed/analysis organization
+- **Task tracking** with numbered folder organization (1-backlog through 9-reference)
 - **Handoff protocols** for seamless agent-to-agent transitions
 - **Documentation standards** for maintaining project memory
 
@@ -45,11 +45,11 @@ A **structured coordination framework** for managing complex software projects u
 - 🤝 **Coordination**: Smooth handoffs between specialized agents
 - 📚 **Memory**: Project knowledge doesn't get lost
 
-**Proven Results** (thematic-cuts):
-- 85.1% → 94.0% test pass rate improvement
-- 87.5% efficiency gain through discovery-first approach
-- Zero phantom work incidents with multi-agent coordination
-- Successful coordination across 6+ specialized agents
+**Key Benefits**:
+- Prevents phantom work through multi-agent coordination
+- Maintains context across sessions via persistent state files
+- Enables smooth handoffs between specialized agents
+- Provides clear audit trail of decisions and progress
 
 ---
 
@@ -66,10 +66,15 @@ A **structured coordination framework** for managing complex software projects u
 
 delegation/                        # Task management directory
 ├── tasks/
-│   ├── active/                   # Current work
-│   ├── completed/                # Finished tasks
-│   ├── analysis/                 # Planning and research
-│   └── logs/                     # Execution records
+│   ├── 1-backlog/                # Planned but not started
+│   ├── 2-todo/                   # Ready to work on
+│   ├── 3-in-progress/            # Currently being worked on
+│   ├── 4-in-review/              # Awaiting review
+│   ├── 5-done/                   # Completed tasks
+│   ├── 6-canceled/               # Tasks that won't be done
+│   ├── 7-blocked/                # Waiting on dependencies
+│   ├── 8-archive/                # Historical reference
+│   └── 9-reference/              # Templates and docs
 └── handoffs/                     # Agent handoff documents
 ```
 
@@ -82,7 +87,7 @@ delegation/                        # Task management directory
                │
                ▼
 ┌─────────────────────────────────────────────────────┐
-│ Coordinator Agent                                   │
+│ Planner Agent                                       │
 │ - Reviews request                                   │
 │ - Checks agent-handoffs.json for context           │
 │ - Creates/updates tasks in delegation/tasks/       │
@@ -100,7 +105,7 @@ delegation/                        # Task management directory
                │
                ▼
 ┌─────────────────────────────────────────────────────┐
-│ Coordinator Agent (return)                          │
+│ Planner Agent (return)                              │
 │ - Reviews completion                                │
 │ - Updates project state                             │
 │ - Archives completed task                           │
@@ -146,19 +151,20 @@ delegation/                        # Task management directory
 ```
 delegation/
 ├── tasks/
-│   ├── active/                  # Current work (prioritized)
-│   │   ├── TASK-YYYY-NNN-description.md
-│   │   └── TASK-*-FOLLOWUP-*.md
-│   ├── completed/               # Finished tasks (archived)
-│   │   ├── phase-1/
-│   │   └── phase-2a/
-│   ├── analysis/                # Planning and research
-│   │   └── *-ANALYSIS.md
-│   └── logs/                    # Execution logs and reports
-│       ├── PHASE-*-EXECUTION-PLAN.md
-│       └── PHASE-*-COMPLETION-SUMMARY.md
+│   ├── 1-backlog/               # Planned but not started
+│   ├── 2-todo/                  # Ready to work on
+│   │   └── ADV-NNNN-description.md
+│   ├── 3-in-progress/           # Currently being worked on
+│   ├── 4-in-review/             # Awaiting review
+│   ├── 5-done/                  # Completed tasks
+│   ├── 6-canceled/              # Won't be implemented
+│   ├── 7-blocked/               # Waiting on dependencies
+│   ├── 8-archive/               # Historical reference
+│   └── 9-reference/             # Templates and docs
+│       └── templates/
+│           └── task-template.md
 └── handoffs/                    # Agent handoff documents
-    └── TASK-*-HANDOFF.md
+    └── ADV-*-HANDOFF.md
 ```
 
 **Git Tracking**: YES - Track everything except temporary logs
@@ -167,18 +173,18 @@ delegation/
 
 ### File Naming Conventions
 
-**Tasks**:
+**Tasks** (use ADV- prefix for Adversarial):
 ```
-TASK-YYYY-NNN-short-description.md
-TASK-2025-014-validation-fixes.md
-TASK-PACKAGING-001-ONBOARDING-ENHANCEMENT.md
+ADV-NNNN-short-description.md
+ADV-0001-test-infrastructure.md
+ADV-0002-feature-name.md
 ```
 
 **Handoffs**:
 ```
-TASK-NNN-HANDOFF.md
-TASK-NNN-READY-FOR-IMPLEMENTATION.md
-TASK-NNN-COMPLETE.md
+ADV-NNNN-HANDOFF.md
+ADV-NNNN-READY-FOR-IMPLEMENTATION.md
+ADV-NNNN-COMPLETE.md
 ```
 
 **Logs**:
@@ -201,7 +207,7 @@ STRATEGIC-REVIEW-*.md
 
 ### Core Agents
 
-#### 1. Coordinator Agent
+#### 1. Planner Agent
 
 **Role**: Project management, planning, agent coordination
 
@@ -216,13 +222,13 @@ STRATEGIC-REVIEW-*.md
 
 **Identity Requirement**:
 ```
-📋 COORDINATOR | [current-task] | [current-status]
+📋 PLANNER | [current-task] | [current-status]
 ```
 
 **Key Files**:
 - `.agent-context/agent-handoffs.json` (read/write)
 - `.agent-context/current-state.json` (read/write)
-- `delegation/tasks/active/*` (read/write)
+- `delegation/tasks/2-todo/*` (read/write)
 
 **Handoff Pattern**: Creates task → Assigns to specialist → Reviews completion
 
@@ -246,12 +252,12 @@ STRATEGIC-REVIEW-*.md
 ```
 
 **Key Files**:
-- `delegation/tasks/active/TASK-*.md` (read)
+- `delegation/tasks/3-in-progress/ADV-*.md` (read)
 - Source code files (write)
 - Test files (write)
 - `.agent-context/agent-handoffs.json` (update progress)
 
-**Handoff Pattern**: Receives task → Implements → Documents → Returns to coordinator
+**Handoff Pattern**: Receives task → Implements → Documents → Returns to planner
 
 ---
 
@@ -277,29 +283,30 @@ STRATEGIC-REVIEW-*.md
 - `delegation/handoffs/TASK-*-VERIFICATION.md` (create)
 - `.agent-context/agent-handoffs.json` (update)
 
-**Handoff Pattern**: Receives implementation → Runs tests → Creates report → Returns to coordinator
+**Handoff Pattern**: Receives implementation → Runs tests → Creates report → Returns to planner
 
 ---
 
-#### 4. Media-Processor Agent
+#### 4. PyPI-Publisher Agent
 
-**Role**: Audio/video processing, timecode validation (domain-specific)
+**Role**: Package publishing, version management, releases
 
 **Responsibilities**:
-- ✅ Implement media processing features
-- ✅ Handle timecode calculations
-- ✅ Validate frame-accurate operations
-- ✅ Create precision tests
+- ✅ Build and publish packages to PyPI
+- ✅ Manage version numbers across files
+- ✅ Create GitHub releases
+- ✅ Verify package installation
+- ✅ Update changelog
 
 **Identity Requirement**:
 ```
-🎬 MEDIA-PROCESSOR | [task-id] | [status]
+📦 PYPI-PUBLISHER | [task-id] | [status]
 ```
 
 **Key Files**:
-- Media processing modules (write)
-- Timecode utilities (write)
-- Precision tests (write)
+- `pyproject.toml` (version updates)
+- `CHANGELOG.md` (update)
+- `adversarial_workflow/__init__.py` (version sync)
 
 ---
 
@@ -309,7 +316,6 @@ Create additional agents as needed:
 - `api-developer`: API integration work
 - `security-reviewer`: Security analysis
 - `document-reviewer`: Documentation quality
-- `edl-generator-developer`: EDL/XML format work (domain-specific)
 
 ---
 
@@ -320,7 +326,7 @@ Create additional agents as needed:
 **Use Case**: Single task, clear dependencies
 
 ```
-Coordinator → Create Task → Assign to Feature-Developer
+Planner → Create Task → Assign to Feature-Developer
                                       ↓
                                  Implement
                                       ↓
@@ -328,17 +334,17 @@ Coordinator → Create Task → Assign to Feature-Developer
                                       ↓
                              Create HANDOFF.md
                                       ↓
-Coordinator ← Review ← Return with handoff
+Planner ← Review ← Return with handoff
      ↓
 Archive task → Update project state
 ```
 
-**Example** (thematic-cuts TASK-2025-014):
-1. Coordinator created task specification
-2. Feature-developer implemented validation fixes
+**Example** (ADV-0001):
+1. Planner created task specification
+2. Feature-developer implemented the feature
 3. Feature-developer updated agent-handoffs.json
-4. Feature-developer created TASK-2025-014-COMPLETE.md
-5. Coordinator reviewed, merged, archived task
+4. Feature-developer created ADV-0001-COMPLETE.md
+5. Planner reviewed, merged, archived task
 
 ---
 
@@ -347,27 +353,27 @@ Archive task → Update project state
 **Use Case**: Code changes requiring test validation
 
 ```
-Coordinator → Create Task → Feature-Developer
+Planner → Create Task → Feature-Developer
                                       ↓
                                  Implement
                                       ↓
                              Update handoffs.json
                                       ↓
-Coordinator ← Request Testing ← Return for validation
+Planner ← Request Testing ← Return for validation
      ↓
 Test-Runner → Run tests → Create verification report
                                       ↓
-Coordinator ← Approve/Reject ← Return with results
+Planner ← Approve/Reject ← Return with results
      ↓
 Archive or Request Fixes
 ```
 
-**Example** (thematic-cuts TASK-2025-012):
-1. Coordinator assigned precision timecode fixes
-2. Feature-developer implemented fixes
-3. Test-runner executed 54 precision tests
+**Example** (ADV-0002):
+1. Planner assigned implementation task
+2. Feature-developer implemented feature
+3. Test-runner executed test suite
 4. Test-runner created verification report (100% pass rate)
-5. Coordinator approved and merged
+5. Planner approved and merged
 
 ---
 
@@ -376,7 +382,7 @@ Archive or Request Fixes
 **Use Case**: Uncertain requirements, complex changes
 
 ```
-Coordinator → Create Investigation Task
+Planner → Create Investigation Task
                     ↓
             Feature-Developer (Phase 0)
                     ↓
@@ -384,19 +390,19 @@ Coordinator → Create Investigation Task
                     ↓
             Create findings document
                     ↓
-Coordinator ← Review findings ← Return with analysis
+Planner ← Review findings ← Return with analysis
      ↓
 Create Implementation Task (Phase 1)
      ↓
-Feature-Developer → Implement → Test-Runner → Coordinator
+Feature-Developer → Implement → Test-Runner → Planner
 ```
 
-**Example** (thematic-cuts TASK-2025-015):
-1. Coordinator requested OTIO investigation
+**Example** (ADV-0003):
+1. Planner requested codebase investigation
 2. Feature-developer researched codebase (grep, read)
 3. Feature-developer created INVESTIGATION-FINDINGS.md
-4. Coordinator reviewed, approved plan
-5. Feature-developer implemented (4 tests fixed)
+4. Planner reviewed, approved plan
+5. Feature-developer implemented changes
 
 ---
 
@@ -405,24 +411,24 @@ Feature-Developer → Implement → Test-Runner → Coordinator
 **Use Case**: Large feature requiring multiple specializations
 
 ```
-Coordinator → Create Master Task
+Planner → Create Master Task
      ↓
 Split into sub-tasks
      ↓
-     ├─→ Feature-Developer (API changes)
-     ├─→ Media-Processor (Domain logic)
+     ├─→ Feature-Developer (Core implementation)
+     ├─→ Security-Reviewer (Security audit)
      └─→ Document-Reviewer (Documentation)
            ↓        ↓           ↓
            └────────┴───────────┘
                     ↓
             Test-Runner (Integration)
                     ↓
-Coordinator ← Review all work ← Return with reports
+Planner ← Review all work ← Return with reports
      ↓
 Merge and archive
 ```
 
-**Example**: Could be used for complex features requiring multiple domains
+**Example**: Complex features requiring multiple domains of expertise
 
 ---
 
@@ -511,27 +517,27 @@ Merge and archive
 ### Task Lifecycle
 
 ```
-1. CREATED (coordinator)
-   └─→ delegation/tasks/active/TASK-*.md
+1. BACKLOG (planner)
+   └─→ delegation/tasks/1-backlog/ADV-*.md
 
-2. ASSIGNED (coordinator updates agent-handoffs.json)
-   └─→ Agent picks up task
+2. TODO (planner moves task, updates agent-handoffs.json)
+   └─→ delegation/tasks/2-todo/ADV-*.md
 
 3. IN_PROGRESS (agent updates agent-handoffs.json)
+   └─→ delegation/tasks/3-in-progress/ADV-*.md
    └─→ deliverables tracking with 🔄
 
 4. BLOCKED (if issues arise)
-   └─→ Update dependencies field, notify coordinator
+   └─→ delegation/tasks/7-blocked/ADV-*.md
+   └─→ Update dependencies field, notify planner
 
-5. COMPLETE (agent updates agent-handoffs.json)
+5. IN_REVIEW (agent updates agent-handoffs.json)
+   └─→ delegation/tasks/4-in-review/ADV-*.md
    └─→ Create handoff document
    └─→ Mark deliverables with ✅
 
-6. VERIFIED (test-runner or coordinator)
-   └─→ Create verification report
-
-7. ARCHIVED (coordinator)
-   └─→ Move to delegation/tasks/completed/
+6. DONE (planner verifies)
+   └─→ delegation/tasks/5-done/ADV-*.md
    └─→ Update project state
 ```
 
@@ -540,14 +546,14 @@ Merge and archive
 ### Task Specification Template
 
 ```markdown
-# TASK-YYYY-NNN: Task Title
+# ADV-NNNN: Task Title
 
-**Task ID**: TASK-YYYY-NNN
-**Status**: READY_FOR_IMPLEMENTATION | IN_PROGRESS | COMPLETE
+**Task ID**: ADV-NNNN
+**Status**: Backlog | Todo | In Progress | In Review | Done | Blocked | Canceled
 **Priority**: HIGH | MEDIUM | LOW
 **Created**: YYYY-MM-DD
 **Assigned**: agent-name
-**Dependencies**: TASK-IDs or "None"
+**Dependencies**: ADV-NNNNs or "None"
 
 ---
 
@@ -651,12 +657,12 @@ Brief description of what needs to be done and why.
 ### Handoff Document Template
 
 ```markdown
-# TASK-NNN Handoff: Brief Title
+# ADV-NNNN Handoff: Brief Title
 
 **Date**: YYYY-MM-DD
 **From**: agent-name
-**To**: coordinator | specific-agent
-**Task**: TASK-NNN
+**To**: planner | specific-agent
+**Task**: ADV-NNNN
 **Status**: COMPLETE | NEEDS_REVIEW | BLOCKED
 
 ---
@@ -741,7 +747,7 @@ Brief summary of what was accomplished (2-3 sentences).
 ```bash
 # 1. Create directory structure
 mkdir -p .agent-context
-mkdir -p delegation/tasks/{active,completed,analysis,logs}
+mkdir -p delegation/tasks/{1-backlog,2-todo,3-in-progress,4-in-review,5-done,6-canceled,7-blocked,8-archive,9-reference}
 mkdir -p delegation/handoffs
 
 # 2. Copy template files
@@ -750,7 +756,7 @@ cp /path/to/existing-project/.agent-context/AGENT-SYSTEM-GUIDE.md .agent-context
 # 3. Initialize agent-handoffs.json
 cat > .agent-context/agent-handoffs.json << 'EOF'
 {
-  "coordinator": {
+  "planner": {
     "current_focus": "Initial project setup",
     "task_file": "None - Starting new project",
     "status": "setup",
@@ -804,10 +810,10 @@ If you only want the essentials:
 
 ```bash
 # Just the critical files
-mkdir -p .agent-context delegation/tasks/active
+mkdir -p .agent-context delegation/tasks/{1-backlog,2-todo,3-in-progress,5-done}
 
 # agent-handoffs.json (minimal)
-echo '{"coordinator":{"current_focus":"Setup","status":"active","last_updated":"'$(date +%Y-%m-%d)'"}}' > .agent-context/agent-handoffs.json
+echo '{"planner":{"current_focus":"Setup","status":"active","last_updated":"'$(date +%Y-%m-%d)'"}}' > .agent-context/agent-handoffs.json
 
 # That's it! Expand as needed.
 ```
@@ -820,16 +826,16 @@ echo '{"coordinator":{"current_focus":"Setup","status":"active","last_updated":"
 ```bash
 # Copy from existing project
 rsync -av --exclude='*.tmp' \
-  /path/to/thematic-cuts/.agent-context/ \
+  /path/to/source-project/.agent-context/ \
   /path/to/new-project/.agent-context/
 
 rsync -av --exclude='*.tmp' \
-  /path/to/thematic-cuts/delegation/ \
+  /path/to/source-project/delegation/ \
   /path/to/new-project/delegation/
 
 # Clean up project-specific content
-rm /path/to/new-project/delegation/tasks/active/*
-rm /path/to/new-project/delegation/tasks/completed/*
+rm /path/to/new-project/delegation/tasks/2-todo/*
+rm /path/to/new-project/delegation/tasks/5-done/*
 
 # Edit agent-handoffs.json to reset state
 ```
@@ -837,7 +843,7 @@ rm /path/to/new-project/delegation/tasks/completed/*
 **Option 2: Start Fresh with Guide**
 ```bash
 # Just copy the guide
-cp /path/to/thematic-cuts/.agent-context/AGENT-SYSTEM-GUIDE.md \
+cp /path/to/source-project/.agent-context/AGENT-SYSTEM-GUIDE.md \
    /path/to/new-project/.agent-context/
 
 # Follow Quick Setup Checklist above
@@ -851,8 +857,8 @@ cp /path/to/thematic-cuts/.agent-context/AGENT-SYSTEM-GUIDE.md \
 
 **Always start responses with identity header**:
 ```
-📋 COORDINATOR | task-name | status
-👨‍💻 FEATURE-DEVELOPER | TASK-2025-014 | implementing
+📋 PLANNER | task-name | status
+👨‍💻 FEATURE-DEVELOPER | ADV-0001 | implementing
 🧪 TEST-RUNNER | verification | running_tests
 ```
 
@@ -915,7 +921,7 @@ cp /path/to/thematic-cuts/.agent-context/AGENT-SYSTEM-GUIDE.md \
 
 ### 5. Archive Completed Tasks
 
-**Immediately archive when**:
+**Immediately move to done when**:
 - Task verified complete
 - Tests passing
 - Code merged to main
@@ -923,8 +929,8 @@ cp /path/to/thematic-cuts/.agent-context/AGENT-SYSTEM-GUIDE.md \
 
 **How**:
 ```bash
-mv delegation/tasks/active/TASK-*.md \
-   delegation/tasks/completed/phase-N/
+mv delegation/tasks/4-in-review/ADV-*.md \
+   delegation/tasks/5-done/
 ```
 
 **Update agent-handoffs.json**: Mark as completed with ✅
@@ -1004,7 +1010,7 @@ Ready for coordinator review and merge.
 5. Propose approach
 
 **Deliverable**:
-- delegation/tasks/active/TASK-NNN-INVESTIGATION-FINDINGS.md
+- delegation/tasks/3-in-progress/ADV-NNNN-INVESTIGATION-FINDINGS.md
 - Update task spec with confirmed approach
 
 ## Phase 1: Implementation (After Investigation)
@@ -1013,8 +1019,8 @@ Proceed with implementation knowing exactly what needs to change.
 ```
 
 **Result**:
-- thematic-cuts: Saved 15 hours through discovery-first in Phase 1
-- Prevented phantom work (TASK-2025-014 failure scenario)
+- Prevents phantom work through investigation before implementation
+- Ensures accurate effort estimates and approach planning
 
 ---
 
@@ -1024,8 +1030,8 @@ Proceed with implementation knowing exactly what needs to change.
 
 ```markdown
 ## Stage 1: Plan Evaluation
-- Coordinator reviews implementation plan
-- Uses aider + GPT-4o for evaluation
+- Planner reviews implementation plan
+- Uses adversarial evaluate command for evaluation
 - Output: APPROVED / NEEDS_REVISION
 
 ## Stage 2: Implementation
@@ -1043,12 +1049,12 @@ Proceed with implementation knowing exactly what needs to change.
 - Output: Tests passing / failing
 
 ## Stage 5: Final Approval
-- Coordinator reviews all artifacts
+- Planner reviews all artifacts
 - Merges if approved
 - Archives task
 ```
 
-**Tools**: adversarial-workflow package (developed in thematic-cuts)
+**Tools**: adversarial-workflow package (`adversarial evaluate`, `adversarial review`)
 
 ---
 
@@ -1057,11 +1063,11 @@ Proceed with implementation knowing exactly what needs to change.
 **When**: Implementation reveals side effects
 
 ```markdown
-## Original Task: TASK-2025-014
-- Fixed 6/6 validation tests
-- **But**: Discovered 4 new test failures (side effects)
+## Original Task: ADV-0001
+- Fixed target functionality
+- **But**: Discovered new test failures (side effects)
 
-## Follow-Up Task: TASK-2025-014-FOLLOWUP
+## Follow-Up Task: ADV-0001-FOLLOWUP
 - Created immediately
 - Addresses side effects
 - Tracks as separate deliverable
@@ -1093,7 +1099,7 @@ Proceed with implementation knowing exactly what needs to change.
 - COORDINATOR-HANDOFF-PHASE-N.md: Transition guide
 ```
 
-**Example**: thematic-cuts Phase 1 → Phase 2 transition (this document!)
+**Example**: Phase 1 → Phase 2 transition after major milestone
 
 ---
 
@@ -1122,8 +1128,8 @@ Proceed with implementation knowing exactly what needs to change.
 - Unclear priorities
 
 **Solution**:
-1. Keep delegation/tasks/active/ organized
-2. Use clear task naming: TASK-YYYY-NNN-description.md
+1. Keep delegation/tasks/2-todo/ organized
+2. Use clear task naming: ADV-NNNN-description.md
 3. Update agent-handoffs.json task_file field
 4. Archive completed tasks immediately
 
@@ -1139,7 +1145,7 @@ Proceed with implementation knowing exactly what needs to change.
 **Solution**:
 1. Define clear agent roles (see Agent Roles section)
 2. Update current_focus in agent-handoffs.json
-3. Use coordinator for assignment clarity
+3. Use planner for assignment clarity
 4. Document responsibility boundaries
 
 ---
@@ -1153,7 +1159,7 @@ Proceed with implementation knowing exactly what needs to change.
 
 **Solution**:
 1. Document decisions in technical_notes
-2. Create decision records in delegation/tasks/analysis/
+2. Create decision records in delegation/tasks/9-reference/
 3. Commit agent-handoffs.json updates
 4. Use handoff documents for major work
 
@@ -1168,56 +1174,49 @@ Proceed with implementation knowing exactly what needs to change.
 
 **Solution**:
 1. **Always** start responses with identity header
-2. Format: `📋 COORDINATOR | task | status`
+2. Format: `📋 PLANNER | task | status`
 3. Update identity when switching contexts
-4. Use standard emojis (📋 coordinator, 👨‍💻 feature-dev, 🧪 test-runner)
+4. Use standard emojis (📋 planner, 👨‍💻 feature-dev, 🧪 test-runner, 📦 pypi-publisher)
 
 ---
 
-## Examples from Real Projects
+## Example Setup
 
-### Example 1: thematic-cuts (Complex Multi-Phase Project)
+### Project Structure
 
 **Setup**:
 ```
 .agent-context/
-├── agent-handoffs.json         # 6 agents tracked
+├── agent-handoffs.json         # Agent status tracking
 ├── current-state.json          # Project metrics
 └── AGENT-SYSTEM-GUIDE.md       # This guide
 
 delegation/
 ├── tasks/
-│   ├── active/                 # 22 active tasks
-│   ├── completed/              # 12 completed tasks
-│   ├── analysis/               # 8 planning docs
-│   └── logs/                   # Phase reports
+│   ├── 1-backlog/              # Planned tasks
+│   ├── 2-todo/                 # Ready to work
+│   ├── 3-in-progress/          # Current work
+│   ├── 4-in-review/            # Awaiting review
+│   ├── 5-done/                 # Completed tasks
+│   └── 9-reference/            # Templates
 └── handoffs/                   # Agent handoffs
 ```
 
-**Results**:
-- 85.1% → 94.0% test pass rate
-- 8+ major tasks coordinated
-- Zero phantom work with multi-stage workflow
-- 87.5% efficiency gain (Phase 1)
+**Key Patterns**:
+- Discovery-first approach for complex tasks
+- Multi-stage verification for high-risk changes
+- Numbered folders for clear task lifecycle
 
-**Key Pattern**: Discovery-first + Multi-stage verification
-
----
-
-### Example 2: adversarial-workflow (New Project Setup)
-
-**Setup** (copying from thematic-cuts):
+**Getting Started**:
 ```bash
-# Copied structure from thematic-cuts
-mkdir -p .agent-context delegation/tasks/active
+# Quick setup for new project
+mkdir -p .agent-context delegation/tasks/{1-backlog,2-todo,3-in-progress,5-done,9-reference}
 
-# Initialized with minimal agent-handoffs.json
-cp ../thematic-cuts/.agent-context/AGENT-SYSTEM-GUIDE.md .agent-context/
+# Initialize agent-handoffs.json
+echo '{"planner":{"current_focus":"Setup","status":"active"}}' > .agent-context/agent-handoffs.json
 
 # Ready for development in <5 minutes
 ```
-
-**Result**: Smooth Phase 2 transition with full context
 
 ---
 
@@ -1227,10 +1226,10 @@ cp ../thematic-cuts/.agent-context/AGENT-SYSTEM-GUIDE.md .agent-context/
 
 ```json
 {
-  "coordinator": {
+  "planner": {
     "current_focus": "Project setup",
     "status": "active",
-    "last_updated": "2025-10-16"
+    "last_updated": "2025-11-28"
   }
 }
 ```
@@ -1239,55 +1238,53 @@ cp ../thematic-cuts/.agent-context/AGENT-SYSTEM-GUIDE.md .agent-context/
 
 ```json
 {
-  "coordinator": {
+  "planner": {
     "current_focus": "✅ PHASE 1 COMPLETE - Ready for Phase 2",
-    "task_file": "delegation/tasks/analysis/PHASE-2-PLAN.md",
+    "task_file": "delegation/tasks/9-reference/PHASE-2-PLAN.md",
     "status": "phase_transition",
     "priority": "high",
     "dependencies": "None - Phase 1 verified complete",
     "deliverables": [
       "✅ Phase 1: 6 tasks completed",
-      "✅ Test pass rate: 85.4%",
-      "✅ v1.0.1 released",
+      "✅ Test pass rate: 100%",
+      "✅ v1.0.0 released",
       "🔄 Phase 2 planning in progress"
     ],
-    "technical_notes": "Phase 1 completed ahead of schedule. Zero regressions. All acceptance criteria met.",
-    "coordination_role": "Planning Phase 2 execution with quality-first sequential approach",
-    "next_critical_path": "Phase 2A: Core fixes (4 tasks, 16 tests)",
-    "last_updated": "2025-10-10 Phase 1 Complete"
+    "technical_notes": "Phase 1 completed. Zero regressions. All acceptance criteria met.",
+    "coordination_role": "Planning Phase 2 execution",
+    "next_critical_path": "Phase 2: Feature enhancements",
+    "last_updated": "2025-11-28 Phase 1 Complete"
   },
   "feature-developer": {
-    "current_focus": "✅ TASK-2025-012 COMPLETE - Precision timecode fixed",
-    "task_file": "delegation/tasks/completed/TASK-2025-012.md",
+    "current_focus": "✅ ADV-0001 COMPLETE - Feature implemented",
+    "task_file": "delegation/tasks/5-done/ADV-0001.md",
     "status": "task_complete",
     "priority": "completed",
     "dependencies": "None - Ready for next assignment",
     "deliverables": [
-      "✅ Fixed 86 frame error at 23.976fps",
-      "✅ Fixed drop frame round-trip",
-      "✅ 54/54 precision tests passing (100%)",
+      "✅ Feature implemented",
+      "✅ All tests passing (100%)",
       "✅ Zero regressions"
     ],
-    "technical_notes": "Used integer arithmetic for DF, Fraction for NDF. Achieves frame-perfect accuracy per SMPTE ST 12-1.",
-    "coordination_role": "Ready for TASK-2025-014 assignment (Validation API)",
-    "last_updated": "2025-10-10 Task complete, verified by test-runner"
+    "technical_notes": "Implementation complete following TDD workflow.",
+    "coordination_role": "Ready for next task assignment",
+    "last_updated": "2025-11-28 Task complete, verified by test-runner"
   },
   "test-runner": {
-    "current_focus": "✅ TASK-2025-012 VERIFIED - 100% precision pass rate",
-    "task_file": "delegation/handoffs/TASK-2025-012-VERIFICATION.md",
+    "current_focus": "✅ ADV-0001 VERIFIED - 100% pass rate",
+    "task_file": "delegation/handoffs/ADV-0001-VERIFICATION.md",
     "status": "verification_complete",
     "priority": "completed",
     "dependencies": "None - Verification passed",
     "deliverables": [
-      "✅ 54/54 precision tests passing",
-      "✅ Zero regressions (298/350 overall)",
-      "✅ Performance validated (<5ms per operation)",
-      "✅ SMPTE compliance confirmed"
+      "✅ All tests passing",
+      "✅ Zero regressions",
+      "✅ Coverage targets met"
     ],
-    "technical_notes": "Verification complete. Recommend immediate merge to main. LOW RISK, HIGH CONFIDENCE.",
+    "technical_notes": "Verification complete. Recommend merge to main.",
     "coordination_role": "Available for next verification task",
     "recommendation": "MERGE TO MAIN - Production Ready",
-    "last_updated": "2025-10-10 Verification complete, approved for merge"
+    "last_updated": "2025-11-28 Verification complete, approved for merge"
   }
 }
 ```
@@ -1304,33 +1301,31 @@ This agent coordination system provides:
 
 ✅ **Clear responsibility** through role-based agents
 ✅ **Persistent context** via agent-handoffs.json
-✅ **Task tracking** with active/completed organization
+✅ **Task tracking** with numbered folder organization
 ✅ **Smooth handoffs** with documented protocols
 ✅ **Project memory** through git-tracked context
 
-**Proven Results**:
-- thematic-cuts: 85.1% → 94.0% test pass rate
-- adversarial-workflow: Successful multi-phase coordination
-- Zero phantom work with verification patterns
+**Key Benefits**:
+- Prevents phantom work with multi-stage verification
+- Maintains context across sessions
+- Enables smooth agent-to-agent handoffs
 
 **Getting Started**:
-1. Create `.agent-context/` and `delegation/` directories
+1. Create `.agent-context/` and `delegation/tasks/` directories
 2. Initialize `agent-handoffs.json`
 3. Start using identity headers
 4. Update context regularly
-5. Archive completed work
+5. Move tasks through numbered folders as they progress
 
-**Questions?** Reference this guide or consult thematic-cuts for working examples.
+**Questions?** Reference this guide or the task template at `delegation/tasks/9-reference/templates/task-template.md`.
 
 ---
 
-**Document Version**: 1.0
+**Document Version**: 2.0
 **Created**: 2025-10-16
-**Tested On**: thematic-cuts, adversarial-workflow
-**Status**: Production-ready methodology
+**Updated**: 2025-11-28
+**Status**: Production-ready methodology for adversarial-workflow
 
 ---
 
 **For new projects**: Copy this guide to `.agent-context/AGENT-SYSTEM-GUIDE.md` and follow the Setup section.
-
-**Good luck with your coordination!** 📋✨
