@@ -148,6 +148,6 @@ When a decision changes:
 
 ---
 
-**Maintainer**: coordinator agent
-**Last Updated**: 2025-10-20
-**ADR Count**: 10 active, 0 superseded, 0 planned
+**Maintainer**: planner agent
+**Last Updated**: 2025-11-28
+**ADR Count**: 11 active, 0 superseded, 0 planned
