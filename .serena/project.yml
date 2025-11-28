@@ -1,0 +1,19 @@
+# Serena configuration for adversarial-workflow
+# See: https://github.com/oraios/serena
+
+project_name: "adversarial-workflow"
+
+# Languages used in this project
+languages:
+  - python
+
+# Project description for context
+description: "CLI tool for adversarial evaluation of task specifications using GPT-4o via aider"
+
+# Paths to include/exclude (optional)
+# include_paths:
+#   - adversarial_workflow/
+#   - tests/
+# exclude_paths:
+#   - .venv/
+#   - dist/
