@@ -113,25 +113,25 @@ class ValidationResult:
 def validate_clip(clip: Clip) -> ValidationResult:
     """Validate Clip object according to business rules."""
     errors = []
-    
+
     # Check 1: Name non-empty
     if not clip.name or not clip.name.strip():
         errors.append("Clip name cannot be empty")
-    
+
     # Check 2: Valid timecode format
     if not _is_valid_smpte_timecode(clip.start_timecode):
         errors.append(f"Invalid start timecode: {clip.start_timecode}")
-    
+
     if not _is_valid_smpte_timecode(clip.end_timecode):
         errors.append(f"Invalid end timecode: {clip.end_timecode}")
-    
+
     # Check 3: Start < End
     if _is_valid_smpte_timecode(clip.start_timecode) and _is_valid_smpte_timecode(clip.end_timecode):
         start_frames = _timecode_to_frames(clip.start_timecode, 24)
         end_frames = _timecode_to_frames(clip.end_timecode, 24)
         if start_frames >= end_frames:
             errors.append("Start timecode must be before end timecode")
-    
+
     return ValidationResult(valid=len(errors) == 0, errors=errors)
 
 def _is_valid_smpte_timecode(tc: str) -> bool:
@@ -263,7 +263,7 @@ class TestClipValidation(unittest.TestCase):
         result = validate_clip(clip)
         self.assertTrue(result.valid)
         self.assertEqual(len(result.errors), 0)
-    
+
     def test_empty_name(self):
         """Test that empty name fails validation."""
         clip = Clip(
@@ -344,23 +344,23 @@ class ValidationResult {
 
 function validateClip(clip) {
   const errors = [];
-  
+
   // Check name
   if (!clip.name || clip.name.trim() === '') {
     errors.push('Clip name cannot be empty');
   }
-  
+
   // Check timecodes
   if (!isValidSMPTETimecode(clip.startTimecode)) {
     errors.push(`Invalid start timecode: ${clip.startTimecode}`);
   }
-  
+
   if (!isValidSMPTETimecode(clip.endTimecode)) {
     errors.push(`Invalid end timecode: ${clip.endTimecode}`);
   }
-  
+
   // Check start < end
-  if (isValidSMPTETimecode(clip.startTimecode) && 
+  if (isValidSMPTETimecode(clip.startTimecode) &&
       isValidSMPTETimecode(clip.endTimecode)) {
     const startFrames = timecodeToFrames(clip.startTimecode, 24);
     const endFrames = timecodeToFrames(clip.endTimecode, 24);
@@ -368,7 +368,7 @@ function validateClip(clip) {
       errors.push('Start timecode must be before end timecode');
     }
   }
-  
+
   return new ValidationResult(errors.length === 0, errors);
 }
 
@@ -387,24 +387,24 @@ describe('Clip Validation', () => {
       startTimecode: '00:00:00:00',
       endTimecode: '00:00:10:00'
     });
-    
+
     const result = validateClip(clip);
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
-  
+
   test('empty name fails validation', () => {
     const clip = new Clip({
       name: '',
       startTimecode: '00:00:00:00',
       endTimecode: '00:00:10:00'
     });
-    
+
     const result = validateClip(clip);
     expect(result.valid).toBe(false);
     expect(result.errors[0]).toMatch(/name cannot be empty/i);
   });
-  
+
   // ... more tests ...
 });
 ```
@@ -485,12 +485,12 @@ describe('Clip Validation', () => {
       startTimecode: '00:00:00:00',
       endTimecode: '00:00:10:00'
     };
-    
+
     const result = validateClip(clip);
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
-  
+
   // ... more tests ...
 });
 ```
@@ -658,38 +658,38 @@ on:
 jobs:
   review:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Full history for git diff
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           pip install adversarial-workflow
           pip install aider-chat
           pip install -r requirements.txt
-      
+
       - name: Run code review
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # Review PR changes
           adversarial review
-      
+
       - name: Upload review artifacts
         uses: actions/upload-artifact@v3
         if: always()
         with:
           name: adversarial-review
           path: .adversarial/logs/
-      
+
       - name: Comment on PR
         uses: actions/github-script@v6
         if: always()
@@ -697,7 +697,7 @@ jobs:
           script: |
             const fs = require('fs');
             const review = fs.readFileSync('.adversarial/logs/CODE-REVIEW.md', 'utf8');
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -718,33 +718,33 @@ stages:
 adversarial_review:
   stage: review
   image: python:3.11
-  
+
   before_script:
     - pip install adversarial-workflow aider-chat
     - pip install -r requirements.txt
-  
+
   script:
     - adversarial review
-  
+
   artifacts:
     paths:
       - .adversarial/logs/
     expire_in: 1 week
-  
+
   only:
     - merge_requests
-  
+
   variables:
     OPENAI_API_KEY: $OPENAI_API_KEY
 
 test_validation:
   stage: test
   image: python:3.11
-  
+
   script:
     - pip install -r requirements.txt
     - pytest tests/ -v
-  
+
   only:
     - merge_requests
 ```
@@ -763,16 +763,16 @@ echo "🔍 Running adversarial code review..."
 if ! git diff --cached --quiet; then
   # Save staged changes
   git diff --cached > /tmp/staged-changes.diff
-  
+
   # Run quick review
   aider \
     --model gpt-4o \
     --yes \
     --read /tmp/staged-changes.diff \
-    --message "Quick review: Any obvious bugs or issues in this diff? 
+    --message "Quick review: Any obvious bugs or issues in this diff?
                 Answer in 2-3 sentences." \
     --no-auto-commits
-  
+
   echo ""
   read -p "Proceed with commit? (y/n) " -n 1 -r
   echo
@@ -1235,7 +1235,7 @@ adversarial evaluate tasks/TASK-042-fix-validation.md
 for task in tasks/pending/TASK-*.md; do
   echo "=== Evaluating $task ==="
   adversarial evaluate "$task"
-  
+
   # Check if approved
   task_num=$(basename "$task" .md)
   if grep -q "Verdict: APPROVED" ".adversarial/logs/${task_num}-PLAN-EVALUATION.md"; then

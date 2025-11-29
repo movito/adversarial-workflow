@@ -180,7 +180,7 @@ Use investigation to write detailed implementation plan:
    ```python
    # SEARCH:
    clip = Clip(start="00:01:00:00", end="00:02:00:00", description="Test")
-   
+
    # REPLACE:
    clip = Clip(
        name="test_validation",
@@ -194,7 +194,7 @@ Use investigation to write detailed implementation plan:
    ```python
    # SEARCH:
    frames = clip.duration_frames(fps)
-   
+
    # REPLACE:
    frames = clip.duration_frames_otio(fps)
    ```
@@ -270,10 +270,10 @@ Your task file should include:
 
 1. `test_empty_list` (line 45)
    - Add `metadata={}` parameter
-   
+
 2. `test_single_clip` (line 67)
    - Add `metadata={"theme": "test"}`
-   
+
 [... continue for all 7 tests]
 
 **Acceptance Criteria**:
@@ -381,7 +381,7 @@ grep -r 'create_from_clips' tests/
    ```python
    # SEARCH:
    result = create_from_clips([])
-   
+
    # REPLACE:
    result = create_from_clips([], metadata={"theme": "empty"})
    ```
@@ -766,10 +766,10 @@ def test_empty_list():
 1. **Implement actual changes** (not TODOs)
    - Use SEARCH/REPLACE blocks from approved plan
    - Verify each change with grep after applying
-   
+
 2. **Remove all TODOs/FIXMEs** from core logic
    - TODOs are planning artifacts, not implementation
-   
+
 3. **Follow plan exactly** or document deviations
    - Plan specified 7 exact changes
    - Implement all 7

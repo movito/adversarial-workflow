@@ -352,20 +352,20 @@ def validate_clip(clip):
 def validate_clip(clip):
     """Validates Clip according to specification."""
     errors = []
-    
+
     if not clip.name or not clip.name.strip():
         errors.append("Clip name cannot be empty")
-    
+
     if not is_valid_smpte_timecode(clip.start_timecode):
         errors.append(f"Invalid start timecode: {clip.start_timecode}")
-    
+
     if not is_valid_smpte_timecode(clip.end_timecode):
         errors.append(f"Invalid end timecode: {clip.end_timecode}")
-    
+
     if is_valid_smpte_timecode(clip.start_timecode) and is_valid_smpte_timecode(clip.end_timecode):
         if timecode_to_frames(clip.start_timecode) >= timecode_to_frames(clip.end_timecode):
             errors.append("Start timecode must be before end timecode")
-    
+
     return ValidationResult(
         valid=len(errors) == 0,
         errors=errors
@@ -387,12 +387,12 @@ def validate_clip(clip):
 
 **Revised plan** (specific):
 > **File**: `tests/test_otio_integration/test_critical_precision.py`
-> 
+>
 > **Changes** (6 fixes):
 > 1. Line 188: `Clip(start=..., end=...)` → `Clip(name=..., start_timecode=..., end_timecode=...)`
 > 2. Line 197: `clip.duration_frames(fps)` → `clip.duration_frames_otio(fps)`
 > 3-6: [Similar specific changes]
-> 
+>
 > **Acceptance**: 4 xfailed tests in `test_critical_precision.py` → passing
 
 **Evaluator verdict**: `APPROVED`
@@ -416,9 +416,9 @@ pytest tests/test_consistent_assembly.py
 **Evaluator analysis**: `CONDITIONAL_PASS`
 > Target requirement met: 7 tests now passing ✅
 > However, 2 regressions introduced: test_empty_list, test_single_clip ⚠️
-> 
+>
 > Root cause: API change to ThematicList broke edge cases.
-> 
+>
 > Recommendation: Fix regressions before approval OR accept with follow-up task.
 
 **Decision**: Created TASK-2025-016-FOLLOWUP, main task approved with caveat.

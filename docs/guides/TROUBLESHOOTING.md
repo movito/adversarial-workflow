@@ -63,10 +63,10 @@ bash: adversarial: command not found
    ```bash
    # Find installation location
    python -m pip show adversarial-workflow
-   
+
    # Add to PATH (Linux/Mac)
    export PATH="$HOME/.local/bin:$PATH"
-   
+
    # Or use full path
    python -m adversarial_workflow.cli init
    ```
@@ -198,7 +198,7 @@ test_command: "pytest tests/ --verbose"  # Quoted
    ```bash
    # Check environment variables
    env | grep ADVERSARIAL
-   
+
    # Unset if needed
    unset ADVERSARIAL_EVALUATOR_MODEL
    ```
@@ -214,7 +214,7 @@ test_command: "pytest tests/ --verbose"  # Quoted
    ```bash
    # Find all config files
    find . -name "config.yml"
-   
+
    # Make sure editing the right one
    cat .adversarial/config.yml  # Should be in .adversarial/
    ```
@@ -283,7 +283,7 @@ Error: OpenAI API key not found. Set OPENAI_API_KEY environment variable.
    ```bash
    # Temporary (current session)
    export OPENAI_API_KEY="sk-your-key-here"
-   
+
    # Permanent (Linux/Mac)
    echo 'export OPENAI_API_KEY="sk-your-key-here"' >> ~/.bashrc
    source ~/.bashrc
@@ -293,7 +293,7 @@ Error: OpenAI API key not found. Set OPENAI_API_KEY environment variable.
    ```bash
    # Mac (zsh)
    echo 'export OPENAI_API_KEY="sk-your-key-here"' >> ~/.zshrc
-   
+
    # Linux (bash)
    echo 'export OPENAI_API_KEY="sk-your-key-here"' >> ~/.bashrc
    ```
@@ -486,10 +486,10 @@ Error: Task file not found: task.md
    ```bash
    # If in project root
    .adversarial/scripts/evaluate_plan.sh tasks/TASK-001.md
-   
+
    # If in different directory
    .adversarial/scripts/evaluate_plan.sh ../tasks/TASK-001.md
-   
+
    # Or use absolute path
    .adversarial/scripts/evaluate_plan.sh /full/path/to/task.md
    ```
@@ -533,7 +533,7 @@ $ adversarial review
    ```bash
    # Review the last commit instead
    git diff HEAD~1 > .adversarial/artifacts/last-commit.diff
-   
+
    # Manually review using aider
    aider --read .adversarial/artifacts/last-commit.diff \
          --message "Review this implementation"
@@ -549,7 +549,7 @@ $ adversarial review
    ```bash
    # Make sure scripts use --yes flag
    grep -n "\-\-yes" .adversarial/scripts/evaluate_plan.sh
-   
+
    # Should see --yes in aider command
    ```
 
@@ -562,7 +562,7 @@ $ adversarial review
    ```bash
    # Check network connectivity
    curl https://api.openai.com/v1/models
-   
+
    # Try manual aider call
    aider --model gpt-4o --yes --message "test"
    ```
@@ -629,7 +629,7 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
    ```bash
    # Verify what's actually in diff
    git diff | head -50
-   
+
    # Make sure changes are staged
    git add -A
    git diff --cached  # Check staged changes
@@ -643,7 +643,7 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
        # Validate timecode
        # Check start < end
        return True
-   
+
    # ✅ This is clearly real code:
    def validate(clip):
        if not clip.name:
@@ -669,7 +669,7 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
    ```bash
    # Check config
    grep test_command .adversarial/config.yml
-   
+
    # Should match what you run manually
    # If you run: pytest tests/test_validation.py -v
    # Config should have: test_command: pytest tests/test_validation.py -v
@@ -679,7 +679,7 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
    ```bash
    # Make sure .env is loaded
    cat .env  # Contains OPENAI_API_KEY, etc.
-   
+
    # Check virtual environment
    which python  # Should be in .venv
    ```
@@ -736,7 +736,7 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
    ```bash
    # ❌ EXPENSIVE:
    aider --files src/**/*.py  # Adds ALL files to context
-   
+
    # ✅ CHEAP:
    aider --read task.md --read diff.txt  # Reference only
    ```
@@ -746,7 +746,7 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
    # ❌ EXPENSIVE: Multiple messages
    aider --files src/validation.py
    # Then 10 messages back and forth
-   
+
    # ✅ CHEAP: One complete message
    aider --files src/validation.py \
          --read plan.md \
@@ -758,7 +758,7 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
    ```bash
    # Check file sizes
    wc -l tasks/TASK-001.md
-   
+
    # If > 1000 lines, extract relevant section
    sed -n '100,200p' tasks/TASK-001.md > task-excerpt.md
    aider --read task-excerpt.md
@@ -814,7 +814,7 @@ Error: Request timed out after 60 seconds
    ```bash
    # Instead of:
    aider --files src/**/*.py
-   
+
    # Do:
    aider --files src/validation.py  # Just one file
    ```
@@ -845,11 +845,11 @@ Error: Request timed out after 60 seconds
    python --version
    pip show adversarial-workflow
    aider --version
-   
+
    # Check configuration
    cat .adversarial/config.yml
    env | grep ADVERSARIAL
-   
+
    # Check git status
    git status
    git diff
@@ -1041,7 +1041,7 @@ iconv -f ISO-8859-1 -t UTF-8 task.md > task-utf8.md
    # Commit often
    git add -A
    git commit -m "WIP: description"
-   
+
    # Create feature branches
    git checkout -b feature/task-001
    ```
@@ -1062,7 +1062,7 @@ iconv -f ISO-8859-1 -t UTF-8 task.md > task-utf8.md
    ```bash
    # Before running workflow, verify tests work
    pytest tests/
-   
+
    # Then run workflow
    adversarial evaluate task.md
    ```
