@@ -447,6 +447,65 @@ done
 
 **Note**: Even with prompt bypass, files >1000 lines will still fail due to OpenAI rate limits on Tier 1 accounts (30,000 TPM). The prompt bypass just allows automation; it doesn't change the underlying rate limits.
 
+### Issue: File too large for evaluation (rate limit errors)
+
+**Symptoms**:
+```bash
+$ adversarial evaluate large-task.md
+Error: Rate limit reached for requests
+# or
+Error: Request too large for model
+```
+
+**Cause**: OpenAI Tier 1 accounts have a 30,000 TPM (tokens per minute) limit. Files over ~500-600 lines often exceed this limit.
+
+**Solutions**:
+
+1. **Split the file using `adversarial split`** (recommended)
+   ```bash
+   # Analyze and split by markdown sections
+   adversarial split large-task.md
+
+   # Split by implementation phases
+   adversarial split large-task.md --strategy phases
+
+   # Preview without creating files
+   adversarial split large-task.md --dry-run
+
+   # Custom line limit per split
+   adversarial split large-task.md --max-lines 400
+   ```
+
+   The split command will:
+   - Analyze your file structure
+   - Create smaller files in a `splits/` subdirectory
+   - Add cross-references between parts
+   - Keep each part under the line limit
+
+   Then evaluate each part separately:
+   ```bash
+   adversarial evaluate splits/large-task-part1.md
+   adversarial evaluate splits/large-task-part2.md
+   ```
+
+2. **Manually reduce file size**
+   - Extract only relevant sections
+   - Move background/context to separate reference docs
+   - Keep task specs focused and specific
+
+3. **Upgrade OpenAI tier** (optional, costs money)
+
+   | Tier | TPM Limit | Max File Size | Approx Monthly Cost |
+   |------|-----------|---------------|---------------------|
+   | Tier 1 | 30,000 | ~500 lines | Free tier |
+   | Tier 2 | 60,000 | ~1,000 lines | $50+ spent |
+   | Tier 3 | 100,000 | ~2,000 lines | $100+ spent |
+   | Tier 4+ | 800,000+ | ~10,000+ lines | $250+ spent |
+
+   Tier upgrades happen automatically based on successful payment history at https://platform.openai.com/account/billing
+
+**Best practice**: Keep task specification files under 500 lines. Use the `adversarial split` command when files grow larger.
+
 ---
 
 ## Script Execution Issues
