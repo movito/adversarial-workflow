@@ -41,14 +41,14 @@ Collection of optional enhancements to be implemented based on user feedback and
 
 ### Enhancement Candidates
 
-| ID | Enhancement | Effort | Trigger |
-|----|-------------|--------|---------|
-| E1 | GitHub Actions workflow file | 30-60 min | User feedback |
-| E2 | Additional platform testing | 2-4 hrs/platform | User reports |
-| E3 | Performance benchmarking | 1-2 hrs | Performance concerns |
-| E4 | Additional documentation | 2-4 hrs | Feedback requests |
-| E5 | Automated test suite expansion | 3-5 hrs | Multiple contributors |
-| E6 | Alternative package distribution | 1-2 hrs | Download metrics |
+| ID | Enhancement | Effort | Status |
+|----|-------------|--------|--------|
+| E1 | GitHub Actions workflow file | 30-60 min | Pending |
+| E2 | Additional platform testing | 2-4 hrs/platform | Pending |
+| E3 | Performance benchmarking | 1-2 hrs | Pending |
+| E4 | Additional documentation | 2-4 hrs | Pending |
+| E5 | CI/CD pipeline with pytest | 2-3 hrs | **DONE** (2025-11-29) |
+| E6 | Alternative package distribution | 1-2 hrs | Pending |
 
 ## Implementation Plan
 
