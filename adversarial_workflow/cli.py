@@ -12,6 +12,7 @@ Commands:
     evaluate - Run Phase 1: Plan evaluation
     review - Run Phase 3: Code review
     validate - Run Phase 4: Test validation
+    split - Split large task files into smaller evaluable chunks
 """
 
 import argparse
@@ -99,25 +100,27 @@ def check_platform_compatibility() -> bool:
     system = platform.system()
 
     if system == "Windows":
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("⚠️  WARNING: Native Windows is NOT Supported")
-        print("="*60)
+        print("=" * 60)
         print("\nThis package requires Unix shell (bash) for workflow scripts.")
         print("\n📍 RECOMMENDED: Use WSL (Windows Subsystem for Linux)")
         print("   Install: https://learn.microsoft.com/windows/wsl/install")
         print("\n⚠️  ALTERNATIVE: Git Bash (not officially supported)")
         print("   Some features may not work correctly")
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
 
         response = input("\n Continue with setup anyway? (y/N): ").strip().lower()
-        if response != 'y':
+        if response != "y":
             print("\nSetup cancelled. Please install WSL and try again.")
             return False
 
     return True
 
 
-def create_env_file_interactive(project_path: str, anthropic_key: str = "", openai_key: str = "") -> bool:
+def create_env_file_interactive(
+    project_path: str, anthropic_key: str = "", openai_key: str = ""
+) -> bool:
     """
     Interactively create .env file with API keys.
 
@@ -247,12 +250,14 @@ def init_interactive(project_path: str = ".") -> int:
                 "",
                 "Need an API key?",
                 "  1. Go to: https://console.anthropic.com/settings/keys",
-                "  2. Click \"Create Key\"",
-                "  3. Copy the key (starts with \"sk-ant-\")",
+                '  2. Click "Create Key"',
+                '  3. Copy the key (starts with "sk-ant-")',
             ],
         )
 
-        anthropic_key = prompt_user("Paste your Anthropic API key (or Enter to skip)", secret=True)
+        anthropic_key = prompt_user(
+            "Paste your Anthropic API key (or Enter to skip)", secret=True
+        )
 
         if anthropic_key:
             is_valid, message = validate_api_key(anthropic_key, "anthropic")
@@ -271,12 +276,14 @@ def init_interactive(project_path: str = ".") -> int:
                 "",
                 "Need an API key?",
                 "  1. Go to: https://platform.openai.com/api-keys",
-                "  2. Click \"+ Create new secret key\"",
-                "  3. Copy the key (starts with \"sk-proj-\" or \"sk-\")",
+                '  2. Click "+ Create new secret key"',
+                '  3. Copy the key (starts with "sk-proj-" or "sk-")',
             ],
         )
 
-        openai_key = prompt_user("Paste your OpenAI API key (or Enter to skip)", secret=True)
+        openai_key = prompt_user(
+            "Paste your OpenAI API key (or Enter to skip)", secret=True
+        )
 
         if openai_key:
             is_valid, message = validate_api_key(openai_key, "openai")
@@ -294,7 +301,9 @@ def init_interactive(project_path: str = ".") -> int:
         ],
     )
 
-    project_name = prompt_user("Project name", default=os.path.basename(os.path.abspath(project_path)))
+    project_name = prompt_user(
+        "Project name", default=os.path.basename(os.path.abspath(project_path))
+    )
     test_command = prompt_user("Test framework", default="pytest")
     task_directory = prompt_user("Task directory", default="tasks/")
 
@@ -313,12 +322,16 @@ def init_interactive(project_path: str = ".") -> int:
         f"{GREEN}✅ Setup Complete!{RESET}",
         [
             "Created:",
-            "  ✓ .env (with your API keys - added to .gitignore)" if (anthropic_key or openai_key) else "  ⚠️ .env (skipped - no API keys provided)",
+            "  ✓ .env (with your API keys - added to .gitignore)"
+            if (anthropic_key or openai_key)
+            else "  ⚠️ .env (skipped - no API keys provided)",
             "  ✓ .adversarial/config.yml",
             "  ✓ .adversarial/scripts/ (3 workflow scripts)",
             "  ✓ .aider.conf.yml (aider configuration)",
             "",
-            "Your configuration:" if (anthropic_key or openai_key) else "Configuration (no API keys yet):",
+            "Your configuration:"
+            if (anthropic_key or openai_key)
+            else "Configuration (no API keys yet):",
             f"  Author (implementation): {'Claude 3.5 Sonnet (Anthropic)' if anthropic_key else 'GPT-4o (OpenAI)' if openai_key else 'Not configured'}",
             f"  Evaluator: {'GPT-4o (OpenAI)' if openai_key else 'Claude 3.5 Sonnet (Anthropic)' if anthropic_key else 'Not configured'}",
             f"  Cost per workflow: {'~$0.02-0.10' if (anthropic_key and openai_key) else '~$0.05-0.15' if (anthropic_key or openai_key) else 'N/A'}",
@@ -497,7 +510,8 @@ def create_example_task(task_path: str) -> None:
     else:
         # Fallback: create basic example
         with open(task_path, "w") as f:
-            f.write("""# Task: Fix Off-By-One Error in List Processing
+            f.write(
+                """# Task: Fix Off-By-One Error in List Processing
 
 **Type**: Bug Fix
 **Priority**: Medium
@@ -515,7 +529,8 @@ The `process_items()` function has an off-by-one error.
 
 - [x] All items processed including last one
 - [x] Tests pass
-""")
+"""
+            )
 
     print(f"{GREEN}✅ Created: {task_path}{RESET}")
 
@@ -594,7 +609,9 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
         print("   3. Then run: adversarial init")
         print()
         print(f"{BOLD}HELP:{RESET}")
-        print("   New to git? https://git-scm.com/book/en/v2/Getting-Started-Installing-Git")
+        print(
+            "   New to git? https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
+        )
         return 1
 
     # Pre-flight validation: Check package integrity
@@ -628,8 +645,12 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
             print(f"   • {template}")
         print()
         print(f"{BOLD}FIX:{RESET}")
-        print("   1. Report this issue: https://github.com/movito/adversarial-workflow/issues")
-        print("   2. Or try reinstalling: pip install --upgrade --force-reinstall adversarial-workflow")
+        print(
+            "   1. Report this issue: https://github.com/movito/adversarial-workflow/issues"
+        )
+        print(
+            "   2. Or try reinstalling: pip install --upgrade --force-reinstall adversarial-workflow"
+        )
         print()
         print(f"{BOLD}WORKAROUND:{RESET}")
         print("   Create missing files manually:")
@@ -790,50 +811,57 @@ def check() -> int:
             env_keys_after = set(os.environ.keys())
             new_keys = env_keys_after - env_keys_before
             env_loaded = True
-            good_checks.append(f".env file found and loaded ({len(new_keys)} variables)")
+            good_checks.append(
+                f".env file found and loaded ({len(new_keys)} variables)"
+            )
         except Exception as e:
-            issues.append({
-                "severity": "WARNING",
-                "message": f".env file found but could not be loaded: {e}",
-                "fix": "Check .env file format and permissions",
-            })
+            issues.append(
+                {
+                    "severity": "WARNING",
+                    "message": f".env file found but could not be loaded: {e}",
+                    "fix": "Check .env file format and permissions",
+                }
+            )
     else:
-        issues.append({
-            "severity": "INFO",
-            "message": ".env file not found (optional - can use environment variables)",
-            "fix": "Create .env file: cp .env.example .env (or run: adversarial init --interactive)",
-        })
+        issues.append(
+            {
+                "severity": "INFO",
+                "message": ".env file not found (optional - can use environment variables)",
+                "fix": "Create .env file: cp .env.example .env (or run: adversarial init --interactive)",
+            }
+        )
 
     # Check 1: Git repository
     if os.path.exists(".git"):
         good_checks.append("Git repository detected")
     else:
-        issues.append({
-            "severity": "ERROR",
-            "message": "Not a git repository",
-            "fix": "Run: git init",
-        })
+        issues.append(
+            {
+                "severity": "ERROR",
+                "message": "Not a git repository",
+                "fix": "Run: git init",
+            }
+        )
 
     # Check 2: Aider installed
     if shutil.which("aider"):
         # Try to get version
         try:
             result = subprocess.run(
-                ["aider", "--version"],
-                capture_output=True,
-                text=True,
-                timeout=2
+                ["aider", "--version"], capture_output=True, text=True, timeout=2
             )
             version = result.stdout.strip() if result.returncode == 0 else "unknown"
             good_checks.append(f"Aider installed ({version})")
         except:
             good_checks.append("Aider installed")
     else:
-        issues.append({
-            "severity": "ERROR",
-            "message": "Aider not found in PATH",
-            "fix": "Install: pip install aider-chat",
-        })
+        issues.append(
+            {
+                "severity": "ERROR",
+                "message": "Aider not found in PATH",
+                "fix": "Install: pip install aider-chat",
+            }
+        )
 
     # Check 3: API keys (with source tracking)
     # Track which keys existed before and after .env loading
@@ -864,11 +892,13 @@ def check() -> int:
         preview = format_key_preview(anthropic_key)
         good_checks.append(f"ANTHROPIC_API_KEY configured ({source}) [{preview}]")
     elif anthropic_key:
-        issues.append({
-            "severity": "WARNING",
-            "message": "ANTHROPIC_API_KEY is placeholder value",
-            "fix": "Edit .env with real API key from https://console.anthropic.com/settings/keys",
-        })
+        issues.append(
+            {
+                "severity": "WARNING",
+                "message": "ANTHROPIC_API_KEY is placeholder value",
+                "fix": "Edit .env with real API key from https://console.anthropic.com/settings/keys",
+            }
+        )
 
     # Check OpenAI API key
     if openai_key and not openai_key.startswith("your-"):
@@ -876,37 +906,45 @@ def check() -> int:
         preview = format_key_preview(openai_key)
         good_checks.append(f"OPENAI_API_KEY configured ({source}) [{preview}]")
     elif openai_key:
-        issues.append({
-            "severity": "WARNING",
-            "message": "OPENAI_API_KEY is placeholder value",
-            "fix": "Edit .env with real API key from https://platform.openai.com/api-keys",
-        })
+        issues.append(
+            {
+                "severity": "WARNING",
+                "message": "OPENAI_API_KEY is placeholder value",
+                "fix": "Edit .env with real API key from https://platform.openai.com/api-keys",
+            }
+        )
 
     # Check if at least one API key is configured
     if not anthropic_key and not openai_key:
-        issues.append({
-            "severity": "ERROR",
-            "message": "No API keys configured - workflow cannot run",
-            "fix": "Run 'adversarial init --interactive' to set up API keys with guided wizard",
-        })
+        issues.append(
+            {
+                "severity": "ERROR",
+                "message": "No API keys configured - workflow cannot run",
+                "fix": "Run 'adversarial init --interactive' to set up API keys with guided wizard",
+            }
+        )
 
     # Check 4: Config valid
     try:
         config = load_config(".adversarial/config.yml")
         good_checks.append(".adversarial/config.yml valid")
     except FileNotFoundError:
-        issues.append({
-            "severity": "ERROR",
-            "message": "Not initialized (.adversarial/config.yml not found)",
-            "fix": "Run: adversarial init",
-        })
+        issues.append(
+            {
+                "severity": "ERROR",
+                "message": "Not initialized (.adversarial/config.yml not found)",
+                "fix": "Run: adversarial init",
+            }
+        )
         config = None
     except yaml.YAMLError as e:
-        issues.append({
-            "severity": "ERROR",
-            "message": f"Invalid config.yml: {e}",
-            "fix": "Fix YAML syntax in .adversarial/config.yml",
-        })
+        issues.append(
+            {
+                "severity": "ERROR",
+                "message": f"Invalid config.yml: {e}",
+                "fix": "Fix YAML syntax in .adversarial/config.yml",
+            }
+        )
         config = None
 
     # Check 5: Scripts executable
@@ -917,18 +955,22 @@ def check() -> int:
             path = f".adversarial/scripts/{script}"
             if os.path.exists(path):
                 if not os.access(path, os.X_OK):
-                    issues.append({
-                        "severity": "WARNING",
-                        "message": f"{script} not executable",
-                        "fix": f"chmod +x {path}",
-                    })
+                    issues.append(
+                        {
+                            "severity": "WARNING",
+                            "message": f"{script} not executable",
+                            "fix": f"chmod +x {path}",
+                        }
+                    )
                     all_scripts_ok = False
             else:
-                issues.append({
-                    "severity": "ERROR",
-                    "message": f"{script} not found",
-                    "fix": "Run: adversarial init",
-                })
+                issues.append(
+                    {
+                        "severity": "ERROR",
+                        "message": f"{script} not found",
+                        "fix": "Run: adversarial init",
+                    }
+                )
                 all_scripts_ok = False
 
         if all_scripts_ok:
@@ -974,9 +1016,13 @@ def check() -> int:
     else:
         status_parts = []
         if error_count > 0:
-            status_parts.append(f"{error_count} error" + ("s" if error_count != 1 else ""))
+            status_parts.append(
+                f"{error_count} error" + ("s" if error_count != 1 else "")
+            )
         if warning_count > 0:
-            status_parts.append(f"{warning_count} warning" + ("s" if warning_count != 1 else ""))
+            status_parts.append(
+                f"{warning_count} warning" + ("s" if warning_count != 1 else "")
+            )
         if info_count > 0:
             status_parts.append(f"{info_count} info")
 
@@ -1011,13 +1057,13 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
 
     # Initialize results tracking
     results = {
-        'configuration': [],
-        'dependencies': [],
-        'api_keys': [],
-        'agent_coordination': [],
-        'workflow_scripts': [],
-        'tasks': [],
-        'permissions': []
+        "configuration": [],
+        "dependencies": [],
+        "api_keys": [],
+        "agent_coordination": [],
+        "workflow_scripts": [],
+        "tasks": [],
+        "permissions": [],
     }
 
     passed = 0
@@ -1028,14 +1074,20 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     # Helper functions for tracking check results
     def check_pass(category: str, message: str, detail: str = None):
         nonlocal passed
-        results[category].append({'status': 'pass', 'message': message, 'detail': detail})
+        results[category].append(
+            {"status": "pass", "message": message, "detail": detail}
+        )
         if not json_output:
             print(f"  {GREEN}✅{RESET} {message}")
         passed += 1
 
-    def check_warn(category: str, message: str, detail: str = None, recommendation: str = None):
+    def check_warn(
+        category: str, message: str, detail: str = None, recommendation: str = None
+    ):
         nonlocal warnings
-        results[category].append({'status': 'warn', 'message': message, 'detail': detail})
+        results[category].append(
+            {"status": "warn", "message": message, "detail": detail}
+        )
         if not json_output:
             print(f"  {YELLOW}⚠️{RESET}  {message}")
             if detail and verbose:
@@ -1044,9 +1096,11 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
             recommendations.append(recommendation)
         warnings += 1
 
-    def check_fail(category: str, message: str, fix: str = None, recommendation: str = None):
+    def check_fail(
+        category: str, message: str, fix: str = None, recommendation: str = None
+    ):
         nonlocal errors
-        results[category].append({'status': 'fail', 'message': message, 'fix': fix})
+        results[category].append({"status": "fail", "message": message, "fix": fix})
         if not json_output:
             print(f"  {RED}❌{RESET} {message}")
             if fix and verbose:
@@ -1056,7 +1110,9 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         errors += 1
 
     def check_info(category: str, message: str, detail: str = None):
-        results[category].append({'status': 'info', 'message': message, 'detail': detail})
+        results[category].append(
+            {"status": "info", "message": message, "detail": detail}
+        )
         if not json_output:
             print(f"  {CYAN}ℹ️{RESET}  {message}")
             if detail and verbose:
@@ -1073,64 +1129,91 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     if not json_output:
         print(f"{BOLD}Configuration:{RESET}")
 
-    config_file = Path('.adversarial/config.yml')
+    config_file = Path(".adversarial/config.yml")
     config = None
 
     if config_file.exists():
         try:
             with open(config_file) as f:
                 config = yaml.safe_load(f)
-            check_pass('configuration', '.adversarial/config.yml - Valid YAML')
+            check_pass("configuration", ".adversarial/config.yml - Valid YAML")
 
             # Check required fields
-            if 'evaluator_model' in config:
-                model = config['evaluator_model']
-                supported_models = ['gpt-4o', 'claude-sonnet-4-5', 'claude-3-5-sonnet']
-                if any(m in model for m in ['gpt-4', 'claude']):
-                    check_pass('configuration', f'evaluator_model: {model}')
+            if "evaluator_model" in config:
+                model = config["evaluator_model"]
+                supported_models = ["gpt-4o", "claude-sonnet-4-5", "claude-3-5-sonnet"]
+                if any(m in model for m in ["gpt-4", "claude"]):
+                    check_pass("configuration", f"evaluator_model: {model}")
                 else:
-                    check_warn('configuration', f'evaluator_model: {model} (unrecognized)',
-                              recommendation='Check model name in config.yml')
+                    check_warn(
+                        "configuration",
+                        f"evaluator_model: {model} (unrecognized)",
+                        recommendation="Check model name in config.yml",
+                    )
             else:
-                check_warn('configuration', 'evaluator_model not set',
-                          recommendation='Add evaluator_model to config.yml')
+                check_warn(
+                    "configuration",
+                    "evaluator_model not set",
+                    recommendation="Add evaluator_model to config.yml",
+                )
 
             # Check directories
-            if 'task_directory' in config:
-                task_dir = Path(config['task_directory'])
+            if "task_directory" in config:
+                task_dir = Path(config["task_directory"])
                 if task_dir.exists():
-                    check_pass('configuration', f'task_directory: {config["task_directory"]} (exists)')
+                    check_pass(
+                        "configuration",
+                        f'task_directory: {config["task_directory"]} (exists)',
+                    )
                 else:
-                    check_fail('configuration', f'task_directory: {config["task_directory"]} (not found)',
-                              fix=f'mkdir -p {config["task_directory"]}',
-                              recommendation=f'Create task directory: mkdir -p {config["task_directory"]}')
+                    check_fail(
+                        "configuration",
+                        f'task_directory: {config["task_directory"]} (not found)',
+                        fix=f'mkdir -p {config["task_directory"]}',
+                        recommendation=f'Create task directory: mkdir -p {config["task_directory"]}',
+                    )
 
-            if 'log_directory' in config:
-                log_dir = Path(config['log_directory'])
+            if "log_directory" in config:
+                log_dir = Path(config["log_directory"])
                 if log_dir.exists():
                     if os.access(log_dir, os.W_OK):
-                        check_pass('configuration', f'log_directory: {config["log_directory"]} (writable)')
+                        check_pass(
+                            "configuration",
+                            f'log_directory: {config["log_directory"]} (writable)',
+                        )
                     else:
-                        check_fail('configuration', f'log_directory: {config["log_directory"]} (not writable)',
-                                  fix=f'chmod +w {config["log_directory"]}')
+                        check_fail(
+                            "configuration",
+                            f'log_directory: {config["log_directory"]} (not writable)',
+                            fix=f'chmod +w {config["log_directory"]}',
+                        )
                 else:
-                    check_warn('configuration', f'log_directory: {config["log_directory"]} (will be created)',
-                              recommendation=f'Log directory will be created automatically')
+                    check_warn(
+                        "configuration",
+                        f'log_directory: {config["log_directory"]} (will be created)',
+                        recommendation=f"Log directory will be created automatically",
+                    )
 
             # Check test command
-            if 'test_command' in config:
-                check_info('configuration', f'test_command: {config["test_command"]}')
+            if "test_command" in config:
+                check_info("configuration", f'test_command: {config["test_command"]}')
 
         except yaml.YAMLError as e:
-            check_fail('configuration', f'.adversarial/config.yml - Invalid YAML: {e}',
-                      fix='Fix YAML syntax in .adversarial/config.yml',
-                      recommendation='Check YAML syntax - look for indentation or special character issues')
+            check_fail(
+                "configuration",
+                f".adversarial/config.yml - Invalid YAML: {e}",
+                fix="Fix YAML syntax in .adversarial/config.yml",
+                recommendation="Check YAML syntax - look for indentation or special character issues",
+            )
         except Exception as e:
-            check_fail('configuration', f'.adversarial/config.yml - Error reading: {e}')
+            check_fail("configuration", f".adversarial/config.yml - Error reading: {e}")
     else:
-        check_fail('configuration', '.adversarial/config.yml not found',
-                  fix='Run: adversarial init',
-                  recommendation='Initialize project with: adversarial init --interactive')
+        check_fail(
+            "configuration",
+            ".adversarial/config.yml not found",
+            fix="Run: adversarial init",
+            recommendation="Initialize project with: adversarial init --interactive",
+        )
 
     if not json_output:
         print()
@@ -1140,64 +1223,112 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         print(f"{BOLD}Dependencies:{RESET}")
 
     # Git
-    if shutil.which('git'):
+    if shutil.which("git"):
         try:
-            git_version = subprocess.run(['git', '--version'], capture_output=True, text=True, timeout=2)
+            git_version = subprocess.run(
+                ["git", "--version"], capture_output=True, text=True, timeout=2
+            )
             if git_version.returncode == 0:
-                version = git_version.stdout.split()[2] if len(git_version.stdout.split()) > 2 else 'unknown'
+                version = (
+                    git_version.stdout.split()[2]
+                    if len(git_version.stdout.split()) > 2
+                    else "unknown"
+                )
 
                 # Check git status
-                git_status = subprocess.run(['git', 'status', '--short'], capture_output=True, text=True, timeout=2)
+                git_status = subprocess.run(
+                    ["git", "status", "--short"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2,
+                )
                 if git_status.returncode == 0:
-                    modified = len([l for l in git_status.stdout.splitlines() if l.startswith(' M')])
-                    untracked = len([l for l in git_status.stdout.splitlines() if l.startswith('??')])
+                    modified = len(
+                        [
+                            l
+                            for l in git_status.stdout.splitlines()
+                            if l.startswith(" M")
+                        ]
+                    )
+                    untracked = len(
+                        [
+                            l
+                            for l in git_status.stdout.splitlines()
+                            if l.startswith("??")
+                        ]
+                    )
                     if modified == 0 and untracked == 0:
-                        check_pass('dependencies', f'Git: {version} (working tree clean)')
+                        check_pass(
+                            "dependencies", f"Git: {version} (working tree clean)"
+                        )
                     else:
-                        check_info('dependencies', f'Git: {version} ({modified} modified, {untracked} untracked)')
+                        check_info(
+                            "dependencies",
+                            f"Git: {version} ({modified} modified, {untracked} untracked)",
+                        )
                 else:
-                    check_pass('dependencies', f'Git: {version}')
+                    check_pass("dependencies", f"Git: {version}")
         except:
-            check_pass('dependencies', 'Git: installed')
+            check_pass("dependencies", "Git: installed")
     else:
-        check_fail('dependencies', 'Git not found',
-                  fix='Install: https://git-scm.com/downloads',
-                  recommendation='Git is required - install from git-scm.com')
+        check_fail(
+            "dependencies",
+            "Git not found",
+            fix="Install: https://git-scm.com/downloads",
+            recommendation="Git is required - install from git-scm.com",
+        )
 
     # Python
     python_version = sys.version.split()[0]
-    major, minor = map(int, python_version.split('.')[:2])
+    major, minor = map(int, python_version.split(".")[:2])
     if (major, minor) >= (3, 8):
-        check_pass('dependencies', f'Python: {python_version} (compatible)')
+        check_pass("dependencies", f"Python: {python_version} (compatible)")
     else:
-        check_fail('dependencies', f'Python: {python_version} (requires 3.8+)',
-                  fix='Upgrade Python to 3.8 or higher',
-                  recommendation='Python 3.8+ required - upgrade your Python installation')
+        check_fail(
+            "dependencies",
+            f"Python: {python_version} (requires 3.8+)",
+            fix="Upgrade Python to 3.8 or higher",
+            recommendation="Python 3.8+ required - upgrade your Python installation",
+        )
 
     # Aider
-    if shutil.which('aider'):
+    if shutil.which("aider"):
         try:
-            aider_version = subprocess.run(['aider', '--version'], capture_output=True, text=True, timeout=2)
-            version = aider_version.stdout.strip() if aider_version.returncode == 0 else 'unknown'
-            check_pass('dependencies', f'Aider: {version} (functional)')
+            aider_version = subprocess.run(
+                ["aider", "--version"], capture_output=True, text=True, timeout=2
+            )
+            version = (
+                aider_version.stdout.strip()
+                if aider_version.returncode == 0
+                else "unknown"
+            )
+            check_pass("dependencies", f"Aider: {version} (functional)")
         except:
-            check_pass('dependencies', 'Aider: installed')
+            check_pass("dependencies", "Aider: installed")
     else:
-        check_fail('dependencies', 'Aider not found',
-                  fix='Install: pip install aider-chat',
-                  recommendation='Aider is required - install with: pip install aider-chat')
+        check_fail(
+            "dependencies",
+            "Aider not found",
+            fix="Install: pip install aider-chat",
+            recommendation="Aider is required - install with: pip install aider-chat",
+        )
 
     # Bash
     try:
-        bash_version = subprocess.run(['bash', '--version'], capture_output=True, text=True, timeout=2)
+        bash_version = subprocess.run(
+            ["bash", "--version"], capture_output=True, text=True, timeout=2
+        )
         if bash_version.returncode == 0:
-            version_line = bash_version.stdout.split('\n')[0]
-            if 'version 3' in version_line:
-                check_info('dependencies', f'Bash: {version_line.split()[3]} (macOS default - limited features)')
+            version_line = bash_version.stdout.split("\n")[0]
+            if "version 3" in version_line:
+                check_info(
+                    "dependencies",
+                    f"Bash: {version_line.split()[3]} (macOS default - limited features)",
+                )
             else:
-                check_pass('dependencies', f'Bash: {version_line.split()[3]}')
+                check_pass("dependencies", f"Bash: {version_line.split()[3]}")
     except:
-        check_info('dependencies', 'Bash: present')
+        check_info("dependencies", "Bash: present")
 
     if not json_output:
         print()
@@ -1207,46 +1338,59 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         print(f"{BOLD}API Keys:{RESET}")
 
     # Load .env
-    env_file = Path('.env')
+    env_file = Path(".env")
     env_loaded = False
     if env_file.exists():
         try:
             load_dotenv(env_file)
             env_loaded = True
-            check_info('api_keys', '.env file loaded')
+            check_info("api_keys", ".env file loaded")
         except:
-            check_warn('api_keys', '.env file found but could not be loaded')
+            check_warn("api_keys", ".env file found but could not be loaded")
 
     # Check keys
-    openai_key = os.environ.get('OPENAI_API_KEY')
-    if openai_key and openai_key.startswith(('sk-proj-', 'sk-')):
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    if openai_key and openai_key.startswith(("sk-proj-", "sk-")):
         preview = f"{openai_key[:8]}...{openai_key[-4:]}"
         source = "from .env" if env_loaded else "from environment"
-        check_pass('api_keys', f'OPENAI_API_KEY: Set ({source}) [{preview}]')
+        check_pass("api_keys", f"OPENAI_API_KEY: Set ({source}) [{preview}]")
     elif openai_key:
-        check_warn('api_keys', 'OPENAI_API_KEY: Invalid format',
-                  recommendation='OpenAI keys should start with "sk-" or "sk-proj-"')
+        check_warn(
+            "api_keys",
+            "OPENAI_API_KEY: Invalid format",
+            recommendation='OpenAI keys should start with "sk-" or "sk-proj-"',
+        )
     else:
-        check_warn('api_keys', 'OPENAI_API_KEY: Not set',
-                  recommendation='Add OPENAI_API_KEY to .env file')
+        check_warn(
+            "api_keys",
+            "OPENAI_API_KEY: Not set",
+            recommendation="Add OPENAI_API_KEY to .env file",
+        )
 
-    anthropic_key = os.environ.get('ANTHROPIC_API_KEY')
-    if anthropic_key and anthropic_key.startswith('sk-ant-'):
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+    if anthropic_key and anthropic_key.startswith("sk-ant-"):
         preview = f"{anthropic_key[:8]}...{anthropic_key[-4:]}"
         source = "from .env" if env_loaded else "from environment"
-        check_pass('api_keys', f'ANTHROPIC_API_KEY: Set ({source}) [{preview}]')
+        check_pass("api_keys", f"ANTHROPIC_API_KEY: Set ({source}) [{preview}]")
     elif anthropic_key:
-        check_warn('api_keys', 'ANTHROPIC_API_KEY: Invalid format',
-                  recommendation='Anthropic keys should start with "sk-ant-"')
+        check_warn(
+            "api_keys",
+            "ANTHROPIC_API_KEY: Invalid format",
+            recommendation='Anthropic keys should start with "sk-ant-"',
+        )
     else:
-        check_info('api_keys', 'ANTHROPIC_API_KEY: Not set (optional)')
+        check_info("api_keys", "ANTHROPIC_API_KEY: Not set (optional)")
 
     # Check if at least one key is configured
-    if not (openai_key and openai_key.startswith(('sk-', 'sk-proj-'))) and \
-       not (anthropic_key and anthropic_key.startswith('sk-ant-')):
-        check_fail('api_keys', 'No valid API keys configured',
-                  fix='Run: adversarial init --interactive',
-                  recommendation='At least one API key required - use adversarial init --interactive')
+    if not (openai_key and openai_key.startswith(("sk-", "sk-proj-"))) and not (
+        anthropic_key and anthropic_key.startswith("sk-ant-")
+    ):
+        check_fail(
+            "api_keys",
+            "No valid API keys configured",
+            fix="Run: adversarial init --interactive",
+            recommendation="At least one API key required - use adversarial init --interactive",
+        )
 
     if not json_output:
         print()
@@ -1255,55 +1399,78 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     if not json_output:
         print(f"{BOLD}Agent Coordination:{RESET}")
 
-    agent_context = Path('.agent-context')
+    agent_context = Path(".agent-context")
     if agent_context.exists():
-        check_pass('agent_coordination', '.agent-context/ directory exists')
+        check_pass("agent_coordination", ".agent-context/ directory exists")
 
         # Check agent-handoffs.json
-        handoffs_file = agent_context / 'agent-handoffs.json'
+        handoffs_file = agent_context / "agent-handoffs.json"
         if handoffs_file.exists():
             try:
                 with open(handoffs_file) as f:
                     handoffs = json.load(f)
-                agent_count = len([k for k in handoffs.keys() if k != 'meta'])
-                check_pass('agent_coordination', f'agent-handoffs.json - Valid JSON ({agent_count} agents)')
+                agent_count = len([k for k in handoffs.keys() if k != "meta"])
+                check_pass(
+                    "agent_coordination",
+                    f"agent-handoffs.json - Valid JSON ({agent_count} agents)",
+                )
 
                 # Check for stale status (optional - would need datetime parsing)
-                if 'meta' in handoffs and 'last_updated' in handoffs['meta']:
-                    check_info('agent_coordination', f'Last updated: {handoffs["meta"]["last_updated"]}')
+                if "meta" in handoffs and "last_updated" in handoffs["meta"]:
+                    check_info(
+                        "agent_coordination",
+                        f'Last updated: {handoffs["meta"]["last_updated"]}',
+                    )
 
             except json.JSONDecodeError as e:
-                check_fail('agent_coordination', f'agent-handoffs.json - Invalid JSON: {e}',
-                          fix='Fix JSON syntax in .agent-context/agent-handoffs.json')
+                check_fail(
+                    "agent_coordination",
+                    f"agent-handoffs.json - Invalid JSON: {e}",
+                    fix="Fix JSON syntax in .agent-context/agent-handoffs.json",
+                )
             except Exception as e:
-                check_fail('agent_coordination', f'agent-handoffs.json - Error: {e}')
+                check_fail("agent_coordination", f"agent-handoffs.json - Error: {e}")
         else:
-            check_warn('agent_coordination', 'agent-handoffs.json not found',
-                      recommendation='Initialize agent coordination system')
+            check_warn(
+                "agent_coordination",
+                "agent-handoffs.json not found",
+                recommendation="Initialize agent coordination system",
+            )
 
         # Check current-state.json
-        state_file = agent_context / 'current-state.json'
+        state_file = agent_context / "current-state.json"
         if state_file.exists():
             try:
                 with open(state_file) as f:
                     json.load(f)
-                check_pass('agent_coordination', 'current-state.json - Valid JSON')
+                check_pass("agent_coordination", "current-state.json - Valid JSON")
             except json.JSONDecodeError as e:
-                check_fail('agent_coordination', f'current-state.json - Invalid JSON: {e}')
+                check_fail(
+                    "agent_coordination", f"current-state.json - Invalid JSON: {e}"
+                )
         else:
-            check_info('agent_coordination', 'current-state.json not found (optional)')
+            check_info("agent_coordination", "current-state.json not found (optional)")
 
         # Check AGENT-SYSTEM-GUIDE.md
-        guide_file = agent_context / 'AGENT-SYSTEM-GUIDE.md'
+        guide_file = agent_context / "AGENT-SYSTEM-GUIDE.md"
         if guide_file.exists():
             file_size = guide_file.stat().st_size
-            check_pass('agent_coordination', f'AGENT-SYSTEM-GUIDE.md - Present ({file_size // 1024}KB)')
+            check_pass(
+                "agent_coordination",
+                f"AGENT-SYSTEM-GUIDE.md - Present ({file_size // 1024}KB)",
+            )
         else:
-            check_warn('agent_coordination', 'AGENT-SYSTEM-GUIDE.md not found',
-                      recommendation='Run adversarial init to install agent guide')
+            check_warn(
+                "agent_coordination",
+                "AGENT-SYSTEM-GUIDE.md not found",
+                recommendation="Run adversarial init to install agent guide",
+            )
     else:
-        check_info('agent_coordination', '.agent-context/ not found (optional)',
-                  detail='Agent coordination is optional for basic workflows')
+        check_info(
+            "agent_coordination",
+            ".agent-context/ not found (optional)",
+            detail="Agent coordination is optional for basic workflows",
+        )
 
     if not json_output:
         print()
@@ -1312,14 +1479,10 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     if not json_output:
         print(f"{BOLD}Workflow Scripts:{RESET}")
 
-    scripts = [
-        'evaluate_plan.sh',
-        'review_implementation.sh',
-        'validate_tests.sh'
-    ]
+    scripts = ["evaluate_plan.sh", "review_implementation.sh", "validate_tests.sh"]
 
     for script_name in scripts:
-        script_path = Path(f'.adversarial/scripts/{script_name}')
+        script_path = Path(f".adversarial/scripts/{script_name}")
         if script_path.exists():
             # Check executable
             if os.access(script_path, os.X_OK):
@@ -1327,21 +1490,32 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                 try:
                     with open(script_path) as f:
                         content = f.read()
-                    if '#!/bin/bash' in content or '#!/usr/bin/env bash' in content:
-                        check_pass('workflow_scripts', f'{script_name} - Executable, valid')
+                    if "#!/bin/bash" in content or "#!/usr/bin/env bash" in content:
+                        check_pass(
+                            "workflow_scripts", f"{script_name} - Executable, valid"
+                        )
                     else:
-                        check_warn('workflow_scripts', f'{script_name} - Missing shebang',
-                                  recommendation=f'Add #!/bin/bash to {script_name}')
+                        check_warn(
+                            "workflow_scripts",
+                            f"{script_name} - Missing shebang",
+                            recommendation=f"Add #!/bin/bash to {script_name}",
+                        )
                 except:
-                    check_warn('workflow_scripts', f'{script_name} - Could not read')
+                    check_warn("workflow_scripts", f"{script_name} - Could not read")
             else:
-                check_fail('workflow_scripts', f'{script_name} - Not executable',
-                          fix=f'chmod +x .adversarial/scripts/{script_name}',
-                          recommendation=f'Make executable: chmod +x .adversarial/scripts/{script_name}')
+                check_fail(
+                    "workflow_scripts",
+                    f"{script_name} - Not executable",
+                    fix=f"chmod +x .adversarial/scripts/{script_name}",
+                    recommendation=f"Make executable: chmod +x .adversarial/scripts/{script_name}",
+                )
         else:
-            check_fail('workflow_scripts', f'{script_name} - Not found',
-                      fix='Run: adversarial init',
-                      recommendation='Reinstall scripts with: adversarial init')
+            check_fail(
+                "workflow_scripts",
+                f"{script_name} - Not found",
+                fix="Run: adversarial init",
+                recommendation="Reinstall scripts with: adversarial init",
+            )
 
     if not json_output:
         print()
@@ -1350,29 +1524,45 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     if not json_output:
         print(f"{BOLD}Tasks:{RESET}")
 
-    if config and 'task_directory' in config:
-        task_dir = Path(config['task_directory'])
+    if config and "task_directory" in config:
+        task_dir = Path(config["task_directory"])
         if task_dir.exists():
-            check_pass('tasks', f'{config["task_directory"]} directory exists')
+            check_pass("tasks", f'{config["task_directory"]} directory exists')
 
             # Count tasks
             try:
-                task_files = list(task_dir.glob('**/*.md'))
-                active_tasks = list((task_dir / 'active').glob('*.md')) if (task_dir / 'active').exists() else []
+                task_files = list(task_dir.glob("**/*.md"))
+                active_tasks = (
+                    list((task_dir / "active").glob("*.md"))
+                    if (task_dir / "active").exists()
+                    else []
+                )
 
                 if len(active_tasks) > 0:
-                    check_info('tasks', f'{len(active_tasks)} active tasks in {config["task_directory"]}active/')
+                    check_info(
+                        "tasks",
+                        f'{len(active_tasks)} active tasks in {config["task_directory"]}active/',
+                    )
                 elif len(task_files) > 0:
-                    check_info('tasks', f'{len(task_files)} task files in {config["task_directory"]}')
+                    check_info(
+                        "tasks",
+                        f'{len(task_files)} task files in {config["task_directory"]}',
+                    )
                 else:
-                    check_info('tasks', f'No task files found (create with adversarial quickstart)')
+                    check_info(
+                        "tasks",
+                        f"No task files found (create with adversarial quickstart)",
+                    )
             except:
-                check_info('tasks', 'Could not count task files')
+                check_info("tasks", "Could not count task files")
         else:
-            check_warn('tasks', f'{config["task_directory"]} directory not found',
-                      recommendation=f'Create with: mkdir -p {config["task_directory"]}')
+            check_warn(
+                "tasks",
+                f'{config["task_directory"]} directory not found',
+                recommendation=f'Create with: mkdir -p {config["task_directory"]}',
+            )
     else:
-        check_info('tasks', 'Task directory not configured')
+        check_info("tasks", "Task directory not configured")
 
     if not json_output:
         print()
@@ -1385,35 +1575,47 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     if env_file.exists():
         stat_info = env_file.stat()
         perms = oct(stat_info.st_mode)[-3:]
-        if perms in ['600', '400']:
-            check_pass('permissions', f'.env - Secure ({perms})')
-        elif perms == '644':
-            check_warn('permissions', f'.env - Readable by others ({perms})',
-                      recommendation='Secure .env file: chmod 600 .env')
+        if perms in ["600", "400"]:
+            check_pass("permissions", f".env - Secure ({perms})")
+        elif perms == "644":
+            check_warn(
+                "permissions",
+                f".env - Readable by others ({perms})",
+                recommendation="Secure .env file: chmod 600 .env",
+            )
         else:
-            check_warn('permissions', f'.env - Permissions {perms}',
-                      recommendation='Secure .env file: chmod 600 .env')
+            check_warn(
+                "permissions",
+                f".env - Permissions {perms}",
+                recommendation="Secure .env file: chmod 600 .env",
+            )
 
     # Check scripts executable (summary)
-    scripts_dir = Path('.adversarial/scripts')
+    scripts_dir = Path(".adversarial/scripts")
     if scripts_dir.exists():
-        script_files = list(scripts_dir.glob('*.sh'))
+        script_files = list(scripts_dir.glob("*.sh"))
         executable_count = sum(1 for s in script_files if os.access(s, os.X_OK))
         if len(script_files) > 0 and executable_count == len(script_files):
-            check_pass('permissions', f'All {len(script_files)} scripts executable')
+            check_pass("permissions", f"All {len(script_files)} scripts executable")
         elif executable_count < len(script_files):
-            check_warn('permissions', f'{executable_count}/{len(script_files)} scripts executable',
-                      recommendation='Fix with: chmod +x .adversarial/scripts/*.sh')
+            check_warn(
+                "permissions",
+                f"{executable_count}/{len(script_files)} scripts executable",
+                recommendation="Fix with: chmod +x .adversarial/scripts/*.sh",
+            )
 
     # Check log directory writable
-    if config and 'log_directory' in config:
-        log_dir = Path(config['log_directory'])
+    if config and "log_directory" in config:
+        log_dir = Path(config["log_directory"])
         if log_dir.exists():
             if os.access(log_dir, os.W_OK):
-                check_pass('permissions', f'{config["log_directory"]} - Writable')
+                check_pass("permissions", f'{config["log_directory"]} - Writable')
             else:
-                check_fail('permissions', f'{config["log_directory"]} - Not writable',
-                          fix=f'chmod +w {config["log_directory"]}')
+                check_fail(
+                    "permissions",
+                    f'{config["log_directory"]} - Not writable',
+                    fix=f'chmod +w {config["log_directory"]}',
+                )
 
     if not json_output:
         print()
@@ -1425,15 +1627,15 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     # Output results
     if json_output:
         output = {
-            'health_score': health_score,
-            'summary': {
-                'passed': passed,
-                'warnings': warnings,
-                'errors': errors,
-                'total': total
+            "health_score": health_score,
+            "summary": {
+                "passed": passed,
+                "warnings": warnings,
+                "errors": errors,
+                "total": total,
             },
-            'results': results,
-            'recommendations': recommendations
+            "results": results,
+            "recommendations": recommendations,
         }
         print(json.dumps(output, indent=2))
     else:
@@ -1455,7 +1657,9 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
             status_text = "critical"
             status_color = RED
 
-        print(f"{status_emoji} {status_color}System is {status_text}!{RESET} (Health: {health_score}%)")
+        print(
+            f"{status_emoji} {status_color}System is {status_text}!{RESET} (Health: {health_score}%)"
+        )
         print(f"   {passed} checks passed, {warnings} warnings, {errors} errors")
         print()
 
@@ -1497,7 +1701,7 @@ def estimate_file_tokens(file_path: str) -> int:
     Returns:
         Estimated token count (integer)
     """
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         char_count = len(f.read())
 
     return char_count // 4  # Rough estimate
@@ -1519,16 +1723,16 @@ def extract_token_count_from_log(log_file_path: str) -> Optional[int]:
     if not os.path.exists(log_file_path):
         return None
 
-    with open(log_file_path, 'r') as f:
+    with open(log_file_path, "r") as f:
         content = f.read()
 
     # Pattern: "Tokens: 12k sent" or "Tokens: 12000 sent"
-    match = re.search(r'Tokens:\s+(\d+\.?\d*)k?\s+sent', content)
+    match = re.search(r"Tokens:\s+(\d+\.?\d*)k?\s+sent", content)
     if match:
         tokens_str = match.group(1)
         tokens = float(tokens_str)
         # If 'k' suffix found, multiply by 1000
-        if 'k' in match.group(0).lower():
+        if "k" in match.group(0).lower():
             tokens *= 1000
         return int(tokens)
 
@@ -1559,9 +1763,13 @@ def verify_token_count(task_file: str, log_file: str) -> None:
         print(f"{YELLOW}⚠️  Token count lower than expected:{RESET}")
         print(f"   File size estimate: ~{expected_tokens:,} tokens")
         print(f"   Actually sent: {actual_tokens:,} tokens")
-        print(f"   Difference: {expected_tokens - actual_tokens:,} tokens ({100 - int(actual_tokens/expected_tokens*100)}% less)")
+        print(
+            f"   Difference: {expected_tokens - actual_tokens:,} tokens ({100 - int(actual_tokens/expected_tokens*100)}% less)"
+        )
         print()
-        print(f"{BOLD}Note:{RESET} Large files may not be fully processed by evaluator.")
+        print(
+            f"{BOLD}Note:{RESET} Large files may not be fully processed by evaluator."
+        )
         print(f"      Consider splitting into smaller documents (<1,000 lines).")
         print()
 
@@ -1691,7 +1899,7 @@ def evaluate(task_file: str) -> int:
         return 1
 
     # Pre-flight check for file size
-    with open(task_file, 'r') as f:
+    with open(task_file, "r") as f:
         line_count = len(f.readlines())
         f.seek(0)
         file_size = len(f.read())
@@ -1716,7 +1924,7 @@ def evaluate(task_file: str) -> int:
             print(f"   Recommended: Split into files <500 lines each")
             print()
             response = input("Continue anyway? [y/N]: ").strip().lower()
-            if response not in ['y', 'yes']:
+            if response not in ["y", "yes"]:
                 print("Evaluation cancelled.")
                 return 0
             print()
@@ -1730,7 +1938,10 @@ def evaluate(task_file: str) -> int:
 
     try:
         result = subprocess.run(
-            [script, task_file], text=True, capture_output=True, timeout=180  # 3 minutes
+            [script, task_file],
+            text=True,
+            capture_output=True,
+            timeout=180,  # 3 minutes
         )
 
         # Check for rate limit errors in output
@@ -1739,11 +1950,13 @@ def evaluate(task_file: str) -> int:
             print(f"{RED}❌ ERROR: OpenAI rate limit exceeded{RESET}")
             print()
             print(f"{BOLD}WHY:{RESET}")
-            print("   Your task file is too large for your OpenAI organization's rate limit")
+            print(
+                "   Your task file is too large for your OpenAI organization's rate limit"
+            )
             print()
 
             # Extract file size for helpful message
-            with open(task_file, 'r') as f:
+            with open(task_file, "r") as f:
                 line_count = len(f.readlines())
 
             print(f"{BOLD}FILE SIZE:{RESET}")
@@ -1786,7 +1999,9 @@ def evaluate(task_file: str) -> int:
             print()
             print(f"{BOLD}FIX:{RESET}")
             print("   Option 1 (RECOMMENDED): Use WSL (Windows Subsystem for Linux)")
-            print("     1. Install WSL: https://learn.microsoft.com/windows/wsl/install")
+            print(
+                "     1. Install WSL: https://learn.microsoft.com/windows/wsl/install"
+            )
             print("     2. Open WSL terminal")
             print("     3. Reinstall package in WSL: pip install adversarial-workflow")
             print()
@@ -1911,7 +2126,7 @@ def proofread(doc_file: str) -> int:
         return 1
 
     # Pre-flight check for file size
-    with open(doc_file, 'r') as f:
+    with open(doc_file, "r") as f:
         line_count = len(f.readlines())
         f.seek(0)
         file_size = len(f.read())
@@ -1926,7 +2141,9 @@ def proofread(doc_file: str) -> int:
         print(f"   Estimated tokens: ~{estimated_tokens:,}")
         print()
         print(f"{BOLD}Note:{RESET} Files over 500 lines may exceed OpenAI rate limits.")
-        print(f"      If proofreading fails, consider splitting into smaller documents.")
+        print(
+            f"      If proofreading fails, consider splitting into smaller documents."
+        )
         print()
 
         # Give user a chance to cancel for very large files
@@ -1936,7 +2153,7 @@ def proofread(doc_file: str) -> int:
             print(f"   Recommended: Split into files <500 lines each")
             print()
             response = input("Continue anyway? [y/N]: ").strip().lower()
-            if response not in ['y', 'yes']:
+            if response not in ["y", "yes"]:
                 print("Proofreading cancelled.")
                 return 0
             print()
@@ -1959,11 +2176,13 @@ def proofread(doc_file: str) -> int:
             print(f"{RED}❌ ERROR: OpenAI rate limit exceeded{RESET}")
             print()
             print(f"{BOLD}WHY:{RESET}")
-            print("   Your document file is too large for your OpenAI organization's rate limit")
+            print(
+                "   Your document file is too large for your OpenAI organization's rate limit"
+            )
             print()
 
             # Extract file size for helpful message
-            with open(doc_file, 'r') as f:
+            with open(doc_file, "r") as f:
                 line_count = len(f.readlines())
 
             print(f"{BOLD}FILE SIZE:{RESET}")
@@ -2006,7 +2225,9 @@ def proofread(doc_file: str) -> int:
             print()
             print(f"{BOLD}FIX:{RESET}")
             print("   Option 1 (RECOMMENDED): Use WSL (Windows Subsystem for Linux)")
-            print("     1. Install WSL: https://learn.microsoft.com/windows/wsl/install")
+            print(
+                "     1. Install WSL: https://learn.microsoft.com/windows/wsl/install"
+            )
             print("     2. Open WSL terminal")
             print("     3. Reinstall package in WSL: pip install adversarial-workflow")
             print()
@@ -2209,7 +2430,7 @@ def select_agent_template() -> Dict[str, str]:
     customize = prompt_user("Customize agent roles?", default="n")
 
     if customize.lower() not in ["y", "yes"]:
-        return {'type': 'standard', 'url': None}
+        return {"type": "standard", "url": None}
 
     # Show customization options
     print()
@@ -2223,25 +2444,27 @@ def select_agent_template() -> Dict[str, str]:
     choice = prompt_user("Your choice", default="1")
 
     if choice == "2":
-        return {'type': 'minimal', 'url': None}
+        return {"type": "minimal", "url": None}
     elif choice == "3":
         print()
         print(f"{CYAN}Custom Template URL:{RESET}")
-        print("  Example: https://raw.githubusercontent.com/user/repo/main/agent-handoffs.json")
+        print(
+            "  Example: https://raw.githubusercontent.com/user/repo/main/agent-handoffs.json"
+        )
         print()
         url = prompt_user("Template URL")
         if url:
-            return {'type': 'custom', 'url': url}
+            return {"type": "custom", "url": url}
         else:
             print(f"{YELLOW}No URL provided, using standard template{RESET}")
-            return {'type': 'standard', 'url': None}
+            return {"type": "standard", "url": None}
     elif choice == "4":
-        return {'type': 'skip', 'url': None}
+        return {"type": "skip", "url": None}
     else:  # Default to standard
-        return {'type': 'standard', 'url': None}
+        return {"type": "standard", "url": None}
 
 
-def fetch_agent_template(url: str, template_type: str = 'standard') -> Optional[str]:
+def fetch_agent_template(url: str, template_type: str = "standard") -> Optional[str]:
     """
     Fetch agent template from URL or package templates.
 
@@ -2252,24 +2475,30 @@ def fetch_agent_template(url: str, template_type: str = 'standard') -> Optional[
     Returns:
         Template content as string, or None on failure
     """
-    if template_type in ['standard', 'minimal']:
+    if template_type in ["standard", "minimal"]:
         # Load from package templates
         package_dir = Path(__file__).parent
-        template_name = "agent-handoffs.json.template" if template_type == 'standard' else "agent-handoffs-minimal.json.template"
+        template_name = (
+            "agent-handoffs.json.template"
+            if template_type == "standard"
+            else "agent-handoffs-minimal.json.template"
+        )
         template_path = package_dir / "templates" / "agent-context" / template_name
 
         if template_path.exists():
             try:
-                with open(template_path, 'r') as f:
+                with open(template_path, "r") as f:
                     return f.read()
             except Exception as e:
-                print(f"{RED}❌ ERROR: Could not read {template_type} template: {e}{RESET}")
+                print(
+                    f"{RED}❌ ERROR: Could not read {template_type} template: {e}{RESET}"
+                )
                 return None
         else:
             print(f"{RED}❌ ERROR: {template_type} template not found in package{RESET}")
             return None
 
-    elif template_type == 'custom' and url:
+    elif template_type == "custom" and url:
         # Fetch from custom URL
         try:
             import urllib.request
@@ -2277,10 +2506,11 @@ def fetch_agent_template(url: str, template_type: str = 'standard') -> Optional[
             print(f"  Fetching template from: {url}")
 
             with urllib.request.urlopen(url, timeout=10) as response:
-                content = response.read().decode('utf-8')
+                content = response.read().decode("utf-8")
 
             # Validate it's JSON
             import json
+
             json.loads(content)
 
             print(f"  {GREEN}✅{RESET} Template fetched successfully")
@@ -2289,15 +2519,15 @@ def fetch_agent_template(url: str, template_type: str = 'standard') -> Optional[
         except urllib.error.URLError as e:
             print(f"{RED}❌ ERROR: Could not fetch template: {e}{RESET}")
             print("  Using standard template instead")
-            return fetch_agent_template(None, 'standard')
+            return fetch_agent_template(None, "standard")
         except json.JSONDecodeError as e:
             print(f"{RED}❌ ERROR: Template is not valid JSON: {e}{RESET}")
             print("  Using standard template instead")
-            return fetch_agent_template(None, 'standard')
+            return fetch_agent_template(None, "standard")
         except Exception as e:
             print(f"{RED}❌ ERROR: Unexpected error: {e}{RESET}")
             print("  Using standard template instead")
-            return fetch_agent_template(None, 'standard')
+            return fetch_agent_template(None, "standard")
 
     return None
 
@@ -2320,9 +2550,9 @@ def agent_onboard(project_path: str = ".") -> int:
     Returns:
         0 on success, 1 on failure
     """
+    import glob
     import json
     from datetime import datetime
-    import glob
 
     # 1. Check prerequisite (Layer 1 must exist)
     if not os.path.exists(".adversarial/config.yml"):
@@ -2369,16 +2599,17 @@ def agent_onboard(project_path: str = ".") -> int:
         "Use delegation/tasks/ structure? (recommended)", "Y"
     ).lower() in ["y", "yes", ""]
 
-    organize_docs = prompt_user(
-        "Organize root docs into docs/?", "n"
-    ).lower() in ["y", "yes"]
+    organize_docs = prompt_user("Organize root docs into docs/?", "n").lower() in [
+        "y",
+        "yes",
+    ]
 
     print()
 
     # 3a. Template selection (optional)
     template_config = select_agent_template()
-    template_type = template_config['type']
-    template_url = template_config['url']
+    template_type = template_config["type"]
+    template_url = template_config["url"]
 
     print()
     print(f"{BOLD}Setting up agent coordination...{RESET}")
@@ -2432,12 +2663,20 @@ def agent_onboard(project_path: str = ".") -> int:
 
                     # Move task files to delegation/tasks/active/
                     for task_file in task_files:
-                        dest_file = os.path.join("delegation/tasks/active", os.path.basename(task_file))
+                        dest_file = os.path.join(
+                            "delegation/tasks/active", os.path.basename(task_file)
+                        )
                         shutil.copy2(task_file, dest_file)
 
-                    print(f"  {GREEN}✅{RESET} Migrated {len(task_files)} task(s) to delegation/tasks/active/")
-                    print(f"  {CYAN}ℹ️{RESET}  Original tasks/ preserved (remove manually if desired)")
-                    print(f"  {CYAN}ℹ️{RESET}  Rollback: rm -rf tasks && mv tasks.backup tasks")
+                    print(
+                        f"  {GREEN}✅{RESET} Migrated {len(task_files)} task(s) to delegation/tasks/active/"
+                    )
+                    print(
+                        f"  {CYAN}ℹ️{RESET}  Original tasks/ preserved (remove manually if desired)"
+                    )
+                    print(
+                        f"  {CYAN}ℹ️{RESET}  Rollback: rm -rf tasks && mv tasks.backup tasks"
+                    )
 
                 except Exception as e:
                     print(f"  {RED}❌{RESET} Migration failed: {e}")
@@ -2451,7 +2690,9 @@ def agent_onboard(project_path: str = ".") -> int:
         print(f"{BOLD}Documentation Organization:{RESET}")
 
         # Find markdown files in root
-        root_docs = [f for f in os.listdir(".") if f.endswith(".md") and not f.startswith(".")]
+        root_docs = [
+            f for f in os.listdir(".") if f.endswith(".md") and not f.startswith(".")
+        ]
 
         if len(root_docs) > 0:
             print(f"  Found {len(root_docs)} markdown file(s) in root")
@@ -2471,7 +2712,9 @@ def agent_onboard(project_path: str = ".") -> int:
                         moved_count += 1
 
                 if moved_count > 0:
-                    print(f"  {GREEN}✅{RESET} Organized {moved_count} doc(s) into docs/")
+                    print(
+                        f"  {GREEN}✅{RESET} Organized {moved_count} doc(s) into docs/"
+                    )
                 else:
                     print(f"  {CYAN}ℹ️{RESET}  No docs needed organizing")
 
@@ -2498,7 +2741,7 @@ def agent_onboard(project_path: str = ".") -> int:
         }
 
         # Render agent-handoffs.json with selected template
-        if template_type != 'skip':
+        if template_type != "skip":
             # Fetch the selected template
             template_content = fetch_agent_template(template_url, template_type)
 
@@ -2512,13 +2755,21 @@ def agent_onboard(project_path: str = ".") -> int:
                 with open(".agent-context/agent-handoffs.json", "w") as f:
                     f.write(template_content)
 
-                template_name = {'standard': '8 agents', 'minimal': '3 agents', 'custom': 'custom template'}[template_type]
-                print(f"  {GREEN}✅{RESET} Created .agent-context/agent-handoffs.json ({template_name})")
+                template_name = {
+                    "standard": "8 agents",
+                    "minimal": "3 agents",
+                    "custom": "custom template",
+                }[template_type]
+                print(
+                    f"  {GREEN}✅{RESET} Created .agent-context/agent-handoffs.json ({template_name})"
+                )
             else:
                 print(f"  {RED}❌{RESET} Failed to fetch agent template")
                 return 1
         else:
-            print(f"  {CYAN}ℹ️{RESET}  Skipped agent-handoffs.json (manual setup requested)")
+            print(
+                f"  {CYAN}ℹ️{RESET}  Skipped agent-handoffs.json (manual setup requested)"
+            )
 
         # Render current-state.json
         current_state_template = templates_dir / "current-state.json.template"
@@ -2526,7 +2777,7 @@ def agent_onboard(project_path: str = ".") -> int:
             render_template(
                 str(current_state_template),
                 ".agent-context/current-state.json",
-                template_vars
+                template_vars,
             )
             print(f"  {GREEN}✅{RESET} Created .agent-context/current-state.json")
 
@@ -2534,9 +2785,7 @@ def agent_onboard(project_path: str = ".") -> int:
         readme_template = templates_dir / "README.md.template"
         if readme_template.exists():
             render_template(
-                str(readme_template),
-                ".agent-context/README.md",
-                template_vars
+                str(readme_template), ".agent-context/README.md", template_vars
             )
             print(f"  {GREEN}✅{RESET} Created .agent-context/README.md")
 
@@ -2576,7 +2825,9 @@ def agent_onboard(project_path: str = ".") -> int:
 
         except Exception as e:
             print(f"  {YELLOW}⚠️{RESET}  Could not update config: {e}")
-            print(f"     Manually set task_directory: delegation/tasks/ in .adversarial/config.yml")
+            print(
+                f"     Manually set task_directory: delegation/tasks/ in .adversarial/config.yml"
+            )
 
     # 9. Update .gitignore
     print()
@@ -2630,10 +2881,17 @@ def agent_onboard(project_path: str = ".") -> int:
         verification_checks.append((f"current-state.json invalid: {e}", False))
 
     # Check directories exist
-    verification_checks.append((".agent-context/ exists", os.path.exists(".agent-context")))
+    verification_checks.append(
+        (".agent-context/ exists", os.path.exists(".agent-context"))
+    )
 
     if use_delegation:
-        verification_checks.append(("delegation/tasks/active/ exists", os.path.exists("delegation/tasks/active")))
+        verification_checks.append(
+            (
+                "delegation/tasks/active/ exists",
+                os.path.exists("delegation/tasks/active"),
+            )
+        )
 
     # Print verification results
     all_passed = True
@@ -2657,8 +2915,12 @@ def agent_onboard(project_path: str = ".") -> int:
     print(f"{BOLD}What was created:{RESET}")
     print("  ✓ .agent-context/ - Agent coordination files")
 
-    if template_type != 'skip':
-        agent_count = {'standard': '8 agents', 'minimal': '3 agents', 'custom': 'custom agents'}[template_type]
+    if template_type != "skip":
+        agent_count = {
+            "standard": "8 agents",
+            "minimal": "3 agents",
+            "custom": "custom agents",
+        }[template_type]
         print(f"  ✓ agent-handoffs.json - {agent_count} initialized")
     else:
         print(f"  ○ agent-handoffs.json - Manual setup required")
@@ -2683,6 +2945,102 @@ def agent_onboard(project_path: str = ".") -> int:
     return 0
 
 
+def split(task_file: str, strategy: str = "sections", max_lines: int = 500, dry_run: bool = False):
+    """Split large task files into smaller evaluable chunks.
+    
+    Args:
+        task_file: Path to the task file to split
+        strategy: Split strategy ('sections', 'phases', or 'manual')
+        max_lines: Maximum lines per split (default: 500)
+        dry_run: Preview splits without creating files
+        
+    Returns:
+        Exit code (0 for success, 1 for error)
+    """
+    from .utils.file_splitter import (
+        analyze_task_file, 
+        split_by_sections, 
+        split_by_phases, 
+        generate_split_files
+    )
+    
+    try:
+        print_box("File Splitting Utility", CYAN)
+        
+        # Validate file exists
+        if not os.path.exists(task_file):
+            print(f"{RED}Error: File not found: {task_file}{RESET}")
+            return 1
+        
+        # Analyze file
+        print(f"📄 Analyzing task file: {task_file}")
+        analysis = analyze_task_file(task_file)
+        
+        lines = analysis['total_lines']
+        tokens = analysis['estimated_tokens']
+        print(f"   Lines: {lines}")
+        print(f"   Estimated tokens: ~{tokens:,}")
+        
+        # Check if splitting is recommended
+        if lines <= max_lines:
+            print(f"{GREEN}✅ File is under recommended limit ({max_lines} lines){RESET}")
+            print("No splitting needed.")
+            return 0
+        
+        print(f"{YELLOW}⚠️  File exceeds recommended limit ({max_lines} lines){RESET}")
+        
+        # Read file content for splitting
+        with open(task_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Apply split strategy
+        if strategy == "sections":
+            splits = split_by_sections(content, max_lines=max_lines)
+            print(f"\n💡 Suggested splits (by sections):")
+        elif strategy == "phases":
+            splits = split_by_phases(content)
+            print(f"\n💡 Suggested splits (by phases):")
+        else:
+            print(f"{RED}Error: Unknown strategy '{strategy}'. Use 'sections' or 'phases'.{RESET}")
+            return 1
+        
+        # Display split preview
+        for i, split in enumerate(splits, 1):
+            filename = f"{Path(task_file).stem}-part{i}{Path(task_file).suffix}"
+            print(f"   - {filename} ({split['line_count']} lines)")
+        
+        # Dry run mode
+        if dry_run:
+            print(f"\n{CYAN}📋 Dry run mode - no files created{RESET}")
+            return 0
+        
+        # Prompt user for confirmation
+        create_files = prompt_user(f"\nCreate {len(splits)} files?", default="n")
+        
+        if create_files.lower() in ['y', 'yes']:
+            # Create output directory
+            output_dir = os.path.join(os.path.dirname(task_file), "splits")
+            
+            # Generate split files
+            created_files = generate_split_files(task_file, splits, output_dir)
+            
+            print(f"{GREEN}✅ Created {len(created_files)} files:{RESET}")
+            for file_path in created_files:
+                print(f"   {file_path}")
+            
+            print(f"\n{CYAN}💡 Tip: Evaluate each split file independently:{RESET}")
+            for file_path in created_files:
+                rel_path = os.path.relpath(file_path)
+                print(f"   adversarial evaluate {rel_path}")
+        else:
+            print("Cancelled - no files created.")
+        
+        return 0
+        
+    except Exception as e:
+        print(f"{RED}Error during file splitting: {e}{RESET}")
+        return 1
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -2699,6 +3057,7 @@ Examples:
   adversarial proofread docs/guide.md   # Proofread teaching content
   adversarial review                    # Review implementation
   adversarial validate "npm test"       # Validate with tests
+  adversarial split large-task.md       # Split large files
 
 For more information: https://github.com/movito/adversarial-workflow
         """,
@@ -2729,7 +3088,9 @@ For more information: https://github.com/movito/adversarial-workflow
     subparsers.add_parser("doctor", help="Alias for 'check'")
 
     # health command
-    health_parser = subparsers.add_parser("health", help="Comprehensive system health check")
+    health_parser = subparsers.add_parser(
+        "health", help="Comprehensive system health check"
+    )
     health_parser.add_argument(
         "--verbose", "-v", action="store_true", help="Show detailed diagnostics"
     )
@@ -2739,10 +3100,14 @@ For more information: https://github.com/movito/adversarial-workflow
 
     # agent command (with subcommands)
     agent_parser = subparsers.add_parser("agent", help="Agent coordination commands")
-    agent_subparsers = agent_parser.add_subparsers(dest="agent_subcommand", help="Agent subcommand")
+    agent_subparsers = agent_parser.add_subparsers(
+        dest="agent_subcommand", help="Agent subcommand"
+    )
 
     # agent onboard subcommand
-    onboard_parser = agent_subparsers.add_parser("onboard", help="Set up agent coordination system")
+    onboard_parser = agent_subparsers.add_parser(
+        "onboard", help="Set up agent coordination system"
+    )
     onboard_parser.add_argument(
         "--path", default=".", help="Project path (default: current directory)"
     )
@@ -2752,7 +3117,9 @@ For more information: https://github.com/movito/adversarial-workflow
     eval_parser.add_argument("task_file", help="Task file to evaluate")
 
     # proofread command
-    proofread_parser = subparsers.add_parser("proofread", help="Proofread teaching content and documentation")
+    proofread_parser = subparsers.add_parser(
+        "proofread", help="Proofread teaching content and documentation"
+    )
     proofread_parser.add_argument("doc_file", help="Document file to proofread")
 
     # review command
@@ -2764,6 +3131,24 @@ For more information: https://github.com/movito/adversarial-workflow
     )
     validate_parser.add_argument(
         "test_command", nargs="?", help="Test command to run (optional)"
+    )
+
+    # split command
+    split_parser = subparsers.add_parser(
+        "split", help="Split large task files into smaller evaluable chunks"
+    )
+    split_parser.add_argument("task_file", help="Task file to split")
+    split_parser.add_argument(
+        "--strategy", "-s", choices=["sections", "phases"], default="sections",
+        help="Split strategy: 'sections' (default) or 'phases'"
+    )
+    split_parser.add_argument(
+        "--max-lines", "-m", type=int, default=500,
+        help="Maximum lines per split (default: 500)"
+    )
+    split_parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Preview splits without creating files"
     )
 
     args = parser.parse_args()
@@ -2800,6 +3185,13 @@ For more information: https://github.com/movito/adversarial-workflow
         return review()
     elif args.command == "validate":
         return validate(args.test_command)
+    elif args.command == "split":
+        return split(
+            args.task_file, 
+            strategy=args.strategy, 
+            max_lines=args.max_lines, 
+            dry_run=args.dry_run
+        )
     else:
         parser.print_help()
         return 1
