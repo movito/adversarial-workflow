@@ -21,7 +21,7 @@ Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to i
 Before installing, ensure you have:
 
 ### Required
-- **Python 3.8+** (Python 3.12 recommended)
+- **Python 3.10+** (Python 3.12 recommended)
 - **Git repository** (workflow analyzes git diff)
 - **API Keys** - At least one of:
   - **Anthropic Claude** (recommended): Get at https://console.anthropic.com/settings/keys
@@ -186,9 +186,14 @@ When using `adversarial evaluate` to review task specifications, be aware of Ope
 - You'll need to split your task into smaller documents
 
 **Solutions for large specifications**:
-1. Split into multiple task files (recommended approach)
-2. Upgrade your OpenAI organization tier (Tier 2: 50k TPM = ~1,000 lines)
-3. Use manual review for comprehensive specifications
+1. Use `adversarial split` to automatically split files (recommended):
+   ```bash
+   adversarial split large-task.md              # Split by sections
+   adversarial split large-task.md --dry-run    # Preview first
+   adversarial split large-task.md --strategy phases  # Split by phases
+   ```
+2. Manually split into multiple task files
+3. Upgrade your OpenAI organization tier (Tier 2: 50k TPM = ~1,000 lines)
 
 **Bypassing interactive prompts** (automation/CI):
 ```bash
@@ -338,6 +343,8 @@ adversarial agent onboard               # Set up agent coordination system
 
 # Workflow
 adversarial evaluate task.md            # Phase 1: Evaluate plan
+adversarial split task.md               # Split large files into smaller parts
+adversarial split task.md --dry-run     # Preview split without creating files
 adversarial review                      # Phase 3: Review implementation
 adversarial validate "pytest"           # Phase 4: Validate with tests
 ```
@@ -427,7 +434,7 @@ The CLI automatically detects Windows and shows an interactive warning:
 
 ### Software Requirements
 
-- **Python**: 3.8 or later (Python 3.12 recommended)
+- **Python**: 3.10 or later (Python 3.12 recommended)
 - **Bash**: 3.2 or later (included with macOS/Linux)
 - **Git**: Repository required (workflow uses git diff)
 - **API Keys**: OpenAI and/or Anthropic (see interactive setup)
