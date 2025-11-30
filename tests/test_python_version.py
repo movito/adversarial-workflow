@@ -5,8 +5,12 @@ This test validates that the project configuration correctly specifies
 Python version requirements to match aider-chat dependency constraints.
 """
 import sys
-import tomllib
 from pathlib import Path
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 
 
 def test_python_version_requirement_in_pyproject():

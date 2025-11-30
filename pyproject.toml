@@ -37,6 +37,7 @@ dev = [
     "black>=22.0",
     "isort>=5.0",
     "flake8>=4.0",
+    "tomli>=2.0; python_version < '3.11'",
 ]
 
 [project.urls]
