@@ -55,3 +55,6 @@ release-*.diff
 # audit-results/
 .env
 .aider*
+
+# Security files (never commit)
+.pypirc

@@ -1,15 +1,17 @@
 ---
 name: feature-developer
 description: Feature implementation for adversarial-workflow CLI with TDD
-model: claude-sonnet-4-20250514
+model: claude-opus-4-5-20251101
 tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Glob
-  - Grep
-  - TodoWrite
+- Bash
+- Glob
+- Grep
+- Read
+- Edit
+- MultiEdit
+- Write
+- WebFetch
+- WebSearch
 ---
 
 # Feature Developer Agent
