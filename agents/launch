@@ -44,6 +44,7 @@ get_agent_files() {
     local agent_order=(
         "planner"
         "feature-developer"
+        "code-reviewer"
         "test-runner"
         "pypi-publisher"
     )
@@ -152,6 +153,7 @@ needs_serena_activation() {
     local serena_agents=(
         "planner"
         "feature-developer"
+        "code-reviewer"
         "test-runner"
         "pypi-publisher"
     )
@@ -210,6 +212,7 @@ get_agent_icon() {
     local icon="⚡"
     [[ "$name" == *"planner"* ]] && icon="📋"
     [[ "$name" == *"feature"* ]] && icon="🛠️"
+    [[ "$name" == *"code-reviewer"* ]] && icon="🔍"
     [[ "$name" == *"test"* ]] && icon="🧪"
     [[ "$name" == *"pypi"* ]] && icon="📦"
     [[ "$name" == *"publisher"* ]] && icon="📦"
