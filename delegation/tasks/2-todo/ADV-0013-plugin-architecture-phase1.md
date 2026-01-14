@@ -185,7 +185,14 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
 def get_all_evaluators() -> dict[str, EvaluatorConfig]:
     """Get built-in + local evaluators. Local overrides built-in."""
     evaluators = BUILTIN_EVALUATORS.copy()
-    evaluators.update(discover_local_evaluators())
+    local_evals = discover_local_evaluators()
+
+    # Warn about overrides per security requirement
+    for name in local_evals:
+        if name in BUILTIN_EVALUATORS:
+            print(f"Warning: Local evaluator '{name}' overrides built-in evaluator")
+
+    evaluators.update(local_evals)
     return evaluators
 ```
 
