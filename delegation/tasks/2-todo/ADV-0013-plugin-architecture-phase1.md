@@ -14,7 +14,7 @@ Implement a plugin architecture that allows projects to define custom evaluators
 
 Based on learnings from the ombruk-idrettsbygg project's "Athena" evaluator implementation. Teams need domain-specific evaluators (knowledge/research, legal, security, etc.) without modifying the installed package.
 
-**Reference Document**: `/Users/broadcaster_three/Github/ombruk/docs/proposals/ADVERSARIAL-WORKFLOW-PLUGIN-ARCHITECTURE.md`
+**Reference Document**: See original proposal from ombruk-idrettsbygg project (external)
 
 ## Requirements
 
@@ -58,6 +58,8 @@ Based on learnings from the ombruk-idrettsbygg project's "Athena" evaluator impl
    - Run via aider with configured model and prompt
    - Write output to `.adversarial/logs/<basename>-<output_suffix>.md`
    - Support same timeout/rate-limit handling as built-in evaluators
+   - If primary model fails (API error, rate limit), retry with `fallback_model` if specified
+   - Fallback is optional; without it, model failure is final
 
 ### Non-Functional Requirements
 
@@ -65,6 +67,13 @@ Based on learnings from the ombruk-idrettsbygg project's "Athena" evaluator impl
 2. **No New Dependencies**: Use existing `pyyaml` (already a dependency)
 3. **Fast Discovery**: Evaluator scanning should add <100ms to startup
 4. **Clear Errors**: Invalid evaluator definitions show helpful messages
+
+### Security Considerations
+
+1. **Trust Model**: Local `.adversarial/evaluators/` files are trusted, same as `.adversarial/scripts/`
+2. **User Responsibility**: Do not clone untrusted repositories and run evaluators without review
+3. **Override Warning**: When a local evaluator overrides a built-in, log a warning at startup
+4. **Future**: Consider `--no-local-evaluators` flag for restricted environments
 
 ## Technical Design
 
@@ -136,6 +145,21 @@ def discover_local_evaluators() -> dict[str, EvaluatorConfig]:
 
     return evaluators
 
+
+class EvaluatorParseError(Exception):
+    """Raised when evaluator YAML is invalid."""
+    pass
+
+
+def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
+    """Parse a YAML file into an EvaluatorConfig."""
+    data = yaml.safe_load(yml_file.read_text())
+    required = ["name", "model", "api_key_env", "prompt", "output_suffix"]
+    for field in required:
+        if field not in data:
+            raise EvaluatorParseError(f"Missing required field: {field}")
+    return EvaluatorConfig(**data)
+
 def get_all_evaluators() -> dict[str, EvaluatorConfig]:
     """Get built-in + local evaluators. Local overrides built-in."""
     evaluators = BUILTIN_EVALUATORS.copy()
@@ -154,9 +178,11 @@ def main():
 
     # Register all evaluators dynamically
     evaluators = get_all_evaluators()
+    registered_configs = set()
     for name, config in evaluators.items():
-        if name in config.aliases:
-            continue  # Skip aliases, they share the same parser
+        if id(config) in registered_configs:
+            continue  # Skip aliases (same config object)
+        registered_configs.add(id(config))
 
         eval_parser = subparsers.add_parser(
             name,
@@ -174,7 +200,7 @@ def main():
 
 ### 4. New CLI Command: list-evaluators
 
-```
+```text
 $ adversarial list-evaluators
 
 Built-in Evaluators:
@@ -189,7 +215,7 @@ Local Evaluators (.adversarial/evaluators/):
 
 ## File Structure Changes
 
-```
+```text
 adversarial_workflow/
 ├── __init__.py
 ├── cli.py                    # Simplified, delegates to evaluators
