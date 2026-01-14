@@ -164,8 +164,14 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         if field not in data:
             raise EvaluatorParseError(f"Missing required field: {field}")
 
-    # Normalize aliases to list (handle missing or None)
-    data["aliases"] = data.get("aliases") or []
+    # Normalize aliases to list (handle missing, None, or single string)
+    aliases = data.get("aliases")
+    if aliases is None:
+        data["aliases"] = []
+    elif isinstance(aliases, str):
+        data["aliases"] = [aliases]  # Convert single string to list
+    elif not isinstance(aliases, list):
+        raise EvaluatorParseError(f"aliases must be a string or list, got {type(aliases).__name__}")
 
     # Filter to only known EvaluatorConfig fields
     known_fields = {
