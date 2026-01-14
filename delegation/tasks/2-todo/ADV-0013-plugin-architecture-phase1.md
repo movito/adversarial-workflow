@@ -140,7 +140,7 @@ def discover_local_evaluators() -> dict[str, EvaluatorConfig]:
             evaluators[config.name] = config
             for alias in config.aliases:
                 evaluators[alias] = config
-        except EvaluatorParseError as e:
+        except (EvaluatorParseError, yaml.YAMLError, TypeError) as e:
             print(f"Warning: Skipping {yml_file}: {e}")
 
     return evaluators
@@ -153,12 +153,28 @@ class EvaluatorParseError(Exception):
 
 def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     """Parse a YAML file into an EvaluatorConfig."""
+    import yaml  # pyyaml is already a dependency
+
     data = yaml.safe_load(yml_file.read_text())
-    required = ["name", "model", "api_key_env", "prompt", "output_suffix"]
+    if data is None:
+        raise EvaluatorParseError("Empty or invalid YAML file")
+
+    required = ["name", "description", "model", "api_key_env", "prompt", "output_suffix"]
     for field in required:
         if field not in data:
             raise EvaluatorParseError(f"Missing required field: {field}")
-    return EvaluatorConfig(**data)
+
+    # Normalize aliases to list (handle missing or None)
+    data["aliases"] = data.get("aliases") or []
+
+    # Filter to only known EvaluatorConfig fields
+    known_fields = {
+        "name", "description", "model", "api_key_env", "prompt",
+        "output_suffix", "log_prefix", "fallback_model", "aliases", "version"
+    }
+    filtered_data = {k: v for k, v in data.items() if k in known_fields}
+
+    return EvaluatorConfig(**filtered_data)
 
 def get_all_evaluators() -> dict[str, EvaluatorConfig]:
     """Get built-in + local evaluators. Local overrides built-in."""
@@ -185,7 +201,7 @@ def main():
         registered_configs.add(id(config))
 
         eval_parser = subparsers.add_parser(
-            name,
+            config.name,
             help=config.description,
             aliases=config.aliases
         )
