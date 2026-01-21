@@ -1,18 +1,24 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2025-11-28",
+  "last_updated": "2026-01-22",
   "agents": {
-    "coordinator": {
+    "planner": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "Ready for task assignment",
+      "brief_note": "ADV-0020 conventions alignment complete",
       "details_link": null
     },
     "feature-developer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "Ready for implementation tasks",
+      "brief_note": "Ready - ADV-0017 handoff available",
+      "details_link": ".agent-context/ADV-0017-HANDOFF-feature-developer.md"
+    },
+    "code-reviewer": {
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "Ready for reviews",
       "details_link": null
     },
     "test-runner": {
@@ -22,7 +28,22 @@
       "details_link": null
     }
   },
-  "recent_completions": [],
+  "recent_completions": [
+    "ADV-0016: Evaluator discovery",
+    "ADV-0015: EvaluatorConfig dataclass",
+    "ADV-0020: Conventions alignment"
+  ],
+  "pending_tasks": [
+    "ADV-0017: Generic evaluator runner",
+    "ADV-0018: CLI dynamic commands",
+    "ADV-0019: List evaluators and docs"
+  ],
   "blocked_items": [],
-  "notes": "Simplified agent roster for package development. Using agentive-starter-kit practices."
+  "conventions": {
+    "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
+    "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
+    "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
+    "archive": ".agent-context/archive/"
+  },
+  "notes": "Aligned with agentive-starter-kit conventions (2026-01-22). Handoffs now in .agent-context/, not task folders."
 }

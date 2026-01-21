@@ -1,27 +1,33 @@
 {
   "project": "adversarial-workflow",
-  "version": "0.4.0",
-  "phase": "maintenance",
-  "last_updated": "2025-11-28",
+  "version": "0.5.0",
+  "phase": "development",
+  "last_updated": "2026-01-22",
   "status": {
     "overall": "healthy",
-    "tests": "needs-setup",
+    "tests": "passing",
     "ci": "configured",
-    "documentation": "complete"
+    "documentation": "updated"
   },
   "metrics": {
     "test_coverage": 0,
-    "tasks_completed": 0,
-    "pypi_version": "0.4.0"
+    "tasks_completed": 16,
+    "pypi_version": "0.5.0"
   },
   "priorities": [
-    "Add test infrastructure",
-    "Achieve 80%+ test coverage",
-    "Refactor cli.py into modules"
+    "Complete plugin architecture (ADV-0017 to ADV-0019)",
+    "Release v0.6.0 with custom evaluators"
   ],
   "recent_changes": [
-    "v0.4.0: Bundled aider-chat as dependency",
-    "Added Dependabot for auto-updates",
-    "Adopted agentive-starter-kit practices"
-  ]
+    "ADV-0020: Aligned with agentive-starter-kit conventions",
+    "ADV-0016: Evaluator discovery merged",
+    "ADV-0015: EvaluatorConfig dataclass merged",
+    "v0.5.0: Released with bundled aider-chat"
+  ],
+  "conventions": {
+    "task_prefix": "ADV-",
+    "handoff_location": ".agent-context/",
+    "review_location": ".agent-context/reviews/",
+    "archive_location": ".agent-context/archive/"
+  }
 }
