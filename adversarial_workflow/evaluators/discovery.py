@@ -48,8 +48,14 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     data = yaml.safe_load(content)
 
     # Check for empty YAML
-    if data is None or data == {} or (isinstance(data, str) and not data.strip()):
+    if data is None or (isinstance(data, str) and not data.strip()):
         raise EvaluatorParseError(f"Empty or invalid YAML file: {yml_file}")
+
+    # Ensure parsed data is a dict (YAML can parse scalars, lists, etc.)
+    if not isinstance(data, dict):
+        raise EvaluatorParseError(
+            f"YAML must be a mapping, got {type(data).__name__}: {yml_file}"
+        )
 
     # Validate required fields exist
     required = ["name", "description", "model", "api_key_env", "prompt", "output_suffix"]
@@ -100,6 +106,16 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     prompt = data.get("prompt", "")
     if not prompt or not prompt.strip():
         raise EvaluatorParseError("prompt cannot be empty")
+
+    # Validate optional string fields if present (YAML can parse '2' as int, 'yes' as bool)
+    optional_string_fields = ["log_prefix", "fallback_model", "version"]
+    for field in optional_string_fields:
+        if field in data and data[field] is not None:
+            value = data[field]
+            if not isinstance(value, str):
+                raise EvaluatorParseError(
+                    f"Field '{field}' must be a string, got {type(value).__name__}: {value!r}"
+                )
 
     # Filter to known fields only (log unknown fields)
     known_fields = {
@@ -153,8 +169,14 @@ def discover_local_evaluators(
     if not local_dir.exists():
         return evaluators
 
-    # Sort for deterministic order
-    for yml_file in sorted(local_dir.glob("*.yml")):
+    # Get yml files with error handling for permission/access issues
+    try:
+        yml_files = sorted(local_dir.glob("*.yml"))
+    except OSError as e:
+        logger.warning("Could not read evaluators directory: %s", e)
+        return evaluators
+
+    for yml_file in yml_files:
         try:
             config = parse_evaluator_yaml(yml_file)
 

@@ -334,6 +334,63 @@ aliases:
         with pytest.raises(EvaluatorParseError, match="Alias must be a string"):
             parse_evaluator_yaml(yml)
 
+    def test_parse_yaml_list_not_mapping(self, tmp_path):
+        """Error when YAML is a list instead of mapping."""
+        yml = tmp_path / "list.yml"
+        yml.write_text(
+            """
+- item1
+- item2
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="must be a mapping"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_yaml_scalar_not_mapping(self, tmp_path):
+        """Error when YAML is a scalar instead of mapping."""
+        yml = tmp_path / "scalar.yml"
+        yml.write_text("just a string value")
+
+        with pytest.raises(EvaluatorParseError, match="must be a mapping"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_optional_field_wrong_type(self, tmp_path):
+        """Error when optional field has wrong type (version as int)."""
+        yml = tmp_path / "bad-version.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+version: 2
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="'version' must be a string"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_fallback_model_wrong_type(self, tmp_path):
+        """Error when fallback_model is boolean (YAML 'yes' -> True)."""
+        yml = tmp_path / "bad-fallback.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+fallback_model: yes
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="'fallback_model' must be a string"):
+            parse_evaluator_yaml(yml)
+
 
 class TestDiscoverLocalEvaluators:
     """Tests for discover_local_evaluators function."""
@@ -586,3 +643,38 @@ output_suffix: IGNORED
         assert "good" in result
         assert "ignored" not in result
         assert len(result) == 1
+
+    def test_discover_skips_yaml_syntax_error(self, tmp_path, caplog):
+        """YAML syntax errors are skipped with warning, valid files still load."""
+        eval_dir = tmp_path / ".adversarial" / "evaluators"
+        eval_dir.mkdir(parents=True)
+
+        # Malformed YAML (bad indentation)
+        (eval_dir / "broken.yml").write_text(
+            """
+name: broken
+  description: Bad indentation
+model: gpt-4o
+"""
+        )
+
+        # Valid YAML
+        (eval_dir / "valid.yml").write_text(
+            """
+name: valid
+description: Valid evaluator
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Valid prompt
+output_suffix: VALID
+"""
+        )
+
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            result = discover_local_evaluators(tmp_path)
+
+        assert "valid" in result
+        assert "broken" not in result
+        assert "YAML syntax error" in caplog.text
