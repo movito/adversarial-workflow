@@ -22,8 +22,6 @@ logger = logging.getLogger(__name__)
 class EvaluatorParseError(Exception):
     """Raised when evaluator YAML is invalid."""
 
-    pass
-
 
 def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     """Parse a YAML file into an EvaluatorConfig.
@@ -53,11 +51,19 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     if data is None or data == {} or (isinstance(data, str) and not data.strip()):
         raise EvaluatorParseError(f"Empty or invalid YAML file: {yml_file}")
 
-    # Validate required fields
+    # Validate required fields exist
     required = ["name", "description", "model", "api_key_env", "prompt", "output_suffix"]
     missing = [f for f in required if f not in data]
     if missing:
         raise EvaluatorParseError(f"Missing required fields: {', '.join(missing)}")
+
+    # Validate required fields are strings (YAML can parse 'yes' as bool, '123' as int)
+    for field in required:
+        value = data[field]
+        if not isinstance(value, str):
+            raise EvaluatorParseError(
+                f"Field '{field}' must be a string, got {type(value).__name__}: {value!r}"
+            )
 
     # Validate name format (valid CLI command name)
     name = data["name"]
@@ -78,9 +84,13 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
             f"aliases must be string or list, got {type(aliases).__name__}"
         )
 
-    # Validate alias names
+    # Validate alias names - must be strings with valid format
     for alias in data.get("aliases", []):
-        if isinstance(alias, str) and not re.match(r"^[a-zA-Z][a-zA-Z0-9_-]*$", alias):
+        if not isinstance(alias, str):
+            raise EvaluatorParseError(
+                f"Alias must be a string, got {type(alias).__name__}: {alias!r}"
+            )
+        if not re.match(r"^[a-zA-Z][a-zA-Z0-9_-]*$", alias):
             raise EvaluatorParseError(
                 f"Invalid alias '{alias}': must start with letter, "
                 "contain only letters, numbers, hyphens, underscores"
@@ -106,7 +116,9 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     }
     unknown = set(data.keys()) - known_fields
     if unknown:
-        logger.warning(f"Unknown fields in {yml_file.name}: {', '.join(sorted(unknown))}")
+        logger.warning(
+            "Unknown fields in %s: %s", yml_file.name, ", ".join(sorted(unknown))
+        )
 
     # Build filtered data dict
     filtered_data = {k: v for k, v in data.items() if k in known_fields}
@@ -149,8 +161,9 @@ def discover_local_evaluators(
             # Check for name conflicts
             if config.name in evaluators:
                 logger.warning(
-                    f"Evaluator '{config.name}' in {yml_file.name} "
-                    "conflicts with existing; skipping"
+                    "Evaluator '%s' in %s conflicts with existing; skipping",
+                    config.name,
+                    yml_file.name,
                 )
                 continue
 
@@ -161,17 +174,17 @@ def discover_local_evaluators(
             for alias in config.aliases:
                 if alias in evaluators:
                     logger.warning(
-                        f"Alias '{alias}' conflicts with existing evaluator; "
-                        "skipping alias"
+                        "Alias '%s' conflicts with existing evaluator; skipping alias",
+                        alias,
                     )
                     continue
                 evaluators[alias] = config
 
         except EvaluatorParseError as e:
-            logger.warning(f"Skipping {yml_file.name}: {e}")
+            logger.warning("Skipping %s: %s", yml_file.name, e)
         except yaml.YAMLError as e:
-            logger.warning(f"Skipping {yml_file.name}: YAML syntax error: {e}")
-        except Exception as e:
-            logger.warning(f"Could not load {yml_file.name}: {e}")
+            logger.warning("Skipping %s: YAML syntax error: %s", yml_file.name, e)
+        except OSError as e:
+            logger.warning("Could not load %s: %s", yml_file.name, e)
 
     return evaluators

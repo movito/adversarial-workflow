@@ -262,6 +262,78 @@ another_unknown: 123
         assert "Unknown fields" in caplog.text
         assert "unknown_field" in caplog.text
 
+    def test_parse_non_string_required_field(self, tmp_path):
+        """Error when required field is not a string (YAML parses 'yes' as bool)."""
+        yml = tmp_path / "bad-type.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: yes
+prompt: Test prompt
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="must be a string"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_integer_required_field(self, tmp_path):
+        """Error when required field is an integer."""
+        yml = tmp_path / "int-field.yml"
+        yml.write_text(
+            """
+name: test
+description: 123
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="must be a string"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_non_string_alias(self, tmp_path):
+        """Error when alias is not a string (e.g., integer)."""
+        yml = tmp_path / "int-alias.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+aliases:
+  - 123
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="Alias must be a string"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_boolean_alias(self, tmp_path):
+        """Error when alias is a boolean (YAML parses 'yes' as True)."""
+        yml = tmp_path / "bool-alias.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+aliases:
+  - yes
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="Alias must be a string"):
+            parse_evaluator_yaml(yml)
+
 
 class TestDiscoverLocalEvaluators:
     """Tests for discover_local_evaluators function."""
