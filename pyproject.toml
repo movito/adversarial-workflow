@@ -49,8 +49,9 @@ Issues = "https://github.com/movito/adversarial-workflow/issues"
 [project.scripts]
 adversarial = "adversarial_workflow.cli:main"
 
-[tool.setuptools]
-packages = ["adversarial_workflow"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["adversarial_workflow*"]
 
 [tool.setuptools.package-data]
 adversarial_workflow = ["templates/*", "templates/.*", "templates/agent-context/*"]
