@@ -12,14 +12,14 @@
     "feature-developer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "Ready for next task",
+      "brief_note": "ADV-0018 implementation complete",
       "details_link": null
     },
     "code-reviewer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "Ready for reviews",
-      "details_link": null
+      "status": "assigned",
+      "current_task": "ADV-0018",
+      "brief_note": "CLI dynamic command registration review",
+      "details_link": ".agent-context/ADV-0018-REVIEW-STARTER.md"
     },
     "test-runner": {
       "status": "idle",
