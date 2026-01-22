@@ -29,7 +29,7 @@ class TestValidateEvaluationOutput:
         log_file = tmp_path / "no_eval.md"
         log_file.write_text("x" * 600)  # Big enough but no markers
 
-        is_valid, verdict, message = validate_evaluation_output(str(log_file))
+        is_valid, verdict, _message = validate_evaluation_output(str(log_file))
         assert is_valid is False
         assert verdict is None
 
@@ -45,7 +45,7 @@ class TestValidateEvaluationOutput:
 - Good implementation
 """ + "x" * 500)
 
-        is_valid, verdict, message = validate_evaluation_output(str(log_file))
+        is_valid, verdict, _message = validate_evaluation_output(str(log_file))
         assert is_valid is True
         assert verdict == "APPROVED"
 
@@ -61,7 +61,7 @@ Verdict: NEEDS_REVISION
 - Missing tests
 """ + "x" * 500)
 
-        is_valid, verdict, message = validate_evaluation_output(str(log_file))
+        is_valid, verdict, _message = validate_evaluation_output(str(log_file))
         assert is_valid is True
         assert verdict == "NEEDS_REVISION"
 
@@ -77,7 +77,7 @@ Verdict: REJECTED
 - Security vulnerability
 """ + "x" * 500)
 
-        is_valid, verdict, message = validate_evaluation_output(str(log_file))
+        is_valid, verdict, _message = validate_evaluation_output(str(log_file))
         assert is_valid is True
         assert verdict == "REJECTED"
 
@@ -93,7 +93,7 @@ Verdict: approved
 Some evaluation content here
 """ + "x" * 500)
 
-        is_valid, verdict, message = validate_evaluation_output(str(log_file))
+        is_valid, verdict, _message = validate_evaluation_output(str(log_file))
         assert is_valid is True
         assert verdict == "APPROVED"
 

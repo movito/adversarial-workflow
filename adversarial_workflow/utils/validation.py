@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import os
 import re
-from typing import Optional, Tuple
 
 
 def validate_evaluation_output(
     log_file_path: str,
-) -> Tuple[bool, Optional[str], str]:
+) -> tuple[bool, str | None, str]:
     """
     Validate that evaluation log contains actual evaluation content.
 
@@ -25,7 +24,7 @@ def validate_evaluation_output(
     if not os.path.exists(log_file_path):
         return False, None, f"Log file not found: {log_file_path}"
 
-    with open(log_file_path, "r") as f:
+    with open(log_file_path) as f:
         content = f.read()
 
     # Check minimum content size
@@ -36,18 +35,19 @@ def validate_evaluation_output(
             f"Log file too small ({len(content)} bytes) - evaluation likely failed",
         )
 
-    # Check for evaluation markers
+    # Check for evaluation markers (case-insensitive)
+    content_lower = content.lower()
     evaluation_markers = [
-        "Verdict:",
-        "APPROVED",
-        "NEEDS_REVISION",
-        "REJECTED",
-        "Evaluation Summary",
-        "Strengths",
-        "Concerns",
+        "verdict:",
+        "approved",
+        "needs_revision",
+        "rejected",
+        "evaluation summary",
+        "strengths",
+        "concerns",
     ]
 
-    has_evaluation_content = any(marker in content for marker in evaluation_markers)
+    has_evaluation_content = any(marker in content_lower for marker in evaluation_markers)
     if not has_evaluation_content:
         return (
             False,

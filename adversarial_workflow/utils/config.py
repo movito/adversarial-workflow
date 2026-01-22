@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import os
-from typing import Dict
+from typing import Any
 
 import yaml
 
 
-def load_config(config_path: str = ".adversarial/config.yml") -> Dict:
+def load_config(config_path: str = ".adversarial/config.yml") -> dict[str, Any]:
     """Load configuration from YAML file with environment variable overrides."""
     # Default configuration
-    config = {
+    config: dict[str, Any] = {
         "evaluator_model": "gpt-4o",
         "task_directory": "tasks/",
         "test_command": "pytest",
@@ -21,8 +21,12 @@ def load_config(config_path: str = ".adversarial/config.yml") -> Dict:
 
     # Load from file if exists
     if os.path.exists(config_path):
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             file_config = yaml.safe_load(f) or {}
+            if not isinstance(file_config, dict):
+                raise ValueError(
+                    f"Config file must be a mapping, got {type(file_config).__name__}"
+                )
             config.update(file_config)
 
     # Override with environment variables

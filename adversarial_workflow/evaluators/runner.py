@@ -7,7 +7,7 @@ import platform
 import shutil
 import subprocess
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import EvaluatorConfig
@@ -36,12 +36,12 @@ def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -
         print(f"{RED}Error: File not found: {file_path}{RESET}")
         return 1
 
-    # 2. Load project config
-    try:
-        project_config = load_config()
-    except FileNotFoundError:
+    # 2. Load project config (check initialization first)
+    config_path = Path(".adversarial/config.yml")
+    if not config_path.exists():
         print(f"{RED}Error: Not initialized. Run 'adversarial init' first.{RESET}")
         return 1
+    project_config = load_config()
 
     # 3. Check aider available
     if not shutil.which("aider"):
@@ -159,7 +159,7 @@ def _run_custom_evaluator(
             return 1
 
         # Write output
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         header = f"""# {config.output_suffix.replace('-', ' ').replace('_', ' ').title()}
 
 **Source**: {file_path}

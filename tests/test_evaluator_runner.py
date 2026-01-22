@@ -79,6 +79,7 @@ class TestRunEvaluatorErrors:
 
         monkeypatch.chdir(tmp_path)
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        monkeypatch.setattr(shutil, "which", lambda _: "/usr/bin/aider")
 
         result = run_evaluator(sample_config, str(test_file))
         assert result == 1
@@ -97,7 +98,7 @@ class TestRunEvaluatorErrors:
 
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-        monkeypatch.setattr(shutil, "which", lambda x: None)
+        monkeypatch.setattr(shutil, "which", lambda _: None)
 
         result = run_evaluator(sample_config, str(test_file))
         assert result == 1

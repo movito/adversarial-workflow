@@ -14,7 +14,7 @@ def get_all_evaluators() -> dict[str, EvaluatorConfig]:
     """Get all available evaluators (built-in + local).
 
     Local evaluators override built-in evaluators with the same name.
-    Aliases are also included in the returned dictionary.
+    Aliases from local evaluators are also included in the returned dictionary.
     """
     import logging
     logger = logging.getLogger(__name__)
