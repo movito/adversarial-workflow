@@ -126,15 +126,110 @@ pre-commit run --all-files
 3. **Implement new features** with TDD
 4. **Improve error handling** and validation
 
+## Post-Implementation Workflow
+
+After all tests pass locally, follow this workflow:
+
+### 1. Commit and Push
+
+```bash
+git add -A
+git commit -m "feat(scope): Description (ADV-XXXX)
+
+- Bullet point of changes
+- Another change
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+git push -u origin <branch-name>
+```
+
+### 2. Create Pull Request
+
+```bash
+gh pr create --title "feat(scope): Description (ADV-XXXX)" --body "$(cat <<'EOF'
+## Summary
+- What was implemented
+
+## Test plan
+- [ ] Test case 1
+- [ ] Test case 2
+
+## Related
+- Closes ADV-XXXX
+
+Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)"
+```
+
+### 3. Monitor Automated Feedback
+
+Wait for and address feedback from automated reviewers:
+
+| Bot | What it checks | Action |
+|-----|----------------|--------|
+| **GitHub Actions** | Tests pass | Fix failing tests |
+| **CodeRabbit** | Code quality, style | Address or explain |
+| **BugBot** | Bugs, security, dead code | Fix issues |
+
+**Monitor commands:**
+```bash
+gh pr view --comments
+gh pr checks
+gh pr view --web  # For detailed bot comments
+```
+
+### 4. Address Bot Feedback
+
+If bots identify issues:
+1. Fix issues locally
+2. Commit: `fix(scope): Address [Bot] feedback`
+3. Push to update PR
+4. Wait for re-review
+
+### 5. Create Review Starter
+
+Once all automated checks pass, create `.agent-context/ADV-XXXX-REVIEW-STARTER.md`:
+
+```markdown
+# ADV-XXXX Code Review Starter
+
+## PR Information
+- **PR**: #XX - Title
+- **Branch**: `feature/adv-xxxx-description`
+- **URL**: [PR URL]
+
+## Summary
+[What was implemented]
+
+## Files Changed
+[List]
+
+## Test Results
+[Output]
+
+## Bot Review Status
+- CodeRabbit: [APPROVED/CHANGES_REQUESTED]
+- BugBot: [Issues found/Clean]
+
+## Areas for Review Focus
+[What reviewers should pay attention to]
+```
+
+Then notify that implementation is ready for code review.
+
 ## Allowed Operations
 - Read all project files
 - Modify Python code in `adversarial_workflow/` and `tests/`
 - Run pytest and test scripts
 - Execute git commands for committing changes
+- Create PRs and monitor bot feedback
 - Update `.agent-context/agent-handoffs.json` with progress
 
 ## Restrictions
 - Must write tests BEFORE implementation (TDD)
 - Cannot skip test validation before committing
 - Must run full test suite before marking task complete
+- Must address bot feedback before requesting human review
 - Should not modify version numbers (delegate to pypi-publisher)
