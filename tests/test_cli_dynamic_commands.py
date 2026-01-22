@@ -484,3 +484,138 @@ class TestEvaluatorConfigAttribute:
             cwd=tmp_path,
         )
         assert "--timeout" in result.stdout or "-t" in result.stdout
+
+
+class TestReviewCommandBackwardsCompatibility:
+    """Test that review command maintains backwards compatibility."""
+
+    def test_review_does_not_require_file(self, tmp_path, monkeypatch):
+        """Review command should NOT require a file argument (reviews git changes)."""
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir(parents=True)
+        (adv_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
+
+        monkeypatch.chdir(tmp_path)
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "review", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+        assert result.returncode == 0
+        # Review should NOT have --timeout flag (that's for evaluators)
+        assert "--timeout" not in result.stdout
+
+    def test_review_command_not_overridden_by_evaluator(self, tmp_path, monkeypatch):
+        """Review command cannot be overridden by local evaluator."""
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir(parents=True)
+        (adv_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
+
+        eval_dir = adv_dir / "evaluators"
+        eval_dir.mkdir(parents=True)
+        # Create evaluator named 'review' (should be skipped)
+        (eval_dir / "review.yml").write_text("""
+name: review
+description: This should NOT override review
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Bad review
+output_suffix: BAD-REVIEW
+""")
+
+        monkeypatch.chdir(tmp_path)
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "review", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+        # Review should still be the static command
+        assert "--timeout" not in result.stdout
+        assert "BAD-REVIEW" not in result.stdout
+
+
+class TestAliasStaticCommandProtection:
+    """Test that evaluator aliases cannot override static commands."""
+
+    def test_alias_cannot_override_static_command(self, tmp_path, monkeypatch):
+        """Evaluator alias matching static command should be skipped."""
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir(parents=True)
+        (adv_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
+
+        eval_dir = adv_dir / "evaluators"
+        eval_dir.mkdir(parents=True)
+        # Create evaluator with alias 'init' (alias should be skipped)
+        (eval_dir / "badeval.yml").write_text("""
+name: badeval
+description: Evaluator with bad alias
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test
+output_suffix: BAD-EVAL
+aliases:
+  - init
+  - safe_alias
+""")
+
+        monkeypatch.chdir(tmp_path)
+
+        # The CLI should not crash
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+        assert result.returncode == 0
+        # badeval should be registered
+        assert "badeval" in result.stdout
+        # safe_alias should work
+        assert "safe_alias" in result.stdout
+        # 'init' should still be the static command
+        result_init = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "init", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+        assert "--path" in result_init.stdout
+        assert "--interactive" in result_init.stdout
+
+    def test_evaluator_with_conflicting_name_and_alias(self, tmp_path, monkeypatch):
+        """Evaluator with conflicting name doesn't crash when alias is processed."""
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir(parents=True)
+        (adv_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
+
+        eval_dir = adv_dir / "evaluators"
+        eval_dir.mkdir(parents=True)
+        # Create evaluator named 'init' with alias 'myalias'
+        # The name conflicts, but the alias dict entry might try to re-register
+        (eval_dir / "init.yml").write_text("""
+name: init
+description: Conflicting name evaluator
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test
+output_suffix: INIT-EVAL
+aliases:
+  - myalias
+""")
+
+        monkeypatch.chdir(tmp_path)
+
+        # The CLI should not crash
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+        assert result.returncode == 0
+        # 'init' should still be the static command
+        assert "init" in result.stdout

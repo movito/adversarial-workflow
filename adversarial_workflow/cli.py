@@ -3054,9 +3054,10 @@ def main():
     logger = logging.getLogger(__name__)
 
     # Commands that cannot be overridden by evaluators
+    # Note: 'review' is special - it reviews git changes without a file argument
     STATIC_COMMANDS = {
         "init", "check", "doctor", "health", "quickstart",
-        "agent", "split", "validate"
+        "agent", "split", "validate", "review"
     }
 
     parser = argparse.ArgumentParser(
@@ -3128,6 +3129,9 @@ For more information: https://github.com/movito/adversarial-workflow
         "--path", default=".", help="Project path (default: current directory)"
     )
 
+    # review command (static - reviews git changes, no file argument)
+    subparsers.add_parser("review", help="Run Phase 3: Code review")
+
     # validate command
     validate_parser = subparsers.add_parser(
         "validate", help="Run Phase 4: Test validation"
@@ -3158,7 +3162,7 @@ For more information: https://github.com/movito/adversarial-workflow
     try:
         evaluators = get_all_evaluators()
     except Exception as e:
-        logger.warning(f"Evaluator discovery failed: {e}")
+        logger.warning("Evaluator discovery failed: %s", e)
         evaluators = BUILTIN_EVALUATORS
 
     registered_configs = set()  # Track by id() to avoid duplicate alias registration
@@ -3166,7 +3170,9 @@ For more information: https://github.com/movito/adversarial-workflow
     for name, config in evaluators.items():
         # Skip if name conflicts with static command
         if name in STATIC_COMMANDS:
-            logger.warning(f"Evaluator '{name}' conflicts with CLI command; skipping")
+            logger.warning("Evaluator '%s' conflicts with CLI command; skipping", name)
+            # Mark as registered to prevent alias re-registration attempts
+            registered_configs.add(id(config))
             continue
 
         # Skip if this config was already registered (aliases share config object)
@@ -3174,11 +3180,20 @@ For more information: https://github.com/movito/adversarial-workflow
             continue
         registered_configs.add(id(config))
 
+        # Filter aliases that conflict with static commands
+        aliases = [a for a in (config.aliases or []) if a not in STATIC_COMMANDS]
+        if config.aliases and len(aliases) != len(config.aliases):
+            skipped = [a for a in config.aliases if a in STATIC_COMMANDS]
+            logger.warning(
+                "Skipping evaluator aliases that conflict with static commands: %s",
+                skipped,
+            )
+
         # Create subparser for this evaluator
         eval_parser = subparsers.add_parser(
             config.name,
             help=config.description,
-            aliases=config.aliases if config.aliases else [],
+            aliases=aliases,
         )
         eval_parser.add_argument("file", help="File to evaluate")
         eval_parser.add_argument(
@@ -3224,6 +3239,8 @@ For more information: https://github.com/movito/adversarial-workflow
             print(f"{RED}Error: agent command requires a subcommand{RESET}")
             print("Usage: adversarial agent onboard")
             return 1
+    elif args.command == "review":
+        return review()
     elif args.command == "validate":
         return validate(args.test_command)
     elif args.command == "split":
