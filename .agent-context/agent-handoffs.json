@@ -6,14 +6,14 @@
     "planner": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0020 conventions alignment complete",
+      "brief_note": "ADV-0017 completed and approved",
       "details_link": null
     },
     "feature-developer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "Ready - ADV-0017 handoff available",
-      "details_link": ".agent-context/ADV-0017-HANDOFF-feature-developer.md"
+      "brief_note": "Ready for next task",
+      "details_link": null
     },
     "code-reviewer": {
       "status": "idle",
@@ -29,12 +29,12 @@
     }
   },
   "recent_completions": [
+    "ADV-0017: Generic evaluator runner",
     "ADV-0016: Evaluator discovery",
     "ADV-0015: EvaluatorConfig dataclass",
     "ADV-0020: Conventions alignment"
   ],
   "pending_tasks": [
-    "ADV-0017: Generic evaluator runner",
     "ADV-0018: CLI dynamic commands",
     "ADV-0019: List evaluators and docs"
   ],

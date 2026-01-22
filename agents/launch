@@ -102,7 +102,7 @@ get_agent_model() {
 # Display header
 display_header() {
     echo -e "${BLUE}========================================${NC}"
-    echo -e "${BLUE}   adversarial-workflow v0.4.0        ${NC}"
+    echo -e "${BLUE}   adversarial-workflow v0.5.0        ${NC}"
     echo -e "${BLUE}   Agent Launcher                     ${NC}"
     echo -e "${BLUE}========================================${NC}"
     echo
