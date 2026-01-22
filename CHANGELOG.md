@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - Unreleased
+
+### Added
+- **Plugin Architecture**: Define custom evaluators in `.adversarial/evaluators/*.yml`
+  - Support for any AI model (GPT-4o, Gemini, Claude, local models)
+  - Create domain-specific evaluation criteria
+  - Share evaluators across projects
+- `adversarial list-evaluators` command to show available evaluators (built-in and local)
+- Support for evaluator aliases (e.g., `athena`, `knowledge`, `research` for same evaluator)
+- Fallback model support for resilient evaluation
+- Full documentation for custom evaluator creation:
+  - New `docs/CUSTOM_EVALUATORS.md` comprehensive guide
+  - New `docs/examples/athena.yml` example evaluator
+  - Updated `README.md` with Custom Evaluators section
+
+### Changed
+- Refactored evaluator execution into `adversarial_workflow.evaluators` module
+- Dynamic CLI subparser registration for custom evaluators
+
+### Technical
+- New `EvaluatorConfig` dataclass for evaluator configuration
+- Generic `run_evaluator()` function for all evaluator types
+- `discover_local_evaluators()` for YAML-based evaluator discovery
+
 ### Maintenance
 - Updated GitHub Actions: actions/checkout v4 → v6, actions/setup-python v5 → v6, codecov/codecov-action v4 → v5
 

@@ -2824,6 +2824,47 @@ def split(task_file: str, strategy: str = "sections", max_lines: int = 500, dry_
         print(f"{RED}Error during file splitting: {e}{RESET}")
         return 1
 
+
+def list_evaluators() -> int:
+    """List all available evaluators (built-in and local)."""
+    from adversarial_workflow.evaluators import (
+        BUILTIN_EVALUATORS,
+        discover_local_evaluators,
+    )
+
+    # Print built-in evaluators
+    print(f"{BOLD}Built-in Evaluators:{RESET}")
+    for name, config in sorted(BUILTIN_EVALUATORS.items()):
+        print(f"  {name:14} {config.description}")
+
+    print()
+
+    # Print local evaluators
+    local_evaluators = discover_local_evaluators()
+    if local_evaluators:
+        print(f"{BOLD}Local Evaluators{RESET} (.adversarial/evaluators/):")
+
+        # Group by primary name (skip aliases)
+        seen_configs = set()
+        for name, config in sorted(local_evaluators.items()):
+            if id(config) in seen_configs:
+                continue
+            seen_configs.add(id(config))
+
+            print(f"  {config.name:14} {config.description}")
+            if config.aliases:
+                print(f"    aliases: {', '.join(config.aliases)}")
+            print(f"    model: {config.model}")
+            if config.version != "1.0.0":
+                print(f"    version: {config.version}")
+    else:
+        print(f"{GRAY}No local evaluators found.{RESET}")
+        print()
+        print("Create .adversarial/evaluators/*.yml to add custom evaluators.")
+        print("See: https://github.com/movito/adversarial-workflow#custom-evaluators")
+
+    return 0
+
 def main():
     """Main CLI entry point."""
     import logging
@@ -2840,7 +2881,7 @@ def main():
     # Note: 'review' is special - it reviews git changes without a file argument
     STATIC_COMMANDS = {
         "init", "check", "doctor", "health", "quickstart",
-        "agent", "split", "validate", "review"
+        "agent", "split", "validate", "review", "list-evaluators"
     }
 
     parser = argparse.ArgumentParser(
@@ -2941,6 +2982,12 @@ For more information: https://github.com/movito/adversarial-workflow
         help="Preview splits without creating files"
     )
 
+    # list-evaluators command
+    subparsers.add_parser(
+        "list-evaluators",
+        help="List all available evaluators (built-in and local)",
+    )
+
     # Dynamic evaluator registration
     try:
         evaluators = get_all_evaluators()
@@ -3028,11 +3075,13 @@ For more information: https://github.com/movito/adversarial-workflow
         return validate(args.test_command)
     elif args.command == "split":
         return split(
-            args.task_file, 
-            strategy=args.strategy, 
-            max_lines=args.max_lines, 
+            args.task_file,
+            strategy=args.strategy,
+            max_lines=args.max_lines,
             dry_run=args.dry_run
         )
+    elif args.command == "list-evaluators":
+        return list_evaluators()
     else:
         parser.print_help()
         return 1

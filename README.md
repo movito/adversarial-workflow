@@ -347,7 +347,67 @@ adversarial split task.md               # Split large files into smaller parts
 adversarial split task.md --dry-run     # Preview split without creating files
 adversarial review                      # Phase 3: Review implementation
 adversarial validate "pytest"           # Phase 4: Validate with tests
+adversarial list-evaluators             # List all available evaluators
 ```
+
+## Custom Evaluators
+
+Starting with v0.6.0, you can define project-specific evaluators without modifying the package.
+
+### Creating a Custom Evaluator
+
+1. Create the evaluators directory:
+   ```bash
+   mkdir -p .adversarial/evaluators
+   ```
+
+2. Create a YAML definition:
+   ```yaml
+   # .adversarial/evaluators/athena.yml
+   name: athena
+   description: Knowledge evaluation using Gemini 2.5 Pro
+   model: gemini-2.5-pro
+   api_key_env: GEMINI_API_KEY
+   output_suffix: KNOWLEDGE-EVALUATION
+   prompt: |
+     You are Athena, a knowledge evaluation specialist...
+
+   # Optional
+   aliases:
+     - knowledge
+   ```
+
+3. Use it like any built-in evaluator:
+   ```bash
+   adversarial athena docs/research-plan.md
+   ```
+
+### Evaluator YAML Schema
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Command name |
+| `description` | Yes | Help text shown in CLI |
+| `model` | Yes | Model to use (e.g., `gpt-4o`, `gemini-2.5-pro`) |
+| `api_key_env` | Yes | Environment variable for API key |
+| `output_suffix` | Yes | Log file suffix (e.g., `KNOWLEDGE-EVAL`) |
+| `prompt` | Yes | The evaluation prompt |
+| `aliases` | No | Alternative command names |
+| `log_prefix` | No | CLI output prefix |
+| `fallback_model` | No | Fallback model if primary fails |
+| `version` | No | Evaluator version (default: 1.0.0) |
+
+### Listing Available Evaluators
+
+```bash
+adversarial list-evaluators
+```
+
+### Example: Athena Knowledge Evaluator
+
+See [docs/examples/athena.yml](docs/examples/athena.yml) for a complete example of a knowledge-focused evaluator using Gemini 2.5 Pro.
+
+For full documentation on custom evaluators, see [docs/CUSTOM_EVALUATORS.md](docs/CUSTOM_EVALUATORS.md).
 
 ## Configuration
 
