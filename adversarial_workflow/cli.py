@@ -3043,6 +3043,22 @@ def split(task_file: str, strategy: str = "sections", max_lines: int = 500, dry_
 
 def main():
     """Main CLI entry point."""
+    import logging
+
+    from adversarial_workflow.evaluators import (
+        get_all_evaluators,
+        run_evaluator,
+        BUILTIN_EVALUATORS,
+    )
+
+    logger = logging.getLogger(__name__)
+
+    # Commands that cannot be overridden by evaluators
+    STATIC_COMMANDS = {
+        "init", "check", "doctor", "health", "quickstart",
+        "agent", "split", "validate"
+    }
+
     parser = argparse.ArgumentParser(
         description="Adversarial Workflow - Multi-stage AI code review",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -3112,19 +3128,6 @@ For more information: https://github.com/movito/adversarial-workflow
         "--path", default=".", help="Project path (default: current directory)"
     )
 
-    # evaluate command
-    eval_parser = subparsers.add_parser("evaluate", help="Run Phase 1: Plan evaluation")
-    eval_parser.add_argument("task_file", help="Task file to evaluate")
-
-    # proofread command
-    proofread_parser = subparsers.add_parser(
-        "proofread", help="Proofread teaching content and documentation"
-    )
-    proofread_parser.add_argument("doc_file", help="Document file to proofread")
-
-    # review command
-    subparsers.add_parser("review", help="Run Phase 3: Code review")
-
     # validate command
     validate_parser = subparsers.add_parser(
         "validate", help="Run Phase 4: Test validation"
@@ -3151,13 +3154,57 @@ For more information: https://github.com/movito/adversarial-workflow
         help="Preview splits without creating files"
     )
 
+    # Dynamic evaluator registration
+    try:
+        evaluators = get_all_evaluators()
+    except Exception as e:
+        logger.warning(f"Evaluator discovery failed: {e}")
+        evaluators = BUILTIN_EVALUATORS
+
+    registered_configs = set()  # Track by id() to avoid duplicate alias registration
+
+    for name, config in evaluators.items():
+        # Skip if name conflicts with static command
+        if name in STATIC_COMMANDS:
+            logger.warning(f"Evaluator '{name}' conflicts with CLI command; skipping")
+            continue
+
+        # Skip if this config was already registered (aliases share config object)
+        if id(config) in registered_configs:
+            continue
+        registered_configs.add(id(config))
+
+        # Create subparser for this evaluator
+        eval_parser = subparsers.add_parser(
+            config.name,
+            help=config.description,
+            aliases=config.aliases if config.aliases else [],
+        )
+        eval_parser.add_argument("file", help="File to evaluate")
+        eval_parser.add_argument(
+            "--timeout", "-t",
+            type=int,
+            default=180,
+            help="Timeout in seconds (default: 180)"
+        )
+        # Store config for later execution
+        eval_parser.set_defaults(evaluator_config=config)
+
     args = parser.parse_args()
 
     if not args.command:
         parser.print_help()
         return 0
 
-    # Execute command
+    # Check for evaluator command first (has evaluator_config attribute)
+    if hasattr(args, "evaluator_config"):
+        return run_evaluator(
+            args.evaluator_config,
+            args.file,
+            timeout=args.timeout,
+        )
+
+    # Execute static commands
     if args.command == "init":
         if args.interactive:
             return init_interactive(args.path)
@@ -3177,12 +3224,6 @@ For more information: https://github.com/movito/adversarial-workflow
             print(f"{RED}Error: agent command requires a subcommand{RESET}")
             print("Usage: adversarial agent onboard")
             return 1
-    elif args.command == "evaluate":
-        return evaluate(args.task_file)
-    elif args.command == "proofread":
-        return proofread(args.doc_file)
-    elif args.command == "review":
-        return review()
     elif args.command == "validate":
         return validate(args.test_command)
     elif args.command == "split":
