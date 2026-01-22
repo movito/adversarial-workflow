@@ -2846,7 +2846,7 @@ def list_evaluators() -> int:
 
         # Group by primary name (skip aliases)
         seen_configs = set()
-        for name, config in sorted(local_evaluators.items()):
+        for _, config in sorted(local_evaluators.items()):
             if id(config) in seen_configs:
                 continue
             seen_configs.add(id(config))
