@@ -212,6 +212,15 @@ adversarial list-evaluators
 - [ ] Unit tests pass
 - [ ] All existing tests pass (160+)
 
+## Post-Implementation
+
+After tests pass, follow the **Post-Implementation Workflow** in the feature-developer agent definition:
+1. Commit and push
+2. Create PR
+3. Monitor CodeRabbit and BugBot feedback
+4. Address any issues
+5. Create review starter when bots are satisfied
+
 ## Resources
 
 - Task spec: `delegation/tasks/2-todo/ADV-0019-list-evaluators-and-docs.md`
