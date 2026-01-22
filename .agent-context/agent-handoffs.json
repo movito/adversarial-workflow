@@ -10,10 +10,10 @@
       "details_link": null
     },
     "feature-developer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0018 implementation complete",
-      "details_link": null
+      "status": "assigned",
+      "current_task": "ADV-0019",
+      "brief_note": "List evaluators command and docs",
+      "details_link": ".agent-context/ADV-0019-HANDOFF-feature-developer.md"
     },
     "code-reviewer": {
       "status": "idle",
