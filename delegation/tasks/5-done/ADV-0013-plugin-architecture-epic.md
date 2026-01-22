@@ -1,6 +1,6 @@
 # ADV-0013: Plugin Architecture - Phase 1 (Local Evaluator Definitions)
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Estimated Effort**: 3-4 days
 **Target Version**: v0.6.0
