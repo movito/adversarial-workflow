@@ -12,13 +12,13 @@
     "feature-developer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "Ready for next task",
+      "brief_note": "ADV-0018 implementation complete",
       "details_link": null
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "Ready for reviews",
+      "brief_note": "ADV-0018 approved",
       "details_link": null
     },
     "test-runner": {
@@ -29,13 +29,12 @@
     }
   },
   "recent_completions": [
+    "ADV-0018: CLI dynamic commands",
     "ADV-0017: Generic evaluator runner",
     "ADV-0016: Evaluator discovery",
-    "ADV-0015: EvaluatorConfig dataclass",
-    "ADV-0020: Conventions alignment"
+    "ADV-0015: EvaluatorConfig dataclass"
   ],
   "pending_tasks": [
-    "ADV-0018: CLI dynamic commands",
     "ADV-0019: List evaluators and docs"
   ],
   "blocked_items": [],
