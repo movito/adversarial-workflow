@@ -1,5 +1,9 @@
 # Adversarial Workflow
 
+[![PyPI version](https://badge.fury.io/py/adversarial-workflow.svg)](https://pypi.org/project/adversarial-workflow/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **A multi-stage AI code review system that makes your code better**
 
 Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to implement but not delivering) through adversarial verification using independent review stages. A battle-tested workflow from the [thematic-cuts](https://github.com/movito/thematic-cuts) project that achieved 96.9% test pass rate improvement.
@@ -15,6 +19,31 @@ Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to i
 - ⚙️ **Configurable**: Works with any test framework, task system, language
 - 🎯 **Tool-agnostic**: Use with Claude Code, Cursor, Aider, manual coding, or any workflow
 - ✨ **Interactive onboarding**: Guided setup wizard gets you started in <5 minutes
+
+## What's New in v0.6.0
+
+🔌 **Plugin Architecture** - Define custom evaluators without modifying the package:
+
+```bash
+# Create a custom evaluator
+mkdir -p .adversarial/evaluators
+cat > .adversarial/evaluators/athena.yml << 'EOF'
+name: athena
+description: Knowledge evaluation using Gemini 2.5 Pro
+model: gemini-2.5-pro
+api_key_env: GEMINI_API_KEY
+prompt: |
+  You are Athena, a knowledge evaluation specialist...
+EOF
+
+# Use it immediately
+adversarial athena docs/research-plan.md
+
+# List all available evaluators
+adversarial list-evaluators
+```
+
+See [Custom Evaluators](#custom-evaluators) for full documentation, or check the [CHANGELOG](CHANGELOG.md) for complete release history.
 
 ## Prerequisites
 
@@ -821,12 +850,13 @@ From the [thematic-cuts](https://github.com/movito/thematic-cuts) project:
 
 ## Documentation
 
-- **Interaction Patterns**: How Author-Reviewer collaboration works
+- **[Custom Evaluators Guide](docs/CUSTOM_EVALUATORS.md)**: Create project-specific evaluators
+- **[Integration Guide](docs/INTEGRATION-GUIDE.md)**: Detailed integration strategies
+- **[CHANGELOG](CHANGELOG.md)**: Release history and version notes
+- **Interaction Patterns**: How Author-Evaluator collaboration works
 - **Token Optimization**: Detailed Aider configuration guide
 - **Workflow Phases**: Step-by-step guide for each phase
 - **Troubleshooting**: Common issues and solutions
-- **Examples**: Real integration scenarios
-- **Terminology**: Official standards for Author/Reviewer concepts
 
 See `docs/` directory for comprehensive guides.
 
