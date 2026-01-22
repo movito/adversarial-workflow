@@ -10,15 +10,15 @@
       "details_link": null
     },
     "feature-developer": {
-      "status": "assigned",
-      "current_task": "ADV-0019",
-      "brief_note": "List evaluators command and docs",
-      "details_link": ".agent-context/ADV-0019-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0019 complete - v0.6.0 plugin architecture done",
+      "details_link": null
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0018 approved",
+      "brief_note": "ADV-0019 approved",
       "details_link": null
     },
     "test-runner": {
@@ -29,14 +29,12 @@
     }
   },
   "recent_completions": [
+    "ADV-0019: List evaluators and docs",
     "ADV-0018: CLI dynamic commands",
     "ADV-0017: Generic evaluator runner",
-    "ADV-0016: Evaluator discovery",
-    "ADV-0015: EvaluatorConfig dataclass"
+    "ADV-0016: Evaluator discovery"
   ],
-  "pending_tasks": [
-    "ADV-0019: List evaluators and docs"
-  ],
+  "pending_tasks": [],
   "blocked_items": [],
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",

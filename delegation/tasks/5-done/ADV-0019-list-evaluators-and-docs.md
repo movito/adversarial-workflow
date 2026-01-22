@@ -1,6 +1,6 @@
 # ADV-0019: List-Evaluators Command and Documentation
 
-**Status**: Todo
+**Status**: Done
 **Priority**: Medium
 **Estimated Effort**: 2-3 hours
 **Target Version**: v0.6.0
