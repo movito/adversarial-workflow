@@ -34,7 +34,9 @@
     "ADV-0017: Generic evaluator runner",
     "ADV-0016: Evaluator discovery"
   ],
-  "pending_tasks": [],
+  "pending_tasks": [
+    "ADV-0021: Fix .env loading for custom evaluators (v0.6.1)"
+  ],
   "blocked_items": [],
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
