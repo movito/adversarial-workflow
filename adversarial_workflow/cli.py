@@ -806,8 +806,10 @@ def check() -> int:
 
     if env_file.exists():
         try:
-            # Use dotenv_values() to count variables without depending on env state
-            # This works correctly even after main() has already loaded the .env
+            # Load .env into environment (idempotent - safe to call again after main())
+            load_dotenv(env_file)
+            # Use dotenv_values() to count variables directly from file
+            # This gives accurate count regardless of what was already in environment
             env_vars = dotenv_values(env_file)
             env_loaded = True
             good_checks.append(
