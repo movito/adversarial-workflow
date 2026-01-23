@@ -2868,8 +2868,6 @@ def list_evaluators() -> int:
 def main():
     """Main CLI entry point."""
     import logging
-    import sys
-    from pathlib import Path
 
     # Load .env file before any commands run
     # Use explicit path to ensure we find .env in current working directory
@@ -2878,7 +2876,7 @@ def main():
     if env_file.exists():
         try:
             load_dotenv(env_file)
-        except Exception as e:
+        except (OSError, UnicodeDecodeError) as e:
             print(f"Warning: Could not load .env file: {e}", file=sys.stderr)
 
     from adversarial_workflow.evaluators import (
