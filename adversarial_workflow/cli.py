@@ -824,8 +824,8 @@ def check() -> int:
                     "fix": "Check .env file permissions",
                 }
             )
-        except OSError as e:
-            # Encoding or other OS-level errors
+        except (OSError, ValueError) as e:
+            # Covers UnicodeDecodeError (ValueError subclass) and other OS errors
             issues.append(
                 {
                     "severity": "WARNING",
@@ -2879,9 +2879,14 @@ def list_evaluators() -> int:
 def main():
     """Main CLI entry point."""
     import logging
+    import sys
 
     # Load .env file before any commands run
-    load_dotenv()
+    # Wrapped in try/except so CLI remains usable even with malformed .env
+    try:
+        load_dotenv()
+    except Exception as e:
+        print(f"Warning: Could not load .env file: {e}", file=sys.stderr)
 
     from adversarial_workflow.evaluators import (
         get_all_evaluators,
