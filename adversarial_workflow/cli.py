@@ -2868,7 +2868,6 @@ def list_evaluators() -> int:
 def main():
     """Main CLI entry point."""
     import logging
-    from dotenv import load_dotenv
 
     # Load .env file before any commands run
     load_dotenv()
