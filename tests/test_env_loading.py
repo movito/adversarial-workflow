@@ -97,3 +97,118 @@ output_suffix: TEST
 
         assert result.returncode == 0
         assert "adversarial" in result.stdout.lower()
+
+
+class TestCheckEnvCount:
+    """Tests for check() command .env variable counting (ADV-0022).
+
+    These are CLI integration tests using subprocess to verify end-to-end behavior.
+    They test that check() correctly reports .env variable count even after
+    main() has already loaded the .env file at startup.
+    """
+
+    def test_check_reports_correct_env_count(self, tmp_path):
+        """check() reports correct .env variable count even after main() loads it.
+
+        This is the primary regression test for ADV-0022. Before the fix,
+        check() would report "0 variables" because main() already loaded them.
+        """
+        # Create .env with 3 variables
+        (tmp_path / ".env").write_text(
+            "OPENAI_API_KEY=sk-test\n"
+            "ANTHROPIC_API_KEY=ant-test\n"
+            "CUSTOM_KEY=custom-value\n"
+        )
+
+        # Remove keys from environment to isolate test
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "CUSTOM_KEY")}
+        env["PATH"] = os.environ.get("PATH", "")
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "check"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+            env=env,
+        )
+
+        # Should report "3 variables configured", not "0 variables"
+        assert "3 variables" in result.stdout, (
+            f"Expected '3 variables' in output. Got: {result.stdout}"
+        )
+
+    def test_check_handles_empty_env_file(self, tmp_path):
+        """check() handles empty .env file gracefully."""
+        (tmp_path / ".env").write_text("")
+
+        env = {k: v for k, v in os.environ.items()}
+        env["PATH"] = os.environ.get("PATH", "")
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "check"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+            env=env,
+        )
+
+        # Should report "0 variables configured"
+        assert "0 variables" in result.stdout, (
+            f"Expected '0 variables' in output. Got: {result.stdout}"
+        )
+
+    def test_check_handles_comments_in_env(self, tmp_path):
+        """check() correctly counts variables, ignoring comments and empty lines."""
+        (tmp_path / ".env").write_text(
+            "# This is a comment\n"
+            "KEY1=value1\n"
+            "\n"  # Empty line
+            "# Another comment\n"
+            "KEY2=value2\n"
+        )
+
+        env = {k: v for k, v in os.environ.items() if k not in ("KEY1", "KEY2")}
+        env["PATH"] = os.environ.get("PATH", "")
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "check"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+            env=env,
+        )
+
+        # Should report 2 variables (comments and empty lines ignored)
+        assert "2 variables" in result.stdout, (
+            f"Expected '2 variables' in output. Got: {result.stdout}"
+        )
+
+    def test_check_handles_unusual_env_entries(self, tmp_path):
+        """check() handles unusual .env entries without crashing.
+
+        dotenv_values() treats 'KEY' without = as key with None value.
+        This test verifies the CLI doesn't crash on such inputs.
+        """
+        (tmp_path / ".env").write_text(
+            "VALID_KEY=value\n"
+            "ALSO_VALID=another\n"
+            "KEY_WITHOUT_VALUE\n"  # dotenv treats this as KEY_WITHOUT_VALUE=None
+        )
+
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("VALID_KEY", "ALSO_VALID", "KEY_WITHOUT_VALUE")}
+        env["PATH"] = os.environ.get("PATH", "")
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "check"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+            env=env,
+        )
+
+        # Should not crash - dotenv_values() returns 3 entries (including key with None value)
+        assert "3 variables" in result.stdout, (
+            f"Expected '3 variables' in output. Got: {result.stdout}"
+        )

@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import yaml
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 
 __version__ = "0.6.1"
 
@@ -800,26 +800,35 @@ def check() -> int:
     issues: List[Dict] = []
     good_checks: List[str] = []
 
-    # Check for .env file first (before loading environment variables)
+    # Check for .env file (note: already loaded by main() at startup)
     env_file = Path(".env")
     env_loaded = False
-    env_keys_before = set(os.environ.keys())
 
     if env_file.exists():
         try:
-            load_dotenv(env_file)
-            env_keys_after = set(os.environ.keys())
-            new_keys = env_keys_after - env_keys_before
+            # Use dotenv_values() to count variables without depending on env state
+            # This works correctly even after main() has already loaded the .env
+            env_vars = dotenv_values(env_file)
             env_loaded = True
             good_checks.append(
-                f".env file found and loaded ({len(new_keys)} variables)"
+                f".env file found ({len(env_vars)} variables configured)"
             )
-        except Exception as e:
+        except (FileNotFoundError, PermissionError) as e:
+            # File access errors
             issues.append(
                 {
                     "severity": "WARNING",
-                    "message": f".env file found but could not be loaded: {e}",
-                    "fix": "Check .env file format and permissions",
+                    "message": f".env file found but could not be read: {e}",
+                    "fix": "Check .env file permissions",
+                }
+            )
+        except OSError as e:
+            # Encoding or other OS-level errors
+            issues.append(
+                {
+                    "severity": "WARNING",
+                    "message": f".env file found but could not be parsed: {e}",
+                    "fix": "Check .env file encoding (should be UTF-8)",
                 }
             )
     else:
