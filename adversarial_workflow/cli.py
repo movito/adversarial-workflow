@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Tuple
 import yaml
 from dotenv import load_dotenv
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 # ANSI color codes for better output
 RESET = "\033[0m"
@@ -2868,6 +2868,10 @@ def list_evaluators() -> int:
 def main():
     """Main CLI entry point."""
     import logging
+    from dotenv import load_dotenv
+
+    # Load .env file before any commands run
+    load_dotenv()
 
     from adversarial_workflow.evaluators import (
         get_all_evaluators,
