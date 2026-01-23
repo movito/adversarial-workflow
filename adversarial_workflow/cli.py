@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Tuple
 import yaml
 from dotenv import load_dotenv
 
-__version__ = "0.6.0"
+__version__ = "0.6.2"
 
 # ANSI color codes for better output
 RESET = "\033[0m"
@@ -2868,6 +2868,18 @@ def list_evaluators() -> int:
 def main():
     """Main CLI entry point."""
     import logging
+    import sys
+    from pathlib import Path
+
+    # Load .env file before any commands run
+    # Use explicit path to ensure we find .env in current working directory
+    # (load_dotenv() without args can fail to find .env in some contexts)
+    env_file = Path.cwd() / ".env"
+    if env_file.exists():
+        try:
+            load_dotenv(env_file)
+        except Exception as e:
+            print(f"Warning: Could not load .env file: {e}", file=sys.stderr)
 
     from adversarial_workflow.evaluators import (
         get_all_evaluators,
@@ -3000,7 +3012,10 @@ For more information: https://github.com/movito/adversarial-workflow
     for name, config in evaluators.items():
         # Skip if name conflicts with static command
         if name in STATIC_COMMANDS:
-            logger.warning("Evaluator '%s' conflicts with CLI command; skipping", name)
+            # Only warn for user-defined evaluators, not built-ins
+            # Built-in conflicts are intentional (e.g., 'review' command vs 'review' evaluator)
+            if config.source != "builtin":
+                logger.warning("Evaluator '%s' conflicts with CLI command; skipping", name)
             # Mark as registered to prevent alias re-registration attempts
             registered_configs.add(id(config))
             continue
