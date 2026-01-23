@@ -3012,7 +3012,7 @@ For more information: https://github.com/movito/adversarial-workflow
         if name in STATIC_COMMANDS:
             # Only warn for user-defined evaluators, not built-ins
             # Built-in conflicts are intentional (e.g., 'review' command vs 'review' evaluator)
-            if config.source != "builtin":
+            if getattr(config, "source", None) != "builtin":
                 logger.warning("Evaluator '%s' conflicts with CLI command; skipping", name)
             # Mark as registered to prevent alias re-registration attempts
             registered_configs.add(id(config))
