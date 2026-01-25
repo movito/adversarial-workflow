@@ -840,6 +840,14 @@ def check() -> int:
                     "fix": "Check .env file format and permissions",
                 }
             )
+        except UnicodeDecodeError as e:
+            issues.append(
+                {
+                    "severity": "WARNING",
+                    "message": f".env file has encoding issues: {e}",
+                    "fix": "Ensure .env file is UTF-8 encoded",
+                }
+            )
     else:
         issues.append(
             {
