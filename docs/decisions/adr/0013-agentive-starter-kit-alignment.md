@@ -206,5 +206,11 @@ Create a sync script that:
 
 ## References
 
-- Starter kit location: `~/Github/agentive-starter-kit`
-- This project: `~/Github/adversarial-workflow`
+- **agentive-starter-kit**: https://github.com/movito/agentive-starter-kit
+  ```bash
+  git clone git@github.com:movito/agentive-starter-kit.git ~/Github/agentive-starter-kit
+  ```
+- **adversarial-workflow**: https://github.com/movito/adversarial-workflow
+  ```bash
+  git clone git@github.com:movito/adversarial-workflow.git ~/Github/adversarial-workflow
+  ```
