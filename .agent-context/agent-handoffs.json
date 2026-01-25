@@ -1,19 +1,19 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2025-01-23",
+  "last_updated": "2025-01-25",
   "agents": {
     "planner": {
-      "status": "active",
-      "current_task": "Coordinating ADV-0022 implementation",
-      "brief_note": "Rolled back PR #13 merge, need ADV-0022 before merging",
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0022 handoff created",
       "details_link": null
     },
     "feature-developer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0024/0025 complete, awaiting ADV-0022 assignment",
-      "details_link": null
+      "status": "assigned",
+      "current_task": "ADV-0022",
+      "brief_note": "Fix check() .env variable count using dotenv_values()",
+      "details_link": ".agent-context/ADV-0022-HANDOFF-feature-developer.md"
     },
     "code-reviewer": {
       "status": "idle",
@@ -34,12 +34,12 @@
     "ADV-0021: Load .env at startup (v0.6.1 merged)"
   ],
   "pending_tasks": [
-    "ADV-0022: Fix check() .env variable count (HIGH - blocks PR #13)",
+    "ADV-0022: Fix check() .env variable count (HIGH - assigned)",
     "ADV-0023: Exception handling improvements",
     "ADV-0026: Fix subprocess test environment issues (LOW)"
   ],
   "blocked_items": [
-    "PR #13: Needs ADV-0022 implemented first"
+    "PR #13: Needs ADV-0022 complete before merge"
   ],
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
@@ -47,5 +47,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "PR #12 (v0.6.1) merged to main. PR #13 blocked until ADV-0022 is implemented on fix/adv-0024-0025-env-loading-v2 branch."
+  "notes": "Working on branch fix/adv-0024-0025-env-loading-v2. ADV-0022 blocks PR #13 merge - tests exist but fail until implementation complete."
 }
