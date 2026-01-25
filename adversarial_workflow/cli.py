@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import yaml
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 
 __version__ = "0.6.2"
 
@@ -803,18 +803,36 @@ def check() -> int:
     # Check for .env file first (before loading environment variables)
     env_file = Path(".env")
     env_loaded = False
-    env_keys_before = set(os.environ.keys())
 
     if env_file.exists():
         try:
+            # Count variables by reading file directly (works even if already loaded)
+            env_vars = dotenv_values(env_file)
+            var_count = len([k for k, v in env_vars.items() if v is not None])
+
+            # Still load to ensure environment is set
             load_dotenv(env_file)
-            env_keys_after = set(os.environ.keys())
-            new_keys = env_keys_after - env_keys_before
             env_loaded = True
             good_checks.append(
-                f".env file found and loaded ({len(new_keys)} variables)"
+                f".env file found and loaded ({var_count} variables)"
             )
-        except Exception as e:
+        except FileNotFoundError:
+            issues.append(
+                {
+                    "severity": "WARNING",
+                    "message": ".env file disappeared during check",
+                    "fix": "Ensure .env file exists and is readable",
+                }
+            )
+        except PermissionError:
+            issues.append(
+                {
+                    "severity": "WARNING",
+                    "message": ".env file found but permission denied",
+                    "fix": "Check file permissions: chmod 644 .env",
+                }
+            )
+        except OSError as e:
             issues.append(
                 {
                     "severity": "WARNING",

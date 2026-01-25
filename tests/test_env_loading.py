@@ -104,3 +104,114 @@ output_suffix: TEST
         assert "check" in combined.lower() and "conflict" in combined.lower(), (
             f"Expected conflict warning for user-defined 'check' evaluator. Got: {combined}"
         )
+
+
+class TestCheckEnvCount:
+    """Tests for check() .env variable count (ADV-0022).
+    
+    The check() command should report accurate variable counts from .env files,
+    even when main() has already loaded the environment variables.
+    """
+
+    def test_check_reports_correct_env_count(self, tmp_path):
+        """check() reports correct count when .env has multiple variables."""
+        # Create .env with 3 variables
+        (tmp_path / ".env").write_text("KEY1=value1\nKEY2=value2\nKEY3=value3\n")
+
+        # Create minimal project config
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir()
+        (adv_dir / "config.yml").write_text("evaluator_model: gpt-4o\n")
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "check"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+
+        # Should report 3 variables
+        combined = result.stdout + result.stderr
+        assert "3 variables" in combined, (
+            f"Expected '.env file found and loaded (3 variables)'. Got: {combined}"
+        )
+
+    def test_check_handles_empty_env_file(self, tmp_path):
+        """check() reports 0 variables for empty .env file."""
+        # Create empty .env
+        (tmp_path / ".env").write_text("")
+
+        # Create minimal project config
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir()
+        (adv_dir / "config.yml").write_text("evaluator_model: gpt-4o\n")
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "check"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+
+        # Should report 0 variables
+        combined = result.stdout + result.stderr
+        assert "0 variables" in combined, (
+            f"Expected '.env file found and loaded (0 variables)'. Got: {combined}"
+        )
+
+    def test_check_handles_comments_in_env(self, tmp_path):
+        """check() only counts actual variables, not comments."""
+        # Create .env with comments and 2 actual variables
+        (tmp_path / ".env").write_text(
+            "# This is a comment\n"
+            "KEY1=value1\n"
+            "# Another comment\n"
+            "KEY2=value2\n"
+            "\n"  # Empty line
+        )
+
+        # Create minimal project config
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir()
+        (adv_dir / "config.yml").write_text("evaluator_model: gpt-4o\n")
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "check"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+
+        # Should report 2 variables (not counting comments)
+        combined = result.stdout + result.stderr
+        assert "2 variables" in combined, (
+            f"Expected '.env file found and loaded (2 variables)'. Got: {combined}"
+        )
+
+    def test_check_handles_unusual_env_entries(self, tmp_path):
+        """check() handles various .env formats correctly."""
+        # Create .env with unusual but valid entries
+        (tmp_path / ".env").write_text(
+            "SIMPLE=value\n"
+            "EMPTY_VALUE=\n"  # Empty string value - counts as a variable
+            "QUOTED='quoted value'\n"
+            "WITH_SPACES=value with spaces\n"
+        )
+
+        # Create minimal project config
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir()
+        (adv_dir / "config.yml").write_text("evaluator_model: gpt-4o\n")
+
+        result = subprocess.run(
+            [sys.executable, "-m", "adversarial_workflow.cli", "check"],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+
+        # Should report 4 variables (EMPTY_VALUE= has empty string value, still counts)
+        combined = result.stdout + result.stderr
+        assert "4 variables" in combined, (
+            f"Expected '.env file found and loaded (4 variables)'. Got: {combined}"
+        )
