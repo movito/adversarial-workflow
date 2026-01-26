@@ -1,5 +1,7 @@
 # ADV-0023: Exception Handling Improvements for .env Loading
 
+## Status: Done
+
 ## Summary
 
 Bot reviews (CodeRabbit, Cursor Bugbot) identified two high-severity exception handling gaps in the .env loading code introduced by ADV-0021/ADV-0022.

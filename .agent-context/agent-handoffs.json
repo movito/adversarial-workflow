@@ -6,19 +6,19 @@
     "planner": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "PR #13 merged, v0.6.2 complete",
+      "brief_note": "ADV-0026 handoff ready",
       "details_link": null
     },
     "feature-developer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0022 and ADV-0027 complete",
-      "details_link": null
+      "status": "assigned",
+      "current_task": "ADV-0026",
+      "brief_note": "Fix subprocess test environment",
+      "details_link": ".agent-context/ADV-0026-HANDOFF-feature-developer.md"
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0022 approved",
+      "brief_note": "Ready for review",
       "details_link": null
     },
     "test-runner": {
@@ -29,15 +29,14 @@
     }
   },
   "recent_completions": [
+    "ADV-0023: Exception handling improvements",
     "ADV-0027: Starter kit alignment",
     "ADV-0022: Fix check() .env variable count",
     "ADV-0024: Custom evaluator .env loading",
-    "ADV-0025: Suppress built-in evaluator warning",
-    "ADV-0021: Load .env at startup (v0.6.1)"
+    "ADV-0025: Suppress built-in evaluator warning"
   ],
   "pending_tasks": [
-    "ADV-0023: Exception handling improvements (LOW)",
-    "ADV-0026: Fix subprocess test environment issues (LOW)"
+    "ADV-0026: Fix subprocess test environment (assigned)"
   ],
   "blocked_items": [],
   "conventions": {
@@ -46,5 +45,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "v0.6.2 complete with ADV-0022/0024/0025/0027. Fully aligned with agentive-starter-kit conventions. Ready for PyPI release."
+  "notes": "ADV-0023 was already implemented in ADV-0022. ADV-0026 is last task before v0.6.2 release."
 }
