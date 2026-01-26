@@ -44,7 +44,11 @@ FOLDER_STATUS_MAP = {
 
 
 def find_task_file(task_id: str, project_dir: Path) -> Path | None:
-    """Find a task file by ID across all workflow folders."""
+    """Find a task file by ID across all workflow folders.
+
+    Uses boundary-aware matching to prevent ADV-1 from matching ADV-10, ADV-11, etc.
+    The task ID must be followed by a non-digit character (typically '-' or '.').
+    """
     tasks_dir = project_dir / "delegation" / "tasks"
 
     # Normalize task ID (handle ASK-0001 or ASK-1)
@@ -54,8 +58,13 @@ def find_task_file(task_id: str, project_dir: Path) -> Path | None:
         if not folder.is_dir():
             continue
         for file in folder.glob("*.md"):
-            if task_id_upper in file.name.upper():
-                return file
+            name_upper = file.name.upper()
+            # Must start with task ID followed by non-digit character
+            if name_upper.startswith(task_id_upper):
+                rest = name_upper[len(task_id_upper) :]
+                # Valid if followed by non-digit (e.g., '-', '.') or exact match
+                if not rest or not rest[0].isdigit():
+                    return file
     return None
 
 
@@ -614,9 +623,6 @@ except Exception as e:
     try:
         result = subprocess.run(cmd, cwd=project_dir)
         sys.exit(result.returncode)
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Error running command: {e}")
-        sys.exit(1)
     except KeyboardInterrupt:
         print("\n⚠️  Operation cancelled by user")
         sys.exit(0)
