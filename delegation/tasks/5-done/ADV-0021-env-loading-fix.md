@@ -1,6 +1,6 @@
 # ADV-0021: Fix .env Loading for Custom Evaluators
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Estimated Effort**: 30 minutes
 **Target Version**: v0.6.1

@@ -6,7 +6,7 @@
     "planner": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0028 complete, ready for v0.6.2",
+      "brief_note": "v0.6.2 released, housekeeping complete",
       "details_link": null
     },
     "feature-developer": {
@@ -34,7 +34,7 @@
     "ADV-0023: Exception handling improvements",
     "ADV-0027: Starter kit alignment",
     "ADV-0022: Fix check() .env variable count",
-    "ADV-0024: Custom evaluator .env loading"
+    "ADV-0021: .env loading at CLI startup"
   ],
   "pending_tasks": [],
   "blocked_items": [],
@@ -44,5 +44,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "ADV-0028 complete. Fixes were merged as part of ADV-0026 PR. Ready for v0.6.2 release."
+  "notes": "v0.6.2 released. All ADV-002x tasks complete. Housekeeping done - stale handoffs archived."
 }
