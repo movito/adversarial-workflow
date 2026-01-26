@@ -20,9 +20,24 @@ Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to i
 - 🎯 **Tool-agnostic**: Use with Claude Code, Cursor, Aider, manual coding, or any workflow
 - ✨ **Interactive onboarding**: Guided setup wizard gets you started in <5 minutes
 
-## What's New in v0.6.0
+## What's New in v0.6.2
 
-🔌 **Plugin Architecture** - Define custom evaluators without modifying the package:
+### Upgrade
+
+```bash
+pip install --upgrade adversarial-workflow
+```
+
+### v0.6.2 - .env Loading & Stability
+
+- **Automatic .env loading**: API keys in `.env` files are now loaded at CLI startup
+- **Custom evaluator support**: Evaluators using `api_key_env: GEMINI_API_KEY` (or other keys) now work with `.env` files
+- **Better diagnostics**: `adversarial check` correctly reports the number of variables loaded from `.env`
+- **Improved error handling**: Malformed `.env` files show warnings instead of crashing
+
+### v0.6.0 - Plugin Architecture
+
+🔌 **Custom Evaluators** - Define your own evaluators without modifying the package:
 
 ```bash
 # Create a custom evaluator

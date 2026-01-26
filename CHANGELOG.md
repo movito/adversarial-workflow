@@ -7,7 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.0] - Unreleased
+## [0.6.2] - 2025-01-25
+
+### Fixed
+- **ADV-0022**: `adversarial check` now correctly reports .env variable count (was showing "0 variables")
+- **ADV-0024**: Custom evaluators with `api_key_env` now properly load keys from .env files
+- **ADV-0025**: Removed false warning "Evaluator 'review' conflicts with CLI command" for built-in evaluators
+- **ADV-0026**: Fixed subprocess test environment issues with system pytest
+
+### Added
+- **ADV-0027**: Full alignment with agentive-starter-kit conventions
+  - Added `scripts/` utilities (validate_task_status.py, verify-setup.sh, ci-check.sh)
+  - Added `agents/` launch scripts (launch, onboarding, preflight)
+  - Added `.agent-context/templates/` and `workflows/` documentation
+  - Updated agent definitions with latest conventions
+  - Added SETUP.md for project setup instructions
+
+### Improved
+- **ADV-0023**: Better exception handling for .env files with encoding issues
+- Exception handling uses specific types (FileNotFoundError, PermissionError, ValueError) instead of generic Exception
+
+## [0.6.1] - 2025-01-24
+
+### Fixed
+- **ADV-0021**: .env files are now automatically loaded at CLI startup
+  - All commands (evaluate, check, custom evaluators) can access .env variables
+  - Explicit path resolution ensures correct .env file is loaded from working directory
+
+## [0.6.0] - 2025-01-22
 
 ### Added
 - **Plugin Architecture**: Define custom evaluators in `.adversarial/evaluators/*.yml`
