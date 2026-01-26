@@ -1,6 +1,6 @@
 # ADV-0028: Fix scripts/project Issues
 
-**Status**: Todo
+**Status**: Done
 **Priority**: Medium
 **Type**: Bug Fix / Code Quality
 **Created**: 2025-01-25
@@ -93,11 +93,11 @@ subprocess.run([sys.executable, "scripts/linear_teams.py", ...])
 
 ## Acceptance Criteria
 
-- [ ] Dead CalledProcessError handler removed
-- [ ] `find_task_file()` uses exact/boundary-aware matching
-- [ ] Tests added for `find_task_file()` edge cases (ADV-1 vs ADV-10)
-- [ ] (Optional) Inline Python extracted to separate files
-- [ ] All existing tests pass
+- [x] Dead CalledProcessError handler removed
+- [x] `find_task_file()` uses exact/boundary-aware matching
+- [x] Tests added for `find_task_file()` edge cases (ADV-1 vs ADV-10)
+- [ ] (Optional) Inline Python extracted to separate files - SKIPPED (not critical)
+- [x] All existing tests pass (184/184)
 
 ## Testing
 
