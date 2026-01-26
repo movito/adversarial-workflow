@@ -1,33 +1,27 @@
 {
-  "project": "adversarial-workflow",
-  "version": "0.5.0",
-  "phase": "development",
-  "last_updated": "2026-01-22",
-  "status": {
-    "overall": "healthy",
-    "tests": "passing",
-    "ci": "configured",
-    "documentation": "updated"
+  "project": {
+    "name": "adversarial-workflow",
+    "version": "0.6.2",
+    "description": "Multi-stage AI code review CLI tool",
+    "created": "2024-10-20",
+    "languages": ["python"]
+  },
+  "configuration": {
+    "serena_enabled": true,
+    "evaluator_enabled": true,
+    "linear_enabled": false,
+    "task_prefix": "ADV"
   },
   "metrics": {
-    "test_coverage": 0,
-    "tasks_completed": 16,
-    "pypi_version": "0.5.0"
+    "tasks_created": 27,
+    "tasks_completed": 21,
+    "agents_active": 1,
+    "test_pass_rate": null,
+    "coverage": null
   },
-  "priorities": [
-    "Complete plugin architecture (ADV-0017 to ADV-0019)",
-    "Release v0.6.0 with custom evaluators"
-  ],
-  "recent_changes": [
-    "ADV-0020: Aligned with agentive-starter-kit conventions",
-    "ADV-0016: Evaluator discovery merged",
-    "ADV-0015: EvaluatorConfig dataclass merged",
-    "v0.5.0: Released with bundled aider-chat"
-  ],
-  "conventions": {
-    "task_prefix": "ADV-",
-    "handoff_location": ".agent-context/",
-    "review_location": ".agent-context/reviews/",
-    "archive_location": ".agent-context/archive/"
-  }
+  "recent_activity": [
+    "ADV-0022: Fix check() .env variable count",
+    "ADV-0024: Custom evaluator .env loading",
+    "ADV-0025: Suppress built-in evaluator warning"
+  ]
 }
