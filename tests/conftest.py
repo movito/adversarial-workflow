@@ -6,6 +6,9 @@ including temporary directories, sample files, and mocked dependencies.
 """
 
 import os
+import shutil
+import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -209,3 +212,42 @@ Plan evaluation completed successfully.
     with patch("subprocess.run") as mock_run:
         mock_run.side_effect = lambda *args, **kwargs: _mock_aider()
         yield _mock_aider
+
+
+@pytest.fixture
+def cli_python():
+    """Get Python interpreter path that has adversarial_workflow installed.
+
+    When running with system pytest, sys.executable may point to a Python
+    that doesn't have our package installed. This fixture finds the correct
+    Python by checking if the 'adversarial' command is available.
+    """
+    # First, try to find the adversarial command on PATH
+    adversarial_cmd = shutil.which("adversarial")
+    if adversarial_cmd:
+        # The adversarial script is available, signal to use command directly
+        return None
+
+    # Fall back to sys.executable (works in venv)
+    return sys.executable
+
+
+@pytest.fixture
+def run_cli(cli_python):
+    """Helper fixture to run CLI commands in subprocess.
+
+    Usage:
+        result = run_cli(["check"], cwd=tmp_path, env=env)
+    """
+
+    def _run_cli(args, **kwargs):
+        if cli_python is None:
+            # Use adversarial command directly
+            cmd = ["adversarial"] + args
+        else:
+            # Use python -m
+            cmd = [cli_python, "-m", "adversarial_workflow.cli"] + args
+
+        return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
+
+    return _run_cli

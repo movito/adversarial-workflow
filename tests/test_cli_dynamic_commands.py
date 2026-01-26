@@ -5,8 +5,6 @@ registered as CLI subcommands, with proper alias support and static command
 protection.
 """
 
-import subprocess
-import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -16,7 +14,7 @@ import pytest
 class TestBuiltinEvaluatorsInHelp:
     """Test that built-in evaluators appear in CLI help output."""
 
-    def test_evaluate_command_in_help(self, tmp_path, monkeypatch):
+    def test_evaluate_command_in_help(self, tmp_path, monkeypatch, run_cli):
         """Built-in 'evaluate' command appears in --help."""
         # Create minimal project structure
         adv_dir = tmp_path / ".adversarial"
@@ -25,16 +23,11 @@ class TestBuiltinEvaluatorsInHelp:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert result.returncode == 0
         assert "evaluate" in result.stdout
 
-    def test_proofread_command_in_help(self, tmp_path, monkeypatch):
+    def test_proofread_command_in_help(self, tmp_path, monkeypatch, run_cli):
         """Built-in 'proofread' command appears in --help."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -42,16 +35,11 @@ class TestBuiltinEvaluatorsInHelp:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert result.returncode == 0
         assert "proofread" in result.stdout
 
-    def test_review_command_in_help(self, tmp_path, monkeypatch):
+    def test_review_command_in_help(self, tmp_path, monkeypatch, run_cli):
         """Built-in 'review' command appears in --help."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -59,12 +47,7 @@ class TestBuiltinEvaluatorsInHelp:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert result.returncode == 0
         assert "review" in result.stdout
 
@@ -72,7 +55,7 @@ class TestBuiltinEvaluatorsInHelp:
 class TestLocalEvaluatorDiscovery:
     """Test that local evaluators in .adversarial/evaluators/ appear in CLI."""
 
-    def test_local_evaluator_in_help(self, tmp_path, monkeypatch):
+    def test_local_evaluator_in_help(self, tmp_path, monkeypatch, run_cli):
         """Local evaluator appears in --help output."""
         # Setup: Create local evaluator
         adv_dir = tmp_path / ".adversarial"
@@ -94,18 +77,13 @@ output_suffix: CUSTOM-TEST
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert (
             "custom" in result.stdout
         ), f"'custom' not found in help output:\n{result.stdout}"
         assert "Custom test evaluator" in result.stdout
 
-    def test_multiple_local_evaluators_in_help(self, tmp_path, monkeypatch):
+    def test_multiple_local_evaluators_in_help(self, tmp_path, monkeypatch, run_cli):
         """Multiple local evaluators appear in --help output."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -138,12 +116,7 @@ output_suffix: POWER-EVAL
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert "athena" in result.stdout
         assert "zeus" in result.stdout
 
@@ -151,7 +124,7 @@ output_suffix: POWER-EVAL
 class TestStaticCommandProtection:
     """Test that static commands cannot be overridden by evaluators."""
 
-    def test_init_command_not_overridden(self, tmp_path, monkeypatch):
+    def test_init_command_not_overridden(self, tmp_path, monkeypatch, run_cli):
         """Static 'init' command cannot be overridden by evaluators."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -174,19 +147,14 @@ output_suffix: BAD-INIT
         monkeypatch.chdir(tmp_path)
 
         # 'init --help' should still show the original init command
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "init", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["init", "--help"], cwd=tmp_path)
         # Init help should have --path and --interactive options (not evaluator options)
         assert "--path" in result.stdout
         assert "--interactive" in result.stdout
         # Should NOT have 'file' positional arg (evaluators have 'file' arg)
         assert "BAD-INIT" not in result.stdout
 
-    def test_check_command_not_overridden(self, tmp_path, monkeypatch):
+    def test_check_command_not_overridden(self, tmp_path, monkeypatch, run_cli):
         """Static 'check' command cannot be overridden by evaluators."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -207,12 +175,7 @@ output_suffix: BAD-CHECK
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "check", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["check", "--help"], cwd=tmp_path)
         # Check command should NOT have evaluator-specific options
         # Evaluators have --timeout and positional 'file' arg
         assert "--timeout" not in result.stdout
@@ -222,7 +185,7 @@ output_suffix: BAD-CHECK
 class TestEvaluatorExecution:
     """Test evaluator command execution routing."""
 
-    def test_evaluator_has_file_argument(self, tmp_path, monkeypatch):
+    def test_evaluator_has_file_argument(self, tmp_path, monkeypatch, run_cli):
         """Evaluator commands have a 'file' positional argument."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -243,16 +206,11 @@ output_suffix: MY-EVAL
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "myeval", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["myeval", "--help"], cwd=tmp_path)
         assert result.returncode == 0
         assert "file" in result.stdout.lower()
 
-    def test_evaluator_has_timeout_flag(self, tmp_path, monkeypatch):
+    def test_evaluator_has_timeout_flag(self, tmp_path, monkeypatch, run_cli):
         """Evaluator commands have --timeout flag."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -273,19 +231,14 @@ output_suffix: MY-EVAL
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "myeval", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["myeval", "--help"], cwd=tmp_path)
         assert "--timeout" in result.stdout or "-t" in result.stdout
 
 
 class TestAliasSupport:
     """Test evaluator alias support."""
 
-    def test_alias_in_help(self, tmp_path, monkeypatch):
+    def test_alias_in_help(self, tmp_path, monkeypatch, run_cli):
         """Evaluator aliases appear in help."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -309,15 +262,10 @@ aliases:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert "knowledge" in result.stdout
 
-    def test_alias_command_works(self, tmp_path, monkeypatch):
+    def test_alias_command_works(self, tmp_path, monkeypatch, run_cli):
         """Alias command shows same help as main command."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -341,18 +289,8 @@ aliases:
         monkeypatch.chdir(tmp_path)
 
         # Both 'knowledge --help' and 'know --help' should work
-        result_main = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "knowledge", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
-        result_alias = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "know", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result_main = run_cli(["knowledge", "--help"], cwd=tmp_path)
+        result_alias = run_cli(["know", "--help"], cwd=tmp_path)
         assert result_main.returncode == 0
         assert result_alias.returncode == 0
         # Both should have 'file' argument
@@ -363,7 +301,7 @@ aliases:
 class TestBackwardsCompatibility:
     """Test backwards compatibility with existing commands."""
 
-    def test_evaluate_help_works(self, tmp_path, monkeypatch):
+    def test_evaluate_help_works(self, tmp_path, monkeypatch, run_cli):
         """adversarial evaluate --help still works."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -371,16 +309,11 @@ class TestBackwardsCompatibility:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "evaluate", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["evaluate", "--help"], cwd=tmp_path)
         assert result.returncode == 0
         assert "file" in result.stdout.lower()
 
-    def test_proofread_help_works(self, tmp_path, monkeypatch):
+    def test_proofread_help_works(self, tmp_path, monkeypatch, run_cli):
         """adversarial proofread --help still works."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -388,15 +321,10 @@ class TestBackwardsCompatibility:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "proofread", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["proofread", "--help"], cwd=tmp_path)
         assert result.returncode == 0
 
-    def test_review_help_works(self, tmp_path, monkeypatch):
+    def test_review_help_works(self, tmp_path, monkeypatch, run_cli):
         """adversarial review --help still works."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -404,15 +332,10 @@ class TestBackwardsCompatibility:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "review", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["review", "--help"], cwd=tmp_path)
         assert result.returncode == 0
 
-    def test_init_command_still_works(self, tmp_path, monkeypatch):
+    def test_init_command_still_works(self, tmp_path, monkeypatch, run_cli):
         """Static init command still works."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -420,12 +343,7 @@ class TestBackwardsCompatibility:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "init", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["init", "--help"], cwd=tmp_path)
         assert result.returncode == 0
         assert "--interactive" in result.stdout or "-i" in result.stdout
 
@@ -433,7 +351,7 @@ class TestBackwardsCompatibility:
 class TestGracefulDegradation:
     """Test graceful degradation on errors."""
 
-    def test_help_works_without_local_evaluators_dir(self, tmp_path, monkeypatch):
+    def test_help_works_without_local_evaluators_dir(self, tmp_path, monkeypatch, run_cli):
         """CLI help works even without .adversarial/evaluators/ directory."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -442,27 +360,17 @@ class TestGracefulDegradation:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert result.returncode == 0
         # Built-in evaluators should still be present
         assert "evaluate" in result.stdout
 
-    def test_help_works_without_adversarial_dir(self, tmp_path, monkeypatch):
+    def test_help_works_without_adversarial_dir(self, tmp_path, monkeypatch, run_cli):
         """CLI help works even without .adversarial/ directory."""
         # Note: NOT creating .adversarial/ directory at all
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert result.returncode == 0
         # Built-in evaluators should still be present
         assert "evaluate" in result.stdout
@@ -471,7 +379,7 @@ class TestGracefulDegradation:
 class TestEvaluatorConfigAttribute:
     """Test that evaluator commands get evaluator_config attribute."""
 
-    def test_builtin_evaluate_has_file_arg(self, tmp_path, monkeypatch):
+    def test_builtin_evaluate_has_file_arg(self, tmp_path, monkeypatch, run_cli):
         """Built-in evaluate command should have file argument after dynamic registration."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -479,17 +387,12 @@ class TestEvaluatorConfigAttribute:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "evaluate", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["evaluate", "--help"], cwd=tmp_path)
         assert result.returncode == 0
         # After dynamic registration, evaluate should have 'file' not 'task_file'
         assert "file" in result.stdout.lower()
 
-    def test_builtin_evaluate_has_timeout(self, tmp_path, monkeypatch):
+    def test_builtin_evaluate_has_timeout(self, tmp_path, monkeypatch, run_cli):
         """Built-in evaluate command should have --timeout flag after dynamic registration."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -497,19 +400,14 @@ class TestEvaluatorConfigAttribute:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "evaluate", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["evaluate", "--help"], cwd=tmp_path)
         assert "--timeout" in result.stdout or "-t" in result.stdout
 
 
 class TestReviewCommandBackwardsCompatibility:
     """Test that review command maintains backwards compatibility."""
 
-    def test_review_does_not_require_file(self, tmp_path, monkeypatch):
+    def test_review_does_not_require_file(self, tmp_path, monkeypatch, run_cli):
         """Review command should NOT require a file argument (reviews git changes)."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -517,17 +415,12 @@ class TestReviewCommandBackwardsCompatibility:
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "review", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["review", "--help"], cwd=tmp_path)
         assert result.returncode == 0
         # Review should NOT have --timeout flag (that's for evaluators)
         assert "--timeout" not in result.stdout
 
-    def test_review_command_not_overridden_by_evaluator(self, tmp_path, monkeypatch):
+    def test_review_command_not_overridden_by_evaluator(self, tmp_path, monkeypatch, run_cli):
         """Review command cannot be overridden by local evaluator."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -549,12 +442,7 @@ output_suffix: BAD-REVIEW
 
         monkeypatch.chdir(tmp_path)
 
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "review", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["review", "--help"], cwd=tmp_path)
         # Review should still be the static command
         assert "--timeout" not in result.stdout
         assert "BAD-REVIEW" not in result.stdout
@@ -563,7 +451,7 @@ output_suffix: BAD-REVIEW
 class TestAliasStaticCommandProtection:
     """Test that evaluator aliases cannot override static commands."""
 
-    def test_alias_cannot_override_static_command(self, tmp_path, monkeypatch):
+    def test_alias_cannot_override_static_command(self, tmp_path, monkeypatch, run_cli):
         """Evaluator alias matching static command should be skipped."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -589,28 +477,18 @@ aliases:
         monkeypatch.chdir(tmp_path)
 
         # The CLI should not crash
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert result.returncode == 0
         # badeval should be registered
         assert "badeval" in result.stdout
         # safe_alias should work
         assert "safe_alias" in result.stdout
         # 'init' should still be the static command
-        result_init = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "init", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result_init = run_cli(["init", "--help"], cwd=tmp_path)
         assert "--path" in result_init.stdout
         assert "--interactive" in result_init.stdout
 
-    def test_evaluator_with_conflicting_name_and_alias(self, tmp_path, monkeypatch):
+    def test_evaluator_with_conflicting_name_and_alias(self, tmp_path, monkeypatch, run_cli):
         """Evaluator with conflicting name doesn't crash when alias is processed."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -636,12 +514,7 @@ aliases:
         monkeypatch.chdir(tmp_path)
 
         # The CLI should not crash
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-            cwd=tmp_path,
-        )
+        result = run_cli(["--help"], cwd=tmp_path)
         assert result.returncode == 0
         # 'init' should still be the static command
         assert "init" in result.stdout

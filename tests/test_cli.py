@@ -5,8 +5,6 @@ Comprehensive smoke tests for all CLI commands to ensure basic functionality
 works correctly before refactoring the monolithic cli.py.
 """
 
-import subprocess
-import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -18,76 +16,48 @@ from adversarial_workflow.cli import check, health, load_config, main
 class TestCLISmoke:
     """Basic smoke tests to verify CLI is functional."""
 
-    def test_version_flag(self):
+    def test_version_flag(self, run_cli):
         """Test that --version returns version info."""
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--version"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["--version"])
         assert result.returncode == 0
 
         assert "0.6.2" in result.stdout or "0.6.2" in result.stderr
 
-    def test_help_flag(self):
+    def test_help_flag(self, run_cli):
         """Test that --help returns help text."""
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["--help"])
         assert result.returncode == 0
         help_text = result.stdout.lower()
         assert any(cmd in help_text for cmd in ["evaluate", "init", "check", "health"])
 
-    def test_no_command_shows_help(self):
+    def test_no_command_shows_help(self, run_cli):
         """Test that no command shows help text."""
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli([])
         assert result.returncode == 0
         help_text = result.stdout.lower()
         assert "usage" in help_text or "help" in help_text
 
-    def test_evaluate_without_file_shows_error(self):
+    def test_evaluate_without_file_shows_error(self, run_cli):
         """Test that evaluate without a file shows an error."""
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "evaluate"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["evaluate"])
         # Should fail because no file was provided
         assert result.returncode != 0
 
-    def test_init_help(self):
+    def test_init_help(self, run_cli):
         """Test that init command help works."""
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "init", "--help"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["init", "--help"])
         assert result.returncode == 0
         assert "workflow" in result.stdout.lower() or "init" in result.stdout.lower()
 
-    def test_check_help(self):
+    def test_check_help(self, run_cli):
         """Test that check command help works."""
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "check", "--help"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["check", "--help"])
         assert result.returncode == 0
         assert "validate" in result.stdout.lower() or "check" in result.stdout.lower()
 
-    def test_health_help(self):
+    def test_health_help(self, run_cli):
         """Test that health command help works."""
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "health", "--help"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["health", "--help"])
         assert result.returncode == 0
         assert "health" in result.stdout.lower()
 
@@ -160,38 +130,20 @@ class TestCLIDirectImport:
 class TestCLIErrorHandling:
     """Test CLI error handling scenarios."""
 
-    def test_invalid_command(self):
+    def test_invalid_command(self, run_cli):
         """Test that invalid command shows error."""
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "invalid_command"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["invalid_command"])
         # Should show help (return code 1) for invalid command
         assert result.returncode != 0 or "usage" in result.stdout.lower()
 
-    def test_evaluate_with_nonexistent_file(self):
+    def test_evaluate_with_nonexistent_file(self, run_cli):
         """Test evaluate command with nonexistent file."""
-        result = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "adversarial_workflow.cli",
-                "evaluate",
-                "nonexistent.md",
-            ],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["evaluate", "nonexistent.md"])
         # Should fail with appropriate error
         assert result.returncode != 0
 
-    def test_agent_without_subcommand(self):
+    def test_agent_without_subcommand(self, run_cli):
         """Test agent command without subcommand shows error."""
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "agent"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["agent"])
         # Should fail and show usage
         assert result.returncode != 0

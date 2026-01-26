@@ -1,6 +1,6 @@
 # ADV-0026: Fix Subprocess Test Environment Issues
 
-**Status**: Todo
+**Status**: In Progress
 **Priority**: High
 **Type**: Bug Fix
 **Created**: 2025-01-23
