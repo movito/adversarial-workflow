@@ -118,7 +118,7 @@ class TestCheckEnvCount:
         """check() handles empty .env file gracefully."""
         (tmp_path / ".env").write_text("")
 
-        env = {k: v for k, v in os.environ.items()}
+        env = dict(os.environ)
         env["PATH"] = os.environ.get("PATH", "")
 
         result = run_cli(["check"], cwd=tmp_path, env=env)

@@ -243,10 +243,10 @@ def run_cli(cli_python):
     def _run_cli(args, **kwargs):
         if cli_python is None:
             # Use adversarial command directly
-            cmd = ["adversarial"] + args
+            cmd = ["adversarial", *args]
         else:
             # Use python -m
-            cmd = [cli_python, "-m", "adversarial_workflow.cli"] + args
+            cmd = [cli_python, "-m", "adversarial_workflow.cli", *args]
 
         return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
 

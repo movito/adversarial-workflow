@@ -5,6 +5,7 @@ Comprehensive smoke tests for all CLI commands to ensure basic functionality
 works correctly before refactoring the monolithic cli.py.
 """
 
+from importlib.metadata import version
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -21,7 +22,8 @@ class TestCLISmoke:
         result = run_cli(["--version"])
         assert result.returncode == 0
 
-        assert "0.6.2" in result.stdout or "0.6.2" in result.stderr
+        expected_version = version("adversarial-workflow")
+        assert expected_version in result.stdout or expected_version in result.stderr
 
     def test_help_flag(self, run_cli):
         """Test that --help returns help text."""
