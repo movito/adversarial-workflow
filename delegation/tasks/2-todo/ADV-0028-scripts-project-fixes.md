@@ -1,6 +1,6 @@
 # ADV-0028: Fix scripts/project Issues
 
-**Status**: Backlog
+**Status**: Todo
 **Priority**: Medium
 **Type**: Bug Fix / Code Quality
 **Created**: 2025-01-25
