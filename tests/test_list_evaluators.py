@@ -37,7 +37,8 @@ class TestListEvaluatorsCommand:
         """Shows local evaluators when present."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "test.yml").write_text("""
+        (eval_dir / "test.yml").write_text(
+            """
 name: test
 description: Test evaluator
 model: gpt-4o-mini
@@ -46,7 +47,8 @@ prompt: Test prompt
 output_suffix: TEST
 aliases:
   - t
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
         result = subprocess.run(
@@ -74,7 +76,8 @@ aliases:
         """Aliases do not cause duplicate entries in output."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "athena.yml").write_text("""
+        (eval_dir / "athena.yml").write_text(
+            """
 name: athena
 description: Knowledge evaluation using Gemini 2.5 Pro
 model: gemini-2.5-pro
@@ -84,7 +87,8 @@ output_suffix: KNOWLEDGE-EVALUATION
 aliases:
   - knowledge
   - research
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
         result = subprocess.run(
@@ -101,7 +105,8 @@ aliases:
         """Shows version only when it differs from default 1.0.0."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "custom.yml").write_text("""
+        (eval_dir / "custom.yml").write_text(
+            """
 name: custom
 description: Custom evaluator v2
 model: gpt-4o
@@ -109,7 +114,8 @@ api_key_env: OPENAI_API_KEY
 prompt: Custom prompt
 output_suffix: CUSTOM
 version: 2.0.0
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
         result = subprocess.run(

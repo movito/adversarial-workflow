@@ -517,4 +517,3 @@ Content line 499: This is filler text to make the file realistic. The quick brow
 ## MARKER_LINE_500
 
 This is marker line 500 of 500.
-

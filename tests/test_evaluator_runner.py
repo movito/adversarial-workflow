@@ -3,15 +3,15 @@
 import os
 import shutil
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from adversarial_workflow.evaluators.config import EvaluatorConfig
 from adversarial_workflow.evaluators.runner import (
-    run_evaluator,
     _check_file_size,
     _report_verdict,
+    run_evaluator,
 )
 
 
@@ -197,6 +197,7 @@ class TestGetAllEvaluators:
         monkeypatch.chdir(tmp_path)
 
         from adversarial_workflow.evaluators import get_all_evaluators
+
         evaluators = get_all_evaluators()
 
         assert "evaluate" in evaluators
@@ -208,18 +209,21 @@ class TestGetAllEvaluators:
         # Create local evaluator that overrides 'evaluate'
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "evaluate.yml").write_text("""
+        (eval_dir / "evaluate.yml").write_text(
+            """
 name: evaluate
 description: Custom evaluate
 model: gpt-4o-mini
 api_key_env: OPENAI_API_KEY
 prompt: Custom prompt
 output_suffix: CUSTOM-EVAL
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
         from adversarial_workflow.evaluators import get_all_evaluators
+
         evaluators = get_all_evaluators()
 
         # Should have the local version
@@ -233,17 +237,26 @@ class TestUtilsModule:
     def test_colors_import(self):
         """Color constants are importable."""
         from adversarial_workflow.utils.colors import (
-            RESET, BOLD, GREEN, YELLOW, RED, CYAN, GRAY
+            BOLD,
+            CYAN,
+            GRAY,
+            GREEN,
+            RED,
+            RESET,
+            YELLOW,
         )
+
         assert RESET == "\033[0m"
         assert BOLD == "\033[1m"
 
     def test_config_import(self):
         """load_config is importable."""
         from adversarial_workflow.utils.config import load_config
+
         assert callable(load_config)
 
     def test_validation_import(self):
         """validate_evaluation_output is importable."""
         from adversarial_workflow.utils.validation import validate_evaluation_output
+
         assert callable(validate_evaluation_output)

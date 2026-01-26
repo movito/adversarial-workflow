@@ -10,10 +10,10 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .config import EvaluatorConfig
-from ..utils.colors import RESET, BOLD, GREEN, YELLOW, RED
+from ..utils.colors import BOLD, GREEN, RED, RESET, YELLOW
 from ..utils.config import load_config
 from ..utils.validation import validate_evaluation_output
+from .config import EvaluatorConfig
 
 
 def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -> int:
@@ -124,7 +124,7 @@ def _run_custom_evaluator(
 """
 
     # Create temp file for prompt
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
         f.write(full_prompt)
         prompt_file = f.name
 
@@ -136,12 +136,15 @@ def _run_custom_evaluator(
         # Build aider command
         cmd = [
             "aider",
-            "--model", config.model,
+            "--model",
+            config.model,
             "--yes",
             "--no-git",
             "--no-auto-commits",
-            "--message-file", prompt_file,
-            "--read", file_path,
+            "--message-file",
+            prompt_file,
+            "--read",
+            file_path,
         ]
 
         result = subprocess.run(
@@ -224,7 +227,10 @@ def _execute_script(
 
     # Validate output
     file_basename = Path(file_path).stem
-    log_file = Path(project_config["log_directory"]) / f"{file_basename}-{config.output_suffix}.md"
+    log_file = (
+        Path(project_config["log_directory"])
+        / f"{file_basename}-{config.output_suffix}.md"
+    )
 
     is_valid, verdict, message = validate_evaluation_output(str(log_file))
 
@@ -235,7 +241,9 @@ def _execute_script(
     return _report_verdict(verdict, log_file, config)
 
 
-def _report_verdict(verdict: str | None, log_file: Path, config: EvaluatorConfig) -> int:
+def _report_verdict(
+    verdict: str | None, log_file: Path, config: EvaluatorConfig
+) -> int:
     """Report the evaluation verdict to terminal."""
     print()
     if verdict == "APPROVED":

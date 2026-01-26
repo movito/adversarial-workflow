@@ -67,7 +67,7 @@ All 12 fields correctly implemented:
 
 **Required Fields (6):**
 - `name: str`
-- `description: str` 
+- `description: str`
 - `model: str`
 - `api_key_env: str`
 - `prompt: str`
@@ -89,7 +89,7 @@ All 6 expected tests present and passing:
 2. `test_default_values` - Default verification
 3. `test_with_all_optional_fields` - Complete field set
 4. `test_aliases_not_shared_between_instances` - Mutable default safety
-5. `test_equality` - Dataclass equality behavior  
+5. `test_equality` - Dataclass equality behavior
 6. `test_inequality` - Different configs not equal
 
 ### Package Discovery ✅
@@ -109,7 +109,7 @@ from adversarial_workflow.evaluators import EvaluatorConfig  # ✅ Works
 
 ```bash
 # EvaluatorConfig tests: 6/6 PASS
-# All project tests: 78/78 PASS  
+# All project tests: 78/78 PASS
 # Import functionality: ✅ PASS
 ```
 

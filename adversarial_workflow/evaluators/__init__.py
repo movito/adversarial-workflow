@@ -1,13 +1,13 @@
 """Evaluators module for adversarial-workflow plugin architecture."""
 
+from .builtins import BUILTIN_EVALUATORS
 from .config import EvaluatorConfig
 from .discovery import (
+    EvaluatorParseError,
     discover_local_evaluators,
     parse_evaluator_yaml,
-    EvaluatorParseError,
 )
 from .runner import run_evaluator
-from .builtins import BUILTIN_EVALUATORS
 
 
 def get_all_evaluators() -> dict[str, EvaluatorConfig]:
@@ -17,6 +17,7 @@ def get_all_evaluators() -> dict[str, EvaluatorConfig]:
     Aliases from local evaluators are also included in the returned dictionary.
     """
     import logging
+
     logger = logging.getLogger(__name__)
 
     evaluators: dict[str, EvaluatorConfig] = {}

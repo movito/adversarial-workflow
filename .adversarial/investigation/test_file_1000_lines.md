@@ -1032,4 +1032,3 @@ Content line 999: This is filler text to make the file realistic. The quick brow
 ## MARKER_LINE_1000
 
 This is marker line 1000 of 1000.
-

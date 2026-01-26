@@ -81,14 +81,16 @@ class TestLocalEvaluatorDiscovery:
 
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "custom.yml").write_text("""
+        (eval_dir / "custom.yml").write_text(
+            """
 name: custom
 description: Custom test evaluator
 model: gpt-4o-mini
 api_key_env: OPENAI_API_KEY
 prompt: Test prompt
 output_suffix: CUSTOM-TEST
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -98,7 +100,9 @@ output_suffix: CUSTOM-TEST
             text=True,
             cwd=tmp_path,
         )
-        assert "custom" in result.stdout, f"'custom' not found in help output:\n{result.stdout}"
+        assert (
+            "custom" in result.stdout
+        ), f"'custom' not found in help output:\n{result.stdout}"
         assert "Custom test evaluator" in result.stdout
 
     def test_multiple_local_evaluators_in_help(self, tmp_path, monkeypatch):
@@ -110,23 +114,27 @@ output_suffix: CUSTOM-TEST
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
 
-        (eval_dir / "athena.yml").write_text("""
+        (eval_dir / "athena.yml").write_text(
+            """
 name: athena
 description: Knowledge evaluation
 model: gemini-2.5-pro
 api_key_env: GOOGLE_API_KEY
 prompt: Evaluate knowledge
 output_suffix: KNOWLEDGE-EVAL
-""")
+"""
+        )
 
-        (eval_dir / "zeus.yml").write_text("""
+        (eval_dir / "zeus.yml").write_text(
+            """
 name: zeus
 description: Power evaluation
 model: gpt-4o
 api_key_env: OPENAI_API_KEY
 prompt: Evaluate power
 output_suffix: POWER-EVAL
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -152,14 +160,16 @@ class TestStaticCommandProtection:
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
         # Create evaluator named 'init' (should be skipped)
-        (eval_dir / "init.yml").write_text("""
+        (eval_dir / "init.yml").write_text(
+            """
 name: init
 description: This should NOT override init
 model: gpt-4o
 api_key_env: OPENAI_API_KEY
 prompt: Bad init
 output_suffix: BAD-INIT
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -184,14 +194,16 @@ output_suffix: BAD-INIT
 
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "check.yml").write_text("""
+        (eval_dir / "check.yml").write_text(
+            """
 name: check
 description: This should NOT override check
 model: gpt-4o
 api_key_env: OPENAI_API_KEY
 prompt: Bad check
 output_suffix: BAD-CHECK
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -218,14 +230,16 @@ class TestEvaluatorExecution:
 
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "myeval.yml").write_text("""
+        (eval_dir / "myeval.yml").write_text(
+            """
 name: myeval
 description: My evaluator
 model: gpt-4o-mini
 api_key_env: OPENAI_API_KEY
 prompt: Evaluate this
 output_suffix: MY-EVAL
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -246,14 +260,16 @@ output_suffix: MY-EVAL
 
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "myeval.yml").write_text("""
+        (eval_dir / "myeval.yml").write_text(
+            """
 name: myeval
 description: My evaluator
 model: gpt-4o-mini
 api_key_env: OPENAI_API_KEY
 prompt: Evaluate this
 output_suffix: MY-EVAL
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -277,7 +293,8 @@ class TestAliasSupport:
 
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "knowledge.yml").write_text("""
+        (eval_dir / "knowledge.yml").write_text(
+            """
 name: knowledge
 description: Knowledge evaluator
 model: gpt-4o
@@ -287,7 +304,8 @@ output_suffix: KNOWLEDGE
 aliases:
   - know
   - k
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -307,7 +325,8 @@ aliases:
 
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "knowledge.yml").write_text("""
+        (eval_dir / "knowledge.yml").write_text(
+            """
 name: knowledge
 description: Knowledge evaluator
 model: gpt-4o
@@ -316,7 +335,8 @@ prompt: Evaluate knowledge
 output_suffix: KNOWLEDGE
 aliases:
   - know
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -516,14 +536,16 @@ class TestReviewCommandBackwardsCompatibility:
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
         # Create evaluator named 'review' (should be skipped)
-        (eval_dir / "review.yml").write_text("""
+        (eval_dir / "review.yml").write_text(
+            """
 name: review
 description: This should NOT override review
 model: gpt-4o
 api_key_env: OPENAI_API_KEY
 prompt: Bad review
 output_suffix: BAD-REVIEW
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -550,7 +572,8 @@ class TestAliasStaticCommandProtection:
         eval_dir = adv_dir / "evaluators"
         eval_dir.mkdir(parents=True)
         # Create evaluator with alias 'init' (alias should be skipped)
-        (eval_dir / "badeval.yml").write_text("""
+        (eval_dir / "badeval.yml").write_text(
+            """
 name: badeval
 description: Evaluator with bad alias
 model: gpt-4o
@@ -560,7 +583,8 @@ output_suffix: BAD-EVAL
 aliases:
   - init
   - safe_alias
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
@@ -596,7 +620,8 @@ aliases:
         eval_dir.mkdir(parents=True)
         # Create evaluator named 'init' with alias 'myalias'
         # The name conflicts, but the alias dict entry might try to re-register
-        (eval_dir / "init.yml").write_text("""
+        (eval_dir / "init.yml").write_text(
+            """
 name: init
 description: Conflicting name evaluator
 model: gpt-4o
@@ -605,7 +630,8 @@ prompt: Test
 output_suffix: INIT-EVAL
 aliases:
   - myalias
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
 
