@@ -5,11 +5,12 @@ This module provides common fixtures used across all test modules,
 including temporary directories, sample files, and mocked dependencies.
 """
 
-import tempfile
 import os
-import pytest
+import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 @pytest.fixture
@@ -17,11 +18,11 @@ def tmp_project(tmp_path):
     """Create a temporary project directory with basic structure."""
     project_dir = tmp_path / "test_project"
     project_dir.mkdir()
-    
+
     # Create basic project structure
     (project_dir / ".adversarial").mkdir()
     (project_dir / ".adversarial" / "logs").mkdir()
-    
+
     # Create a basic config file
     config_content = """
 project_name: test_project
@@ -34,11 +35,11 @@ stages:
   - test_validation
 """
     (project_dir / ".adversarial" / "config.yaml").write_text(config_content.strip())
-    
+
     # Create a basic .env file
     env_content = "OPENAI_API_KEY=sk-fake-test-key\n"
     (project_dir / ".env").write_text(env_content)
-    
+
     return project_dir
 
 
@@ -100,12 +101,10 @@ def sample_task_file(tmp_project, sample_task_content):
 @pytest.fixture
 def mock_subprocess():
     """Mock subprocess.run calls to avoid running actual aider commands."""
-    with patch('subprocess.run') as mock_run:
+    with patch("subprocess.run") as mock_run:
         # Default successful aider run
         mock_run.return_value = Mock(
-            returncode=0,
-            stdout="Aider completed successfully",
-            stderr=""
+            returncode=0, stdout="Aider completed successfully", stderr=""
         )
         yield mock_run
 
@@ -113,15 +112,9 @@ def mock_subprocess():
 @pytest.fixture
 def mock_openai_api():
     """Mock OpenAI API calls to avoid actual API requests during tests."""
-    with patch('openai.ChatCompletion.create') as mock_create:
+    with patch("openai.ChatCompletion.create") as mock_create:
         mock_create.return_value = Mock(
-            choices=[
-                Mock(
-                    message=Mock(
-                        content="Test response from mocked OpenAI"
-                    )
-                )
-            ]
+            choices=[Mock(message=Mock(content="Test response from mocked OpenAI"))]
         )
         yield mock_create
 
@@ -130,17 +123,17 @@ def mock_openai_api():
 def sample_config():
     """Sample configuration dictionary for testing."""
     return {
-        'project_name': 'test_project',
-        'openai_api_key': 'sk-fake-test-key',
-        'aider_model': 'gpt-4o',
-        'stages': [
-            'plan_evaluation',
-            'implementation', 
-            'code_review',
-            'test_validation'
+        "project_name": "test_project",
+        "openai_api_key": "sk-fake-test-key",
+        "aider_model": "gpt-4o",
+        "stages": [
+            "plan_evaluation",
+            "implementation",
+            "code_review",
+            "test_validation",
         ],
-        'working_directory': '/tmp/test',
-        'output_directory': '.adversarial/logs'
+        "working_directory": "/tmp/test",
+        "output_directory": ".adversarial/logs",
     }
 
 
@@ -148,19 +141,18 @@ def sample_config():
 def mock_file_operations():
     """Mock file system operations for isolated testing."""
     mocks = {}
-    with patch('pathlib.Path.exists') as mock_exists, \
-         patch('pathlib.Path.is_file') as mock_is_file, \
-         patch('pathlib.Path.is_dir') as mock_is_dir:
-        
+    with patch("pathlib.Path.exists") as mock_exists, patch(
+        "pathlib.Path.is_file"
+    ) as mock_is_file, patch("pathlib.Path.is_dir") as mock_is_dir:
         # Default to files/dirs existing
         mock_exists.return_value = True
         mock_is_file.return_value = True
         mock_is_dir.return_value = True
-        
-        mocks['exists'] = mock_exists
-        mocks['is_file'] = mock_is_file
-        mocks['is_dir'] = mock_is_dir
-        
+
+        mocks["exists"] = mock_exists
+        mocks["is_file"] = mock_is_file
+        mocks["is_dir"] = mock_is_dir
+
         yield mocks
 
 
@@ -176,9 +168,10 @@ def change_test_dir(tmp_project):
 @pytest.fixture
 def mock_aider_command():
     """Mock aider command execution with realistic outputs."""
-    def _mock_aider(command_type='evaluate'):
+
+    def _mock_aider(command_type="evaluate"):
         """Create a mock aider command result based on type."""
-        if command_type == 'evaluate':
+        if command_type == "evaluate":
             return Mock(
                 returncode=0,
                 stdout="""
@@ -202,21 +195,17 @@ Plan evaluation completed successfully.
 - Output tokens: 500
 - Total tokens: 2000
 """,
-                stderr=""
+                stderr="",
             )
-        elif command_type == 'implement':
+        elif command_type == "implement":
             return Mock(
-                returncode=0,
-                stdout="Implementation completed successfully",
-                stderr=""
+                returncode=0, stdout="Implementation completed successfully", stderr=""
             )
         else:
             return Mock(
-                returncode=0,
-                stdout=f"{command_type} completed successfully",
-                stderr=""
+                returncode=0, stdout=f"{command_type} completed successfully", stderr=""
             )
-    
-    with patch('subprocess.run') as mock_run:
+
+    with patch("subprocess.run") as mock_run:
         mock_run.side_effect = lambda *args, **kwargs: _mock_aider()
         yield _mock_aider

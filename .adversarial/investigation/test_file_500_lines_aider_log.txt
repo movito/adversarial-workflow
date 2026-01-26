@@ -7,14 +7,14 @@ Git repo: none
 Repo-map: disabled
 Added .adversarial/investigation/test_file_500_lines.md to the chat (read-only).
 
-Here are the MARKER_LINE entries found in the test file:                        
+Here are the MARKER_LINE entries found in the test file:
 
- 1 Line 100: MARKER_LINE_100                                                    
- 2 Line 200: MARKER_LINE_200                                                    
- 3 Line 300: MARKER_LINE_300                                                    
- 4 Line 400: MARKER_LINE_400                                                    
- 5 Line 500: MARKER_LINE_500                                                    
+ 1 Line 100: MARKER_LINE_100
+ 2 Line 200: MARKER_LINE_200
+ 3 Line 300: MARKER_LINE_300
+ 4 Line 400: MARKER_LINE_400
+ 5 Line 500: MARKER_LINE_500
 
-Total markers found: 5.                                                         
+Total markers found: 5.
 
 Tokens: 20k sent, 90 received. Cost: $0.05 message, $0.05 session.

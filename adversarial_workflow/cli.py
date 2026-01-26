@@ -27,9 +27,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import yaml
-from dotenv import load_dotenv, dotenv_values
+from dotenv import dotenv_values, load_dotenv
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 # ANSI color codes for better output
 RESET = "\033[0m"
@@ -806,15 +806,14 @@ def check() -> int:
 
     if env_file.exists():
         try:
-            # Load .env into environment (idempotent - safe to call again after main())
-            load_dotenv(env_file)
-            # Use dotenv_values() to count variables directly from file
-            # This gives accurate count regardless of what was already in environment
+            # Count variables by reading file directly (works even if already loaded)
             env_vars = dotenv_values(env_file)
+            var_count = len([k for k, v in env_vars.items() if v is not None])
+
+            # Still load to ensure environment is set
+            load_dotenv(env_file)
             env_loaded = True
-            good_checks.append(
-                f".env file found ({len(env_vars)} variables configured)"
-            )
+            good_checks.append(f".env file found and loaded ({var_count} variables)")
         except (FileNotFoundError, PermissionError) as e:
             # File access errors
             issues.append(
@@ -2097,10 +2096,6 @@ def evaluate(task_file: str) -> int:
         return 0
 
 
-
-
-
-
 def review() -> int:
     """Run Phase 3: Code review."""
 
@@ -2739,54 +2734,61 @@ def agent_onboard(project_path: str = ".") -> int:
     return 0
 
 
-def split(task_file: str, strategy: str = "sections", max_lines: int = 500, dry_run: bool = False):
+def split(
+    task_file: str,
+    strategy: str = "sections",
+    max_lines: int = 500,
+    dry_run: bool = False,
+):
     """Split large task files into smaller evaluable chunks.
-    
+
     Args:
         task_file: Path to the task file to split
         strategy: Split strategy ('sections', 'phases', or 'manual')
         max_lines: Maximum lines per split (default: 500)
         dry_run: Preview splits without creating files
-        
+
     Returns:
         Exit code (0 for success, 1 for error)
     """
     from .utils.file_splitter import (
-        analyze_task_file, 
-        split_by_sections, 
-        split_by_phases, 
-        generate_split_files
+        analyze_task_file,
+        generate_split_files,
+        split_by_phases,
+        split_by_sections,
     )
-    
+
     try:
         print_box("File Splitting Utility", CYAN)
-        
+
         # Validate file exists
         if not os.path.exists(task_file):
             print(f"{RED}Error: File not found: {task_file}{RESET}")
             return 1
-        
+
         # Analyze file
         print(f"📄 Analyzing task file: {task_file}")
         analysis = analyze_task_file(task_file)
-        
-        lines = analysis['total_lines']
-        tokens = analysis['estimated_tokens']
+
+        lines = analysis["total_lines"]
+        tokens = analysis["estimated_tokens"]
         print(f"   Lines: {lines}")
         print(f"   Estimated tokens: ~{tokens:,}")
-        
+
         # Check if splitting is recommended
         if lines <= max_lines:
-            print(f"{GREEN}✅ File is under recommended limit ({max_lines} lines){RESET}")
+            print(
+                f"{GREEN}✅ File is under recommended limit ({max_lines} lines){RESET}"
+            )
             print("No splitting needed.")
             return 0
-        
+
         print(f"{YELLOW}⚠️  File exceeds recommended limit ({max_lines} lines){RESET}")
-        
+
         # Read file content for splitting
-        with open(task_file, 'r', encoding='utf-8') as f:
+        with open(task_file, "r", encoding="utf-8") as f:
             content = f.read()
-        
+
         # Apply split strategy
         if strategy == "sections":
             splits = split_by_sections(content, max_lines=max_lines)
@@ -2795,42 +2797,44 @@ def split(task_file: str, strategy: str = "sections", max_lines: int = 500, dry_
             splits = split_by_phases(content)
             print(f"\n💡 Suggested splits (by phases):")
         else:
-            print(f"{RED}Error: Unknown strategy '{strategy}'. Use 'sections' or 'phases'.{RESET}")
+            print(
+                f"{RED}Error: Unknown strategy '{strategy}'. Use 'sections' or 'phases'.{RESET}"
+            )
             return 1
-        
+
         # Display split preview
         for i, split in enumerate(splits, 1):
             filename = f"{Path(task_file).stem}-part{i}{Path(task_file).suffix}"
             print(f"   - {filename} ({split['line_count']} lines)")
-        
+
         # Dry run mode
         if dry_run:
             print(f"\n{CYAN}📋 Dry run mode - no files created{RESET}")
             return 0
-        
+
         # Prompt user for confirmation
         create_files = prompt_user(f"\nCreate {len(splits)} files?", default="n")
-        
-        if create_files.lower() in ['y', 'yes']:
+
+        if create_files.lower() in ["y", "yes"]:
             # Create output directory
             output_dir = os.path.join(os.path.dirname(task_file), "splits")
-            
+
             # Generate split files
             created_files = generate_split_files(task_file, splits, output_dir)
-            
+
             print(f"{GREEN}✅ Created {len(created_files)} files:{RESET}")
             for file_path in created_files:
                 print(f"   {file_path}")
-            
+
             print(f"\n{CYAN}💡 Tip: Evaluate each split file independently:{RESET}")
             for file_path in created_files:
                 rel_path = os.path.relpath(file_path)
                 print(f"   adversarial evaluate {rel_path}")
         else:
             print("Cancelled - no files created.")
-        
+
         return 0
-        
+
     except Exception as e:
         print(f"{RED}Error during file splitting: {e}{RESET}")
         return 1
@@ -2876,6 +2880,7 @@ def list_evaluators() -> int:
 
     return 0
 
+
 def main():
     """Main CLI entry point."""
     import logging
@@ -2888,10 +2893,20 @@ def main():
     except Exception as e:
         print(f"Warning: Could not load .env file: {e}", file=sys.stderr)
 
+    # Load .env file before any commands run
+    # Use explicit path to ensure we find .env in current working directory
+    # (load_dotenv() without args can fail to find .env in some contexts)
+    env_file = Path.cwd() / ".env"
+    if env_file.exists():
+        try:
+            load_dotenv(env_file)
+        except (OSError, UnicodeDecodeError) as e:
+            print(f"Warning: Could not load .env file: {e}", file=sys.stderr)
+
     from adversarial_workflow.evaluators import (
+        BUILTIN_EVALUATORS,
         get_all_evaluators,
         run_evaluator,
-        BUILTIN_EVALUATORS,
     )
 
     logger = logging.getLogger(__name__)
@@ -2899,8 +2914,16 @@ def main():
     # Commands that cannot be overridden by evaluators
     # Note: 'review' is special - it reviews git changes without a file argument
     STATIC_COMMANDS = {
-        "init", "check", "doctor", "health", "quickstart",
-        "agent", "split", "validate", "review", "list-evaluators"
+        "init",
+        "check",
+        "doctor",
+        "health",
+        "quickstart",
+        "agent",
+        "split",
+        "validate",
+        "review",
+        "list-evaluators",
     }
 
     parser = argparse.ArgumentParser(
@@ -2989,16 +3012,21 @@ For more information: https://github.com/movito/adversarial-workflow
     )
     split_parser.add_argument("task_file", help="Task file to split")
     split_parser.add_argument(
-        "--strategy", "-s", choices=["sections", "phases"], default="sections",
-        help="Split strategy: 'sections' (default) or 'phases'"
+        "--strategy",
+        "-s",
+        choices=["sections", "phases"],
+        default="sections",
+        help="Split strategy: 'sections' (default) or 'phases'",
     )
     split_parser.add_argument(
-        "--max-lines", "-m", type=int, default=500,
-        help="Maximum lines per split (default: 500)"
+        "--max-lines",
+        "-m",
+        type=int,
+        default=500,
+        help="Maximum lines per split (default: 500)",
     )
     split_parser.add_argument(
-        "--dry-run", action="store_true",
-        help="Preview splits without creating files"
+        "--dry-run", action="store_true", help="Preview splits without creating files"
     )
 
     # list-evaluators command
@@ -3019,7 +3047,12 @@ For more information: https://github.com/movito/adversarial-workflow
     for name, config in evaluators.items():
         # Skip if name conflicts with static command
         if name in STATIC_COMMANDS:
-            logger.warning("Evaluator '%s' conflicts with CLI command; skipping", name)
+            # Only warn for user-defined evaluators, not built-ins
+            # Built-in conflicts are intentional (e.g., 'review' command vs 'review' evaluator)
+            if getattr(config, "source", None) != "builtin":
+                logger.warning(
+                    "Evaluator '%s' conflicts with CLI command; skipping", name
+                )
             # Mark as registered to prevent alias re-registration attempts
             registered_configs.add(id(config))
             continue
@@ -3046,10 +3079,11 @@ For more information: https://github.com/movito/adversarial-workflow
         )
         eval_parser.add_argument("file", help="File to evaluate")
         eval_parser.add_argument(
-            "--timeout", "-t",
+            "--timeout",
+            "-t",
             type=int,
             default=180,
-            help="Timeout in seconds (default: 180)"
+            help="Timeout in seconds (default: 180)",
         )
         # Store config for later execution
         eval_parser.set_defaults(evaluator_config=config)
@@ -3097,7 +3131,7 @@ For more information: https://github.com/movito/adversarial-workflow
             args.task_file,
             strategy=args.strategy,
             max_lines=args.max_lines,
-            dry_run=args.dry_run
+            dry_run=args.dry_run,
         )
     elif args.command == "list-evaluators":
         return list_evaluators()

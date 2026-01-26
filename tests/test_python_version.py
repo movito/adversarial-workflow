@@ -43,27 +43,27 @@ def test_python_classifiers_exclude_old_versions():
     python_38_classifier = "Programming Language :: Python :: 3.8"
     python_39_classifier = "Programming Language :: Python :: 3.9"
 
-    assert python_38_classifier not in classifiers, (
-        f"Python 3.8 classifier should be removed: {python_38_classifier}"
-    )
-    assert python_39_classifier not in classifiers, (
-        f"Python 3.9 classifier should be removed: {python_39_classifier}"
-    )
+    assert (
+        python_38_classifier not in classifiers
+    ), f"Python 3.8 classifier should be removed: {python_38_classifier}"
+    assert (
+        python_39_classifier not in classifiers
+    ), f"Python 3.9 classifier should be removed: {python_39_classifier}"
 
     # Check that 3.10+ are still present
     python_310_classifier = "Programming Language :: Python :: 3.10"
     python_311_classifier = "Programming Language :: Python :: 3.11"
     python_312_classifier = "Programming Language :: Python :: 3.12"
 
-    assert python_310_classifier in classifiers, (
-        f"Python 3.10 classifier should be present: {python_310_classifier}"
-    )
-    assert python_311_classifier in classifiers, (
-        f"Python 3.11 classifier should be present: {python_311_classifier}"
-    )
-    assert python_312_classifier in classifiers, (
-        f"Python 3.12 classifier should be present: {python_312_classifier}"
-    )
+    assert (
+        python_310_classifier in classifiers
+    ), f"Python 3.10 classifier should be present: {python_310_classifier}"
+    assert (
+        python_311_classifier in classifiers
+    ), f"Python 3.11 classifier should be present: {python_311_classifier}"
+    assert (
+        python_312_classifier in classifiers
+    ), f"Python 3.12 classifier should be present: {python_312_classifier}"
 
 
 def test_current_python_version_compatibility():

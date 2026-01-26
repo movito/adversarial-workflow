@@ -388,7 +388,9 @@ fallback_model: yes
 """
         )
 
-        with pytest.raises(EvaluatorParseError, match="'fallback_model' must be a string"):
+        with pytest.raises(
+            EvaluatorParseError, match="'fallback_model' must be a string"
+        ):
             parse_evaluator_yaml(yml)
 
 

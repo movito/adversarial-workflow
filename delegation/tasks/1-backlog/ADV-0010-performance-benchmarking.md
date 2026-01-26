@@ -85,7 +85,7 @@ def main():
     results.append(benchmark_split(100))
     results.append(benchmark_split(500))
     results.append(benchmark_split(1000))
-    
+
     with open("benchmarks/results.json", "w") as f:
         json.dump(results, f, indent=2)
 

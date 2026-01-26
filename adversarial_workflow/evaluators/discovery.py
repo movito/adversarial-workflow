@@ -40,9 +40,7 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     try:
         content = yml_file.read_text(encoding="utf-8")
     except UnicodeDecodeError as e:
-        raise EvaluatorParseError(
-            f"File encoding error (not UTF-8): {yml_file}"
-        ) from e
+        raise EvaluatorParseError(f"File encoding error (not UTF-8): {yml_file}") from e
 
     # Parse YAML
     data = yaml.safe_load(content)
@@ -58,7 +56,14 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         )
 
     # Validate required fields exist
-    required = ["name", "description", "model", "api_key_env", "prompt", "output_suffix"]
+    required = [
+        "name",
+        "description",
+        "model",
+        "api_key_env",
+        "prompt",
+        "output_suffix",
+    ]
     missing = [f for f in required if f not in data]
     if missing:
         raise EvaluatorParseError(f"Missing required fields: {', '.join(missing)}")

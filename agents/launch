@@ -1,13 +1,17 @@
 #!/bin/bash
 
-# adversarial-workflow - Agent Launcher v1.0.0
+# adversarial-workflow - Agent Launcher
 # Reads Claude Code native agent definitions from .claude/agents/
+# Version is read dynamically from pyproject.toml
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 CLAUDE_AGENTS_DIR="$PROJECT_ROOT/.claude/agents"
 CONTEXT_DIR="$PROJECT_ROOT/.agent-context"
 PROJECT_NAME="adversarial-workflow"
+
+# Read version from pyproject.toml (fallback to 0.0.0 if not found)
+PROJECT_VERSION=$(grep -m1 '^version' "$PROJECT_ROOT/pyproject.toml" 2>/dev/null | sed 's/version[[:space:]]*=[[:space:]]*"\([^"]*\)"/\1/' || echo "0.0.0")
 
 # Colors
 RED='\033[0;31m'
@@ -44,15 +48,20 @@ get_agent_files() {
     local agent_order=(
         "planner"
         "feature-developer"
-        "code-reviewer"
         "test-runner"
-        "pypi-publisher"
+        "tycho"
+        "powertest-runner"
+        "document-reviewer"
+        "security-reviewer"
+        "ci-checker"
+        "agent-creator"
     )
 
     # Get all agent files (excluding templates and operational files)
     local all_files=$(find "$CLAUDE_AGENTS_DIR" -name "*.md" \
         -not -name "OPERATIONAL-RULES.md" \
-        -not -name "AGENT-TEMPLATE.md")
+        -not -name "AGENT-TEMPLATE.md" \
+        -not -name "TASK-STARTER-TEMPLATE.md")
 
     # Output files in custom order
     for agent_name in "${agent_order[@]}"; do
@@ -95,14 +104,14 @@ get_agent_description() {
 get_agent_model() {
     local file="$1"
     local model=$(parse_frontmatter "$file" "model")
-    # Default to Sonnet 4 if not specified
-    echo "${model:-claude-sonnet-4-20250514}"
+    # Default to Sonnet 4.5 if not specified
+    echo "${model:-claude-sonnet-4-5-20250929}"
 }
 
 # Display header
 display_header() {
     echo -e "${BLUE}========================================${NC}"
-    echo -e "${BLUE}   adversarial-workflow v0.5.0        ${NC}"
+    echo -e "${BLUE}   ${PROJECT_NAME} v${PROJECT_VERSION}${NC}"
     echo -e "${BLUE}   Agent Launcher                     ${NC}"
     echo -e "${BLUE}========================================${NC}"
     echo
@@ -125,10 +134,13 @@ list_agents() {
         counter=$((counter + 1))
     done
     echo
+    echo -e "  ${BLUE}Tip:${NC} To reorder or customize agents, edit ${YELLOW}agents/launch${NC}"
+    echo
 }
 
 # Check if Serena MCP is configured in Claude Code
 is_serena_configured() {
+    # Check if claude mcp list shows serena
     if command -v claude &> /dev/null; then
         if claude mcp list 2>/dev/null | grep -q "serena"; then
             return 0  # true - Serena is configured
@@ -149,13 +161,16 @@ needs_serena_activation() {
     # =========================================================================
     # SERENA-ENABLED AGENTS
     # These agents get automatic Serena activation for semantic code navigation.
+    # Add agent names here if they work with code and would benefit from Serena.
     # =========================================================================
     local serena_agents=(
         "planner"
         "feature-developer"
-        "code-reviewer"
         "test-runner"
-        "pypi-publisher"
+        "tycho"
+        "powertest-runner"
+        "security-reviewer"
+        "code-reviewer"
     )
 
     for serena_agent in "${serena_agents[@]}"; do
@@ -187,17 +202,33 @@ launch_agent() {
     echo -e "${GREEN}Launching agent: ${YELLOW}$name${NC}"
     echo -e "${BLUE}Model: ${NC}$model"
 
-    if is_serena_configured; then
-        echo -e "${BLUE}Serena: ${GREEN}configured${NC} (semantic navigation enabled)"
-    else
-        echo -e "${BLUE}Serena: ${YELLOW}not configured${NC}"
+    # Check Serena status for code-focused agents
+    local is_code_agent=false
+    for sa in "${serena_agents[@]}"; do
+        [[ "$name" == "$sa" ]] && is_code_agent=true && break
+    done
+
+    if [[ "$is_code_agent" == true ]]; then
+        if is_serena_configured; then
+            echo -e "${BLUE}Serena: ${GREEN}configured${NC} (semantic navigation enabled)"
+        else
+            echo -e "${BLUE}Serena: ${YELLOW}not configured${NC} (run .serena/setup-serena.sh to enable)"
+        fi
     fi
     echo
+
+    # Warn about Serena browser flash if Serena is configured
+    if is_serena_configured; then
+        echo -e "${YELLOW}Note: Your browser may briefly open with the Serena dashboard.${NC}"
+        echo -e "${YELLOW}This is normal - you can close it and continue here.${NC}"
+        echo
+    fi
 
     # Change to project directory
     cd "$PROJECT_ROOT"
 
     # Launch Claude with model and full agent markdown as system prompt
+    # For code-focused agents, send initial Serena activation prompt
     if needs_serena_activation "$name"; then
         exec claude --model "$model" --append-system-prompt "$full_agent_content" \
             "Please activate Serena for semantic code navigation in this project before we begin. Use: mcp__serena__activate_project(\"$PROJECT_NAME\")"
@@ -211,11 +242,13 @@ get_agent_icon() {
     local name="$1"
     local icon="⚡"
     [[ "$name" == *"planner"* ]] && icon="📋"
+    [[ "$name" == *"tycho"* ]] && icon="🧭"
     [[ "$name" == *"feature"* ]] && icon="🛠️"
-    [[ "$name" == *"code-reviewer"* ]] && icon="🔍"
     [[ "$name" == *"test"* ]] && icon="🧪"
-    [[ "$name" == *"pypi"* ]] && icon="📦"
-    [[ "$name" == *"publisher"* ]] && icon="📦"
+    [[ "$name" == *"document"* ]] && icon="📄"
+    [[ "$name" == *"security"* ]] && icon="🔒"
+    [[ "$name" == *"ci-checker"* ]] && icon="✅"
+    [[ "$name" == *"agent-creator"* ]] && icon="🤖"
     echo "$icon"
 }
 
@@ -239,6 +272,7 @@ interactive_select() {
     PS3="Choose (number or type name): "
     select opt in "${options[@]}"; do
         if [[ -n "$opt" ]]; then
+            # Get the selected index
             local selected_index=$REPLY
             launch_agent "$selected_index"
             break
@@ -251,6 +285,7 @@ interactive_select() {
                 local name_lower=$(echo "$name" | tr '[:upper:]' '[:lower:]')
                 local reply_lower=$(echo "$REPLY" | tr '[:upper:]' '[:lower:]')
 
+                # Match partial names (e.g., "feat" matches "feature-developer")
                 if [[ "$name_lower" == *"$reply_lower"* ]]; then
                     launch_agent "$counter"
                     match_found=true
@@ -300,6 +335,7 @@ main() {
                 local name_lower=$(echo "$name" | tr '[:upper:]' '[:lower:]')
                 local arg_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
+                # Match partial names
                 if [[ "$name_lower" == *"$arg_lower"* ]]; then
                     launch_agent "$counter"
                     match_found=true

@@ -105,4 +105,3 @@ Content line 99: This is filler text to make the file realistic. The quick brown
 ## MARKER_LINE_100
 
 This is marker line 100 of 100.
-

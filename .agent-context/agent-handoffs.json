@@ -1,25 +1,25 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-01-22",
+  "last_updated": "2025-01-25",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0017 completed and approved",
+      "status": "active",
+      "current_task": "ADV-0022 completion, PR #13 merge",
+      "brief_note": "ADV-0022 approved, ready to merge PR #13",
       "details_link": null
     },
     "feature-developer": {
-      "status": "assigned",
-      "current_task": "ADV-0021",
-      "brief_note": "Fix .env loading for custom evaluators",
-      "details_link": ".agent-context/ADV-0021-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0022 complete, ADV-0027 ready for assignment",
+      "details_link": ".agent-context/ADV-0027-HANDOFF-feature-developer.md"
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0019 approved",
-      "details_link": null
+      "brief_note": "ADV-0022 approved",
+      "details_link": ".agent-context/reviews/ADV-0022-review.md"
     },
     "test-runner": {
       "status": "idle",
@@ -29,13 +29,15 @@
     }
   },
   "recent_completions": [
-    "ADV-0019: List evaluators and docs",
-    "ADV-0018: CLI dynamic commands",
-    "ADV-0017: Generic evaluator runner",
-    "ADV-0016: Evaluator discovery"
+    "ADV-0022: Fix check() .env variable count",
+    "ADV-0024: Custom evaluator .env loading",
+    "ADV-0025: Suppress built-in evaluator warning",
+    "ADV-0021: Load .env at startup (v0.6.1)"
   ],
   "pending_tasks": [
-    "ADV-0021: Fix .env loading for custom evaluators (v0.6.1)"
+    "ADV-0027: Starter kit alignment (ready for assignment)",
+    "ADV-0023: Exception handling improvements",
+    "ADV-0026: Fix subprocess test environment issues"
   ],
   "blocked_items": [],
   "conventions": {
@@ -44,5 +46,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "Aligned with agentive-starter-kit conventions (2026-01-22). Handoffs now in .agent-context/, not task folders."
+  "notes": "ADV-0022 complete. PR #13 ready to merge with all ADV-0022/0024/0025 fixes for v0.6.2."
 }

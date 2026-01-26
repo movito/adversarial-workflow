@@ -29,9 +29,9 @@ class TestEnvFileLoading:
         # The check command should see the API key from .env
         # It will show as valid (green checkmark) in the output
         combined_output = result.stdout + result.stderr
-        assert "OPENAI_API_KEY" in combined_output, (
-            f"Expected OPENAI_API_KEY check. stdout: {result.stdout}, stderr: {result.stderr}"
-        )
+        assert (
+            "OPENAI_API_KEY" in combined_output
+        ), f"Expected OPENAI_API_KEY check. stdout: {result.stdout}, stderr: {result.stderr}"
 
     def test_env_loaded_before_evaluator_commands(self, tmp_path, monkeypatch):
         """API keys in .env are available to evaluator commands."""
@@ -41,13 +41,15 @@ class TestEnvFileLoading:
         # Create minimal evaluator config
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)
-        (eval_dir / "test.yml").write_text("""name: test
+        (eval_dir / "test.yml").write_text(
+            """name: test
 description: Test evaluator
 model: gpt-4o-mini
 api_key_env: TEST_API_KEY
 prompt: Test prompt
 output_suffix: TEST
-""")
+"""
+        )
 
         monkeypatch.chdir(tmp_path)
         # Ensure key is NOT in current environment
@@ -121,8 +123,11 @@ class TestCheckEnvCount:
         )
 
         # Remove keys from environment to isolate test
-        env = {k: v for k, v in os.environ.items()
-               if k not in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "CUSTOM_KEY")}
+        env = {
+            k: v
+            for k, v in os.environ.items()
+            if k not in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "CUSTOM_KEY")
+        }
         env["PATH"] = os.environ.get("PATH", "")
 
         result = subprocess.run(
@@ -134,9 +139,9 @@ class TestCheckEnvCount:
         )
 
         # Should report "3 variables configured", not "0 variables"
-        assert "3 variables" in result.stdout, (
-            f"Expected '3 variables' in output. Got: {result.stdout}"
-        )
+        assert (
+            "3 variables" in result.stdout
+        ), f"Expected '3 variables' in output. Got: {result.stdout}"
 
     def test_check_handles_empty_env_file(self, tmp_path):
         """check() handles empty .env file gracefully."""
@@ -154,9 +159,9 @@ class TestCheckEnvCount:
         )
 
         # Should report "0 variables configured"
-        assert "0 variables" in result.stdout, (
-            f"Expected '0 variables' in output. Got: {result.stdout}"
-        )
+        assert (
+            "0 variables" in result.stdout
+        ), f"Expected '0 variables' in output. Got: {result.stdout}"
 
     def test_check_handles_comments_in_env(self, tmp_path):
         """check() correctly counts variables, ignoring comments and empty lines."""
@@ -180,24 +185,28 @@ class TestCheckEnvCount:
         )
 
         # Should report 2 variables (comments and empty lines ignored)
-        assert "2 variables" in result.stdout, (
-            f"Expected '2 variables' in output. Got: {result.stdout}"
-        )
+        assert (
+            "2 variables" in result.stdout
+        ), f"Expected '2 variables' in output. Got: {result.stdout}"
 
     def test_check_handles_unusual_env_entries(self, tmp_path):
         """check() handles unusual .env entries without crashing.
 
         dotenv_values() treats 'KEY' without = as key with None value.
-        This test verifies the CLI doesn't crash on such inputs.
+        Our implementation filters out None values, so only valid key=value
+        pairs are counted.
         """
         (tmp_path / ".env").write_text(
             "VALID_KEY=value\n"
             "ALSO_VALID=another\n"
-            "KEY_WITHOUT_VALUE\n"  # dotenv treats this as KEY_WITHOUT_VALUE=None
+            "KEY_WITHOUT_VALUE\n"  # dotenv treats this as KEY_WITHOUT_VALUE=None (filtered out)
         )
 
-        env = {k: v for k, v in os.environ.items()
-               if k not in ("VALID_KEY", "ALSO_VALID", "KEY_WITHOUT_VALUE")}
+        env = {
+            k: v
+            for k, v in os.environ.items()
+            if k not in ("VALID_KEY", "ALSO_VALID", "KEY_WITHOUT_VALUE")
+        }
         env["PATH"] = os.environ.get("PATH", "")
 
         result = subprocess.run(
@@ -208,7 +217,7 @@ class TestCheckEnvCount:
             env=env,
         )
 
-        # Should not crash - dotenv_values() returns 3 entries (including key with None value)
-        assert "3 variables" in result.stdout, (
-            f"Expected '3 variables' in output. Got: {result.stdout}"
-        )
+        # Should not crash - only 2 valid variables counted (None values filtered out)
+        assert (
+            "2 variables" in result.stdout
+        ), f"Expected '2 variables' in output. Got: {result.stdout}"

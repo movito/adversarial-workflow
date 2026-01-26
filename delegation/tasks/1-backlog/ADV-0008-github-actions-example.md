@@ -65,21 +65,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          
+
       - name: Install adversarial-workflow
         run: pip install adversarial-workflow
-        
+
       - name: Run evaluation
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           adversarial evaluate ${{ github.event.inputs.task_file || 'tasks/example.md' }}
-          
+
       - name: Upload results
         uses: actions/upload-artifact@v4
         with:
