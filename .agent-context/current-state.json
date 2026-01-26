@@ -30,7 +30,7 @@
     "source_commit": "5407d4e",
     "source_date": "2025-01-23",
     "synced_components": [
-      "scripts/ (5 files, excluding Linear-specific)",
+      "scripts/ (6 files, excluding Linear-specific)",
       "agents/ launch utilities (3 files)",
       ".agent-context/templates/ (2 files)",
       ".agent-context/workflows/ (8 files)",
