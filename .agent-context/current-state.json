@@ -14,14 +14,39 @@
   },
   "metrics": {
     "tasks_created": 27,
-    "tasks_completed": 21,
+    "tasks_completed": 22,
     "agents_active": 1,
     "test_pass_rate": null,
     "coverage": null
   },
   "recent_activity": [
+    "ADV-0027: Starter kit alignment complete",
     "ADV-0022: Fix check() .env variable count",
-    "ADV-0024: Custom evaluator .env loading",
-    "ADV-0025: Suppress built-in evaluator warning"
-  ]
+    "ADV-0024: Custom evaluator .env loading"
+  ],
+  "starter_kit_sync": {
+    "last_synced": "2025-01-26",
+    "source_repo": "~/Github/agentive-starter-kit",
+    "source_commit": "5407d4e",
+    "source_date": "2025-01-23",
+    "synced_components": [
+      "scripts/ (5 files, excluding Linear-specific)",
+      "agents/ launch utilities (3 files)",
+      ".agent-context/templates/ (2 files)",
+      ".agent-context/workflows/ (8 files)",
+      ".claude/agents/ (9 updated/added, 3 preserved)"
+    ],
+    "preserved_ours": [
+      ".claude/agents/code-reviewer.md",
+      ".claude/agents/pypi-publisher.md",
+      ".claude/agents/ci-checker.md"
+    ],
+    "skipped": [
+      "scripts/linear_sync_utils.py",
+      "scripts/sync_tasks_to_linear.py",
+      ".claude/agents/powertest-runner.md",
+      ".claude/agents/tycho.md"
+    ],
+    "check_for_updates": "cd ~/Github/agentive-starter-kit && git log --oneline --since='2025-01-26' -- .claude/agents/ scripts/ .agent-context/"
+  }
 }
