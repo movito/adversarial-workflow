@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import yaml
-from dotenv import load_dotenv, dotenv_values
+from dotenv import dotenv_values, load_dotenv
 
 __version__ = "0.6.2"
 
@@ -800,7 +800,7 @@ def check() -> int:
     issues: List[Dict] = []
     good_checks: List[str] = []
 
-    # Check for .env file first (before loading environment variables)
+    # Check for .env file (note: already loaded by main() at startup)
     env_file = Path(".env")
     env_loaded = False
 
@@ -813,39 +813,23 @@ def check() -> int:
             # Still load to ensure environment is set
             load_dotenv(env_file)
             env_loaded = True
-            good_checks.append(
-                f".env file found and loaded ({var_count} variables)"
-            )
-        except FileNotFoundError:
+            good_checks.append(f".env file found and loaded ({var_count} variables)")
+        except (FileNotFoundError, PermissionError) as e:
+            # File access errors
             issues.append(
                 {
                     "severity": "WARNING",
-                    "message": ".env file disappeared during check",
-                    "fix": "Ensure .env file exists and is readable",
+                    "message": f".env file found but could not be read: {e}",
+                    "fix": "Check .env file permissions",
                 }
             )
-        except PermissionError:
+        except (OSError, ValueError) as e:
+            # Covers UnicodeDecodeError (ValueError subclass) and other OS errors
             issues.append(
                 {
                     "severity": "WARNING",
-                    "message": ".env file found but permission denied",
-                    "fix": "Check file permissions: chmod 644 .env",
-                }
-            )
-        except OSError as e:
-            issues.append(
-                {
-                    "severity": "WARNING",
-                    "message": f".env file found but could not be loaded: {e}",
-                    "fix": "Check .env file format and permissions",
-                }
-            )
-        except UnicodeDecodeError as e:
-            issues.append(
-                {
-                    "severity": "WARNING",
-                    "message": f".env file has encoding issues: {e}",
-                    "fix": "Ensure .env file is UTF-8 encoded",
+                    "message": f".env file found but could not be parsed: {e}",
+                    "fix": "Check .env file encoding (should be UTF-8)",
                 }
             )
     else:
@@ -2112,10 +2096,6 @@ def evaluate(task_file: str) -> int:
         return 0
 
 
-
-
-
-
 def review() -> int:
     """Run Phase 3: Code review."""
 
@@ -2754,54 +2734,61 @@ def agent_onboard(project_path: str = ".") -> int:
     return 0
 
 
-def split(task_file: str, strategy: str = "sections", max_lines: int = 500, dry_run: bool = False):
+def split(
+    task_file: str,
+    strategy: str = "sections",
+    max_lines: int = 500,
+    dry_run: bool = False,
+):
     """Split large task files into smaller evaluable chunks.
-    
+
     Args:
         task_file: Path to the task file to split
         strategy: Split strategy ('sections', 'phases', or 'manual')
         max_lines: Maximum lines per split (default: 500)
         dry_run: Preview splits without creating files
-        
+
     Returns:
         Exit code (0 for success, 1 for error)
     """
     from .utils.file_splitter import (
-        analyze_task_file, 
-        split_by_sections, 
-        split_by_phases, 
-        generate_split_files
+        analyze_task_file,
+        generate_split_files,
+        split_by_phases,
+        split_by_sections,
     )
-    
+
     try:
         print_box("File Splitting Utility", CYAN)
-        
+
         # Validate file exists
         if not os.path.exists(task_file):
             print(f"{RED}Error: File not found: {task_file}{RESET}")
             return 1
-        
+
         # Analyze file
         print(f"📄 Analyzing task file: {task_file}")
         analysis = analyze_task_file(task_file)
-        
-        lines = analysis['total_lines']
-        tokens = analysis['estimated_tokens']
+
+        lines = analysis["total_lines"]
+        tokens = analysis["estimated_tokens"]
         print(f"   Lines: {lines}")
         print(f"   Estimated tokens: ~{tokens:,}")
-        
+
         # Check if splitting is recommended
         if lines <= max_lines:
-            print(f"{GREEN}✅ File is under recommended limit ({max_lines} lines){RESET}")
+            print(
+                f"{GREEN}✅ File is under recommended limit ({max_lines} lines){RESET}"
+            )
             print("No splitting needed.")
             return 0
-        
+
         print(f"{YELLOW}⚠️  File exceeds recommended limit ({max_lines} lines){RESET}")
-        
+
         # Read file content for splitting
-        with open(task_file, 'r', encoding='utf-8') as f:
+        with open(task_file, "r", encoding="utf-8") as f:
             content = f.read()
-        
+
         # Apply split strategy
         if strategy == "sections":
             splits = split_by_sections(content, max_lines=max_lines)
@@ -2810,42 +2797,44 @@ def split(task_file: str, strategy: str = "sections", max_lines: int = 500, dry_
             splits = split_by_phases(content)
             print(f"\n💡 Suggested splits (by phases):")
         else:
-            print(f"{RED}Error: Unknown strategy '{strategy}'. Use 'sections' or 'phases'.{RESET}")
+            print(
+                f"{RED}Error: Unknown strategy '{strategy}'. Use 'sections' or 'phases'.{RESET}"
+            )
             return 1
-        
+
         # Display split preview
         for i, split in enumerate(splits, 1):
             filename = f"{Path(task_file).stem}-part{i}{Path(task_file).suffix}"
             print(f"   - {filename} ({split['line_count']} lines)")
-        
+
         # Dry run mode
         if dry_run:
             print(f"\n{CYAN}📋 Dry run mode - no files created{RESET}")
             return 0
-        
+
         # Prompt user for confirmation
         create_files = prompt_user(f"\nCreate {len(splits)} files?", default="n")
-        
-        if create_files.lower() in ['y', 'yes']:
+
+        if create_files.lower() in ["y", "yes"]:
             # Create output directory
             output_dir = os.path.join(os.path.dirname(task_file), "splits")
-            
+
             # Generate split files
             created_files = generate_split_files(task_file, splits, output_dir)
-            
+
             print(f"{GREEN}✅ Created {len(created_files)} files:{RESET}")
             for file_path in created_files:
                 print(f"   {file_path}")
-            
+
             print(f"\n{CYAN}💡 Tip: Evaluate each split file independently:{RESET}")
             for file_path in created_files:
                 rel_path = os.path.relpath(file_path)
                 print(f"   adversarial evaluate {rel_path}")
         else:
             print("Cancelled - no files created.")
-        
+
         return 0
-        
+
     except Exception as e:
         print(f"{RED}Error during file splitting: {e}{RESET}")
         return 1
@@ -2891,9 +2880,18 @@ def list_evaluators() -> int:
 
     return 0
 
+
 def main():
     """Main CLI entry point."""
     import logging
+    import sys
+
+    # Load .env file before any commands run
+    # Wrapped in try/except so CLI remains usable even with malformed .env
+    try:
+        load_dotenv()
+    except Exception as e:
+        print(f"Warning: Could not load .env file: {e}", file=sys.stderr)
 
     # Load .env file before any commands run
     # Use explicit path to ensure we find .env in current working directory
@@ -2906,9 +2904,9 @@ def main():
             print(f"Warning: Could not load .env file: {e}", file=sys.stderr)
 
     from adversarial_workflow.evaluators import (
+        BUILTIN_EVALUATORS,
         get_all_evaluators,
         run_evaluator,
-        BUILTIN_EVALUATORS,
     )
 
     logger = logging.getLogger(__name__)
@@ -2916,8 +2914,16 @@ def main():
     # Commands that cannot be overridden by evaluators
     # Note: 'review' is special - it reviews git changes without a file argument
     STATIC_COMMANDS = {
-        "init", "check", "doctor", "health", "quickstart",
-        "agent", "split", "validate", "review", "list-evaluators"
+        "init",
+        "check",
+        "doctor",
+        "health",
+        "quickstart",
+        "agent",
+        "split",
+        "validate",
+        "review",
+        "list-evaluators",
     }
 
     parser = argparse.ArgumentParser(
@@ -3006,16 +3012,21 @@ For more information: https://github.com/movito/adversarial-workflow
     )
     split_parser.add_argument("task_file", help="Task file to split")
     split_parser.add_argument(
-        "--strategy", "-s", choices=["sections", "phases"], default="sections",
-        help="Split strategy: 'sections' (default) or 'phases'"
+        "--strategy",
+        "-s",
+        choices=["sections", "phases"],
+        default="sections",
+        help="Split strategy: 'sections' (default) or 'phases'",
     )
     split_parser.add_argument(
-        "--max-lines", "-m", type=int, default=500,
-        help="Maximum lines per split (default: 500)"
+        "--max-lines",
+        "-m",
+        type=int,
+        default=500,
+        help="Maximum lines per split (default: 500)",
     )
     split_parser.add_argument(
-        "--dry-run", action="store_true",
-        help="Preview splits without creating files"
+        "--dry-run", action="store_true", help="Preview splits without creating files"
     )
 
     # list-evaluators command
@@ -3039,7 +3050,9 @@ For more information: https://github.com/movito/adversarial-workflow
             # Only warn for user-defined evaluators, not built-ins
             # Built-in conflicts are intentional (e.g., 'review' command vs 'review' evaluator)
             if getattr(config, "source", None) != "builtin":
-                logger.warning("Evaluator '%s' conflicts with CLI command; skipping", name)
+                logger.warning(
+                    "Evaluator '%s' conflicts with CLI command; skipping", name
+                )
             # Mark as registered to prevent alias re-registration attempts
             registered_configs.add(id(config))
             continue
@@ -3066,10 +3079,11 @@ For more information: https://github.com/movito/adversarial-workflow
         )
         eval_parser.add_argument("file", help="File to evaluate")
         eval_parser.add_argument(
-            "--timeout", "-t",
+            "--timeout",
+            "-t",
             type=int,
             default=180,
-            help="Timeout in seconds (default: 180)"
+            help="Timeout in seconds (default: 180)",
         )
         # Store config for later execution
         eval_parser.set_defaults(evaluator_config=config)
@@ -3117,7 +3131,7 @@ For more information: https://github.com/movito/adversarial-workflow
             args.task_file,
             strategy=args.strategy,
             max_lines=args.max_lines,
-            dry_run=args.dry_run
+            dry_run=args.dry_run,
         )
     elif args.command == "list-evaluators":
         return list_evaluators()

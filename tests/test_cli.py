@@ -26,6 +26,7 @@ class TestCLISmoke:
             text=True,
         )
         assert result.returncode == 0
+
         assert "0.6.2" in result.stdout or "0.6.2" in result.stderr
 
     def test_help_flag(self):
