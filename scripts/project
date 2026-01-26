@@ -1,0 +1,674 @@
+#!/usr/bin/env python3
+"""
+Project CLI - Command Launcher for Agentive Projects
+=====================================================
+
+Simple memorable command interface for common project operations.
+
+Usage:
+    ./project linearsync     - Sync tasks to Linear
+    ./project sync           - Alias for linearsync
+    ./project move <id> <status> - Move task and update Status field
+    ./project complete <id>  - Move task to done
+    ./project validate       - Validate all task statuses
+    ./project help           - Show help
+"""
+
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+# Status to folder mapping
+STATUS_FOLDER_MAP = {
+    "backlog": "1-backlog",
+    "todo": "2-todo",
+    "in-progress": "3-in-progress",
+    "in-review": "4-in-review",
+    "done": "5-done",
+    "canceled": "6-canceled",
+    "blocked": "7-blocked",
+}
+
+# Folder to Linear-native status mapping
+FOLDER_STATUS_MAP = {
+    "1-backlog": "Backlog",
+    "2-todo": "Todo",
+    "3-in-progress": "In Progress",
+    "4-in-review": "In Review",
+    "5-done": "Done",
+    "6-canceled": "Canceled",
+    "7-blocked": "Blocked",
+}
+
+
+def find_task_file(task_id: str, project_dir: Path) -> Path | None:
+    """Find a task file by ID across all workflow folders."""
+    tasks_dir = project_dir / "delegation" / "tasks"
+
+    # Normalize task ID (handle ASK-0001 or ASK-1)
+    task_id_upper = task_id.upper()
+
+    for folder in tasks_dir.iterdir():
+        if not folder.is_dir():
+            continue
+        for file in folder.glob("*.md"):
+            if task_id_upper in file.name.upper():
+                return file
+    return None
+
+
+def update_status_in_file(file_path: Path, new_status: str) -> bool:
+    """Update the Status field in a task file."""
+    try:
+        content = file_path.read_text()
+        # Replace Status field
+        new_content = re.sub(
+            r"(\*\*Status\*\*:\s*)(\w+(?:\s+\w+)?)",
+            f"\\1{new_status}",
+            content,
+            count=1,
+        )
+        if new_content != content:
+            file_path.write_text(new_content)
+            return True
+        return False
+    except Exception as e:
+        print(f"❌ Error updating file: {e}")
+        return False
+
+
+def move_task(task_id: str, target_status: str, project_dir: Path) -> bool:
+    """Move a task to a new folder and update its Status field."""
+    # Normalize target status
+    target_lower = target_status.lower().replace("_", "-").replace(" ", "-")
+
+    if target_lower not in STATUS_FOLDER_MAP:
+        print(f"❌ Unknown status: {target_status}")
+        print(f"   Valid statuses: {', '.join(STATUS_FOLDER_MAP.keys())}")
+        return False
+
+    target_folder = STATUS_FOLDER_MAP[target_lower]
+    linear_status = FOLDER_STATUS_MAP[target_folder]
+
+    # Find the task file
+    task_file = find_task_file(task_id, project_dir)
+    if not task_file:
+        print(f"❌ Task not found: {task_id}")
+        return False
+
+    # Get current folder
+    current_folder = task_file.parent.name
+
+    if current_folder == target_folder:
+        print(f"ℹ️  Task already in {target_folder}")
+        # Still update status field if needed
+        update_status_in_file(task_file, linear_status)
+        return True
+
+    # Move file
+    target_dir = project_dir / "delegation" / "tasks" / target_folder
+    target_path = target_dir / task_file.name
+
+    try:
+        shutil.move(str(task_file), str(target_path))
+        print(f"📁 Moved: {current_folder} → {target_folder}")
+    except Exception as e:
+        print(f"❌ Error moving file: {e}")
+        return False
+
+    # Update status field
+    if update_status_in_file(target_path, linear_status):
+        print(f"✏️  Updated: **Status**: {linear_status}")
+
+    print(f"✅ Task {task_id} is now {linear_status}")
+    return True
+
+
+def validate_all_tasks(project_dir: Path) -> bool:
+    """Validate all task files have matching Status and folder."""
+    tasks_dir = project_dir / "delegation" / "tasks"
+    errors = []
+    checked = 0
+
+    for folder in tasks_dir.iterdir():
+        if not folder.is_dir():
+            continue
+        if folder.name in ["8-archive", "9-reference"]:
+            continue
+        if folder.name not in FOLDER_STATUS_MAP:
+            continue
+
+        expected_status = FOLDER_STATUS_MAP[folder.name]
+
+        for file in folder.glob("*.md"):
+            checked += 1
+            content = file.read_text()
+            match = re.search(r"\*\*Status\*\*:\s*(\w+(?:\s+\w+)?)", content)
+
+            if not match:
+                errors.append(f"{file.name}: No Status field found")
+                continue
+
+            actual_status = match.group(1).strip()
+            if actual_status != expected_status:
+                errors.append(
+                    f"{file.name}: Status '{actual_status}' != folder '{expected_status}'"
+                )
+
+    if errors:
+        print(f"❌ Found {len(errors)} status mismatches:\n")
+        for error in errors:
+            print(f"  • {error}")
+        print(f"\nTo fix, use: ./project move <task-id> <status>")
+        return False
+
+    print(f"✅ All {checked} tasks have matching Status and folder")
+    return True
+
+
+def reconfigure_project(project_dir: Path) -> bool:
+    """Reconfigure agent files with the correct project name.
+
+    This updates .claude/agents/*.md files, replacing any activate_project()
+    calls with the actual project name from .serena/project.yml.
+
+    Handles multiple scenarios:
+    - Fresh clone with "your-project" placeholder
+    - After upstream merge with "agentive-starter-kit"
+    - Any other project name that needs updating
+
+    Useful after fetching upstream updates that overwrite agent files.
+    """
+    serena_config = project_dir / ".serena" / "project.yml"
+    agents_dir = project_dir / ".claude" / "agents"
+
+    # Check .serena/project.yml exists
+    if not serena_config.exists():
+        print("Error: .serena/project.yml not found")
+        print("Run 'agents/launch onboarding' first to configure your project")
+        return False
+
+    # Extract project name (supports both 'name:' and 'project_name:')
+    project_name = None
+    try:
+        content = serena_config.read_text()
+        for line in content.splitlines():
+            # Match top-level name or project_name (no leading whitespace)
+            if line.startswith("name:") or line.startswith("project_name:"):
+                # Extract value after colon, strip quotes and whitespace
+                value = line.split(":", 1)[1].strip().strip("\"'")
+                if value:
+                    project_name = value
+                    break
+    except Exception as e:
+        print(f"Error reading .serena/project.yml: {e}")
+        return False
+
+    if not project_name:
+        print("Error: Could not find 'name:' or 'project_name:' in .serena/project.yml")
+        print("Check your Serena configuration.")
+        return False
+
+    print(f"\n🔧 Reconfiguring project: {project_name}\n")
+    print("Checking agent files...")
+
+    # Check if agents directory exists
+    if not agents_dir.exists():
+        print("Warning: No agent files found in .claude/agents/")
+        return True  # Success - nothing to do
+
+    # Find and update agent files
+    agent_files = list(agents_dir.glob("*.md"))
+    if not agent_files:
+        print("Warning: No .md files found in .claude/agents/")
+        return True  # Success - nothing to do
+
+    updated = 0
+    skipped = 0
+
+    # Regex pattern to match any activate_project call
+    # This handles both placeholder ("your-project") and upstream ("agentive-starter-kit")
+    pattern = re.compile(r'activate_project\("([^"]+)"\)')
+    replacement = f'activate_project("{project_name}")'
+
+    for agent_file in sorted(agent_files):
+        try:
+            content = agent_file.read_text()
+
+            # Find all current project names in the file
+            matches = pattern.findall(content)
+
+            if not matches:
+                print(f"  · {agent_file.name} - no activation calls found")
+                skipped += 1
+                continue
+
+            # Check if any match is NOT the current project name
+            needs_update = any(m != project_name for m in matches)
+
+            if needs_update:
+                new_content = pattern.sub(replacement, content)
+                agent_file.write_text(new_content)
+                old_names = set(m for m in matches if m != project_name)
+                print(f"  ✓ {agent_file.name} - updated (was: {', '.join(old_names)})")
+                updated += 1
+            else:
+                print(f"  · {agent_file.name} - already configured")
+                skipped += 1
+        except Exception as e:
+            print(f"  ✗ {agent_file.name} - error: {e}")
+
+    print(f"\n✅ Reconfigured {updated} files ({skipped} already correct)")
+    return True
+
+
+def main():
+    """Launch project commands."""
+    # Get the project directory (parent of scripts/)
+    project_dir = Path(__file__).resolve().parent.parent
+
+    # Use venv Python if available, otherwise system Python
+    venv_python = project_dir / "venv" / "bin" / "python3"
+    if not venv_python.exists():
+        venv_python = project_dir / ".venv" / "bin" / "python3"
+    python_cmd = str(venv_python) if venv_python.exists() else "python3"
+
+    # Show help if no arguments
+    if len(sys.argv) == 1:
+        print_help()
+        sys.exit(0)
+
+    command = sys.argv[1].lower()
+
+    # Handle commands
+    if command in ["linearsync", "sync", "linear"]:
+        # Linear sync command
+        print("🚀 Syncing tasks to Linear...")
+        sync_args = sys.argv[2:] if len(sys.argv) > 2 else []
+        cmd = [
+            python_cmd,
+            str(project_dir / "scripts" / "sync_tasks_to_linear.py"),
+        ] + sync_args
+
+    elif command in ["teams", "linearteams"]:
+        # List Linear teams
+        print("🏢 Listing Linear teams...")
+        cmd = [
+            python_cmd,
+            "-c",
+            """
+import os
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
+from gql import gql, Client
+from gql.transport.requests import RequestsHTTPTransport
+
+# Load .env from project root
+env_path = Path.cwd() / '.env'
+if env_path.exists():
+    load_dotenv(env_path)
+
+api_key = os.getenv('LINEAR_API_KEY')
+if not api_key:
+    print('❌ LINEAR_API_KEY not found in .env')
+    print('   Get your key at: https://linear.app/{workspace}/settings/account/security')
+    sys.exit(1)
+
+transport = RequestsHTTPTransport(
+    url='https://api.linear.app/graphql',
+    headers={'Authorization': api_key},
+    use_json=True
+)
+
+try:
+    client = Client(transport=transport, fetch_schema_from_transport=True)
+    query = gql('''
+        query {
+          teams {
+            nodes {
+              id
+              key
+              name
+            }
+          }
+        }
+    ''')
+
+    result = client.execute(query)
+    teams = result['teams']['nodes']
+
+    if not teams:
+        print('❌ No teams found in Linear workspace')
+        sys.exit(1)
+
+    print()
+    print('🏢 Your Linear Teams:')
+    print('=' * 70)
+    for team in teams:
+        print(f"Team: {team['name']}")
+        print(f"  Key:  {team['key']}")
+        print(f"  UUID: {team['id']}")
+        print()
+
+    print('💡 To use a specific team, add to .env:')
+    print(f"   LINEAR_TEAM_ID={teams[0]['key']}  # (or any team KEY above)")
+
+except Exception as e:
+    print(f'❌ Error connecting to Linear: {e}')
+    sys.exit(1)
+""",
+        ]
+
+    elif command in ["help", "-h", "--help"]:
+        print_help()
+        sys.exit(0)
+
+    elif command == "version":
+        print("Project CLI v1.1.0")
+        print("Part of adversarial-workflow")
+        sys.exit(0)
+
+    elif command == "move":
+        # Move task to new status folder
+        if len(sys.argv) < 4:
+            print("Usage: ./scripts/project move <task-id> <status>")
+            print("       ./project move ASK-0001 done")
+            print(f"       Valid statuses: {', '.join(STATUS_FOLDER_MAP.keys())}")
+            sys.exit(1)
+        task_id = sys.argv[2]
+        target_status = sys.argv[3]
+        success = move_task(task_id, target_status, project_dir)
+        sys.exit(0 if success else 1)
+
+    elif command == "complete":
+        # Shorthand for moving to done
+        if len(sys.argv) < 3:
+            print("Usage: ./scripts/project complete <task-id>")
+            sys.exit(1)
+        task_id = sys.argv[2]
+        success = move_task(task_id, "done", project_dir)
+        sys.exit(0 if success else 1)
+
+    elif command == "start":
+        # Shorthand for moving to in-progress
+        if len(sys.argv) < 3:
+            print("Usage: ./scripts/project start <task-id>")
+            sys.exit(1)
+        task_id = sys.argv[2]
+        success = move_task(task_id, "in-progress", project_dir)
+        sys.exit(0 if success else 1)
+
+    elif command == "block":
+        # Shorthand for moving to blocked
+        if len(sys.argv) < 3:
+            print("Usage: ./scripts/project block <task-id>")
+            sys.exit(1)
+        task_id = sys.argv[2]
+        success = move_task(task_id, "blocked", project_dir)
+        sys.exit(0 if success else 1)
+
+    elif command == "validate":
+        # Validate all task statuses match folders
+        success = validate_all_tasks(project_dir)
+        sys.exit(0 if success else 1)
+
+    elif command == "reconfigure":
+        # Reconfigure agent files with project name
+        success = reconfigure_project(project_dir)
+        sys.exit(0 if success else 1)
+
+    elif command == "sync-status":
+        # Check Linear sync status
+        print("🔍 Checking Linear sync status...")
+        cmd = [
+            python_cmd,
+            "-c",
+            """
+import os
+import sys
+from pathlib import Path
+from datetime import datetime
+
+# Try to load .env file if it exists
+try:
+    from dotenv import load_dotenv
+    env_path = Path.cwd() / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+except ImportError:
+    pass
+
+# Import gql for GraphQL operations
+try:
+    from gql import gql, Client
+    from gql.transport.requests import RequestsHTTPTransport
+except ImportError:
+    print('❌ Error: gql package not installed')
+    print('   Run: pip install gql[requests]')
+    sys.exit(1)
+
+# Check environment
+api_key = os.getenv('LINEAR_API_KEY')
+if not api_key:
+    print('❌ LINEAR_API_KEY not found in .env')
+    print('   Get your key at: https://linear.app/{workspace}/settings/account/security')
+    sys.exit(1)
+
+# Count local tasks
+tasks_dir = Path('delegation/tasks')
+workflow_folders = [
+    '1-backlog', '2-todo', '3-in-progress', '4-in-review',
+    '5-done', '6-canceled', '7-blocked'
+]
+
+local_tasks = []
+for folder in workflow_folders:
+    folder_path = tasks_dir / folder
+    if folder_path.exists():
+        # Match any task format: PREFIX-NNNN-description.md (e.g., TASK-0001, ASK-0001, TC2-0001)
+        local_tasks.extend(list(folder_path.glob('*-[0-9]*.md')))
+
+local_count = len(local_tasks)
+
+# Get Linear issues
+transport = RequestsHTTPTransport(
+    url='https://api.linear.app/graphql',
+    headers={'Authorization': api_key},
+    use_json=True
+)
+
+try:
+    client = Client(transport=transport, fetch_schema_from_transport=True)
+
+    # Get team ID
+    team_id = os.getenv('LINEAR_TEAM_ID')
+    if team_id and '-' not in team_id:
+        # It's a team key, need to look up UUID
+        teams_query = gql('''
+            query {
+              teams { nodes { id key name } }
+            }
+        ''')
+        result = client.execute(teams_query)
+        for team in result['teams']['nodes']:
+            if team['key'] == team_id:
+                team_id = team['id']
+                break
+
+    if not team_id:
+        # Get default team
+        teams_query = gql('''
+            query {
+              teams { nodes { id name } }
+            }
+        ''')
+        result = client.execute(teams_query)
+        teams = result['teams']['nodes']
+        if not teams:
+            print('❌ No teams found in Linear workspace')
+            sys.exit(1)
+        team_id = teams[0]['id']
+
+    # Query issues for this team with updatedAt for last sync time
+    issues_query = gql('''
+        query TeamIssues($teamId: String!) {
+          team(id: $teamId) {
+            name
+            issues {
+              nodes {
+                identifier
+                title
+                state { name }
+                updatedAt
+              }
+            }
+          }
+        }
+    ''')
+
+    result = client.execute(issues_query, variable_values={'teamId': team_id})
+    team_name = result['team']['name']
+    issues = result['team']['issues']['nodes']
+    linear_count = len(issues)
+
+    # Find last sync time (most recent updatedAt)
+    last_sync = None
+    if issues:
+        timestamps = [issue['updatedAt'] for issue in issues]
+        timestamps.sort(reverse=True)
+        last_sync = timestamps[0]
+
+    # Compare counts
+    print()
+    print('Linear Sync Status')
+    print('==================')
+    print(f'Team: {team_name}')
+    print(f'Local tasks:   {local_count}')
+    print(f'Linear issues: {linear_count}')
+    print()
+
+    if local_count == linear_count:
+        print('Status: ✅ In sync')
+    elif local_count > linear_count:
+        diff = local_count - linear_count
+        print(f'Status: ⚠️  Mismatch detected ({diff} missing in Linear)')
+        print()
+        # Find which tasks might be missing
+        linear_ids = set()
+        for issue in issues:
+            # Extract task ID from title like "[ASK-0001] Title"
+            title = issue['title']
+            if title.startswith('[') and ']' in title:
+                task_id = title[1:title.index(']')]
+                linear_ids.add(task_id)
+
+        local_ids = set()
+        for task_file in local_tasks:
+            # Extract task ID from filename like ASK-0001-description.md
+            name = task_file.stem
+            if '-' in name:
+                parts = name.split('-')
+                if len(parts) >= 2:
+                    task_id = f'{parts[0]}-{parts[1]}'
+                    local_ids.add(task_id)
+
+        missing = local_ids - linear_ids
+        if missing:
+            print(f'Missing in Linear: {", ".join(sorted(missing)[:5])}')
+            if len(missing) > 5:
+                print(f'  ... and {len(missing) - 5} more')
+        print()
+        print('Run: ./project linearsync')
+    else:
+        diff = linear_count - local_count
+        print(f'Status: ⚠️  Mismatch detected ({diff} extra in Linear)')
+        print()
+        print('Note: Linear has more issues than local tasks.')
+        print('This may be normal if issues were created directly in Linear.')
+
+    print()
+    if last_sync:
+        # Parse ISO timestamp and format nicely
+        try:
+            dt = datetime.fromisoformat(last_sync.replace('Z', '+00:00'))
+            formatted = dt.strftime('%Y-%m-%d %H:%M:%S UTC')
+            print(f'Last sync: {formatted}')
+        except Exception:
+            print(f'Last sync: {last_sync}')
+
+except Exception as e:
+    print(f'❌ Error connecting to Linear: {e}')
+    sys.exit(1)
+""",
+        ]
+
+    else:
+        print(f"❌ Unknown command: {command}")
+        print("Run './project help' for available commands.")
+        sys.exit(1)
+
+    # Run the command from project directory
+    try:
+        result = subprocess.run(cmd, cwd=project_dir)
+        sys.exit(result.returncode)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error running command: {e}")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\n⚠️  Operation cancelled by user")
+        sys.exit(0)
+    except FileNotFoundError:
+        print(f"❌ Python not found at: {python_cmd}")
+        print("   Make sure you have a virtual environment set up:")
+        print("   python3 -m venv venv && source venv/bin/activate")
+        sys.exit(1)
+
+
+def print_help():
+    """Print help message."""
+    print(
+        """
+Project CLI - adversarial-workflow
+==================================
+
+Usage: ./scripts/project <command> [options]
+
+Task Management:
+  move <id> <status>   Move task to folder and update Status field
+  complete <id>        Move task to done (shorthand)
+  start <id>           Move task to in-progress (shorthand)
+  block <id>           Move task to blocked (shorthand)
+  validate             Validate all task statuses match folders
+
+Configuration:
+  reconfigure          Update agent files with project name after upstream merge
+
+Linear Sync:
+  linearsync, sync     Sync task files to Linear
+  sync-status          Check if local tasks match Linear issues
+  teams                List all Linear teams
+
+Other:
+  help                 Show this help message
+  version              Show version information
+
+Examples:
+  ./project complete ASK-0001    Move task to done, update Status
+  ./project move ASK-0002 todo   Move task to todo folder
+  ./project validate             Check all statuses match folders
+  ./project reconfigure          Update agents after pulling upstream
+  ./project linearsync           Sync all tasks to Linear
+
+Valid statuses for 'move':
+  backlog, todo, in-progress, in-review, done, canceled, blocked
+
+For more information, see README.md
+"""
+    )
+
+
+if __name__ == "__main__":
+    main()
