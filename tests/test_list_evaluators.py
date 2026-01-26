@@ -1,39 +1,28 @@
 """Tests for adversarial list-evaluators command."""
 
-import subprocess
-import sys
-
 
 class TestListEvaluatorsCommand:
     """Tests for list-evaluators CLI command."""
 
-    def test_list_evaluators_shows_builtins(self, tmp_path, monkeypatch):
+    def test_list_evaluators_shows_builtins(self, tmp_path, monkeypatch, run_cli):
         """Built-in evaluators appear in output."""
         monkeypatch.chdir(tmp_path)
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "list-evaluators"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["list-evaluators"])
         assert result.returncode == 0
         assert "Built-in Evaluators" in result.stdout
         assert "evaluate" in result.stdout
         assert "proofread" in result.stdout
         assert "review" in result.stdout
 
-    def test_list_evaluators_no_local_message(self, tmp_path, monkeypatch):
+    def test_list_evaluators_no_local_message(self, tmp_path, monkeypatch, run_cli):
         """Shows helpful message when no local evaluators."""
         monkeypatch.chdir(tmp_path)
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "list-evaluators"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["list-evaluators"])
         assert result.returncode == 0
         assert "No local evaluators" in result.stdout
         assert ".adversarial/evaluators/*.yml" in result.stdout
 
-    def test_list_evaluators_with_local(self, tmp_path, monkeypatch):
+    def test_list_evaluators_with_local(self, tmp_path, monkeypatch, run_cli):
         """Shows local evaluators when present."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)
@@ -51,28 +40,20 @@ aliases:
         )
 
         monkeypatch.chdir(tmp_path)
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "list-evaluators"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["list-evaluators"])
         assert result.returncode == 0
         assert "Local Evaluators" in result.stdout
         assert "test" in result.stdout
         assert "aliases: t" in result.stdout
         assert "model: gpt-4o-mini" in result.stdout
 
-    def test_list_evaluators_help(self, tmp_path, monkeypatch):
+    def test_list_evaluators_help(self, tmp_path, monkeypatch, run_cli):
         """list-evaluators appears in --help."""
         monkeypatch.chdir(tmp_path)
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "--help"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["--help"])
         assert "list-evaluators" in result.stdout
 
-    def test_list_evaluators_skips_alias_duplicates(self, tmp_path, monkeypatch):
+    def test_list_evaluators_skips_alias_duplicates(self, tmp_path, monkeypatch, run_cli):
         """Aliases do not cause duplicate entries in output."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)
@@ -91,17 +72,13 @@ aliases:
         )
 
         monkeypatch.chdir(tmp_path)
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "list-evaluators"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["list-evaluators"])
         assert result.returncode == 0
         # Should only show athena once, not three times (name + 2 aliases)
         assert result.stdout.count("Knowledge evaluation") == 1
         assert "aliases: knowledge, research" in result.stdout
 
-    def test_list_evaluators_shows_version_if_not_default(self, tmp_path, monkeypatch):
+    def test_list_evaluators_shows_version_if_not_default(self, tmp_path, monkeypatch, run_cli):
         """Shows version only when it differs from default 1.0.0."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)
@@ -118,10 +95,6 @@ version: 2.0.0
         )
 
         monkeypatch.chdir(tmp_path)
-        result = subprocess.run(
-            [sys.executable, "-m", "adversarial_workflow.cli", "list-evaluators"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["list-evaluators"])
         assert result.returncode == 0
         assert "version: 2.0.0" in result.stdout

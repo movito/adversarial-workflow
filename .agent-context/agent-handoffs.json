@@ -4,22 +4,22 @@
   "last_updated": "2025-01-25",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0026 handoff ready",
+      "status": "active",
+      "current_task": "ADV-0026 completion, merge PR",
+      "brief_note": "ADV-0026 approved, merging to main",
       "details_link": null
     },
     "feature-developer": {
-      "status": "assigned",
-      "current_task": "ADV-0026",
-      "brief_note": "Fix subprocess test environment",
-      "details_link": ".agent-context/ADV-0026-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0026 complete, ADV-0028 ready after merge",
+      "details_link": ".agent-context/ADV-0028-HANDOFF-feature-developer.md"
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "Ready for review",
-      "details_link": null
+      "brief_note": "ADV-0026 approved",
+      "details_link": ".agent-context/reviews/ADV-0026-review.md"
     },
     "test-runner": {
       "status": "idle",
@@ -29,14 +29,13 @@
     }
   },
   "recent_completions": [
+    "ADV-0026: Fix subprocess test environment",
     "ADV-0023: Exception handling improvements",
     "ADV-0027: Starter kit alignment",
-    "ADV-0022: Fix check() .env variable count",
-    "ADV-0024: Custom evaluator .env loading",
-    "ADV-0025: Suppress built-in evaluator warning"
+    "ADV-0022: Fix check() .env variable count"
   ],
   "pending_tasks": [
-    "ADV-0026: Fix subprocess test environment (assigned)"
+    "ADV-0028: Fix scripts/project issues (ready after merge)"
   ],
   "blocked_items": [],
   "conventions": {
@@ -45,5 +44,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "ADV-0023 was already implemented in ADV-0022. ADV-0026 is last task before v0.6.2 release."
+  "notes": "ADV-0026 approved. After merge, ADV-0028 can start. Then v0.6.2 release."
 }
