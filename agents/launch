@@ -1,13 +1,17 @@
 #!/bin/bash
 
-# Agentive Starter Kit - Agent Launcher v1.0.0
+# adversarial-workflow - Agent Launcher
 # Reads Claude Code native agent definitions from .claude/agents/
+# Version is read dynamically from pyproject.toml
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 CLAUDE_AGENTS_DIR="$PROJECT_ROOT/.claude/agents"
 CONTEXT_DIR="$PROJECT_ROOT/.agent-context"
-PROJECT_NAME=$(basename "$PROJECT_ROOT")
+PROJECT_NAME="adversarial-workflow"
+
+# Read version from pyproject.toml (fallback to 0.0.0 if not found)
+PROJECT_VERSION=$(grep -m1 '^version' "$PROJECT_ROOT/pyproject.toml" 2>/dev/null | sed 's/version[[:space:]]*=[[:space:]]*"\([^"]*\)"/\1/' || echo "0.0.0")
 
 # Colors
 RED='\033[0;31m'
@@ -107,7 +111,7 @@ get_agent_model() {
 # Display header
 display_header() {
     echo -e "${BLUE}========================================${NC}"
-    echo -e "${BLUE}   Agentive Starter Kit v1.0.0        ${NC}"
+    echo -e "${BLUE}   ${PROJECT_NAME} v${PROJECT_VERSION}${NC}"
     echo -e "${BLUE}   Agent Launcher                     ${NC}"
     echo -e "${BLUE}========================================${NC}"
     echo

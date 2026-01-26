@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# Agentive Starter Kit - First-Run Onboarding
+# adversarial-workflow - First-Run Onboarding
 # Launches planner with full context for new project setup
+# Version is read dynamically from pyproject.toml
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 CLAUDE_AGENTS_DIR="$PROJECT_ROOT/.claude/agents"
-PROJECT_NAME=$(basename "$PROJECT_ROOT")
+PROJECT_NAME="adversarial-workflow"
+PROJECT_VERSION=$(grep -m1 '^version' "$PROJECT_ROOT/pyproject.toml" 2>/dev/null | sed 's/version[[:space:]]*=[[:space:]]*"\([^"]*\)"/\1/' || echo "0.0.0")
 
 # Colors
 RED='\033[0;31m'
@@ -19,9 +21,9 @@ NC='\033[0m'
 # Display welcome banner
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}║                                                                ║${NC}"
-echo -e "${CYAN}║   ${GREEN}🚀 Agentive Starter Kit - First-Run Onboarding${CYAN}              ║${NC}"
+echo -e "${CYAN}║   ${GREEN}🚀 ${PROJECT_NAME} v${PROJECT_VERSION} - Onboarding${CYAN}              ║${NC}"
 echo -e "${CYAN}║                                                                ║${NC}"
-echo -e "${CYAN}║   ${NC}Welcome! This will configure your new agentive project.${CYAN}      ║${NC}"
+echo -e "${CYAN}║   ${NC}Welcome! This will configure your project.${CYAN}                  ║${NC}"
 echo -e "${CYAN}║   ${NC}planner (your planning agent) will guide you through setup.${CYAN}   ║${NC}"
 echo -e "${CYAN}║                                                                ║${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════════╝${NC}"

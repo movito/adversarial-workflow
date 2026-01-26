@@ -1,12 +1,18 @@
 #!/bin/bash
 #
-# Preflight Check for Agentive Starter Kit
+# Preflight Check for adversarial-workflow
 # Validates that all required dependencies are installed before onboarding.
+# Version is read dynamically from pyproject.toml
 #
 # Usage: ./agents/preflight
 #
 
 # Don't use set -e because arithmetic operations can return non-zero
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_NAME="adversarial-workflow"
+PROJECT_VERSION=$(grep -m1 '^version' "$PROJECT_ROOT/pyproject.toml" 2>/dev/null | sed 's/version[[:space:]]*=[[:space:]]*"\([^"]*\)"/\1/' || echo "0.0.0")
 
 # Colors for output
 RED='\033[0;31m'
@@ -24,7 +30,7 @@ FAIL=0
 # Print header
 echo ""
 echo -e "${BOLD}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${BOLD}                  Agentive Starter Kit                         ${NC}"
+echo -e "${BOLD}          ${PROJECT_NAME} v${PROJECT_VERSION}                  ${NC}"
 echo -e "${BOLD}                    Preflight Check                            ${NC}"
 echo -e "${BOLD}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
