@@ -96,7 +96,7 @@ subprocess.run([sys.executable, "scripts/linear_teams.py", ...])
 - [x] Dead CalledProcessError handler removed
 - [x] `find_task_file()` uses exact/boundary-aware matching
 - [x] Tests added for `find_task_file()` edge cases (ADV-1 vs ADV-10)
-- [ ] (Optional) Inline Python extracted to separate files - SKIPPED (not critical)
+- [x] (Optional) Inline Python extracted to separate files - SKIPPED (not critical)
 - [x] All existing tests pass (184/184)
 
 ## Testing
