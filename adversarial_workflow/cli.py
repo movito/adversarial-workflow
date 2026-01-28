@@ -3114,6 +3114,9 @@ For more information: https://github.com/movito/adversarial-workflow
             source = "default"
 
         # Validate CLI timeout (consistent with YAML validation)
+        if timeout <= 0:
+            print(f"{RED}Error: Timeout must be positive (> 0), got {timeout}{RESET}")
+            return 1
         if timeout > 600:
             print(
                 f"{YELLOW}Warning: Timeout {timeout}s exceeds maximum (600s), clamping to 600s{RESET}"

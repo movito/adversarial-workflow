@@ -128,6 +128,12 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         # Handle null/empty values
         if timeout is None or timeout == "":
             raise EvaluatorParseError("Field 'timeout' cannot be null or empty")
+        # Check for bool before int (bool is subclass of int in Python)
+        # YAML parses 'yes'/'true' as True, 'no'/'false' as False
+        if isinstance(timeout, bool):
+            raise EvaluatorParseError(
+                f"Field 'timeout' must be an integer, got bool: {timeout!r}"
+            )
         if not isinstance(timeout, int):
             raise EvaluatorParseError(
                 f"Field 'timeout' must be an integer, got {type(timeout).__name__}: {timeout!r}"

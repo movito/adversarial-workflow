@@ -4,12 +4,9 @@ These tests verify that timeout values flow correctly through the entire stack:
 YAML config -> CLI parsing -> runner execution.
 """
 
-import subprocess
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-
-from adversarial_workflow.evaluators.config import EvaluatorConfig
 
 
 class TestTimeoutIntegration:
@@ -323,3 +320,87 @@ output_suffix: DEFAULT
 
         captured = capsys.readouterr()
         assert "Using timeout: 180s (default)" in captured.out
+
+    def test_cli_timeout_zero_rejected(self, tmp_path, monkeypatch, capsys):
+        """CLI timeout of 0 is rejected with error."""
+        from adversarial_workflow.cli import main
+
+        # Setup project structure
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir(parents=True)
+        (adv_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
+
+        # Create basic evaluator
+        eval_dir = adv_dir / "evaluators"
+        eval_dir.mkdir(parents=True)
+        (eval_dir / "basic.yml").write_text(
+            """
+name: basic
+description: Basic evaluator
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test
+output_suffix: BASIC
+"""
+        )
+
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test")
+
+        monkeypatch.chdir(tmp_path)
+
+        def mock_run_evaluator(config, file_path, timeout):
+            return 0
+
+        with patch("adversarial_workflow.evaluators.run_evaluator", mock_run_evaluator):
+            with patch(
+                "sys.argv",
+                ["adversarial", "basic", "--timeout", "0", str(test_file)],
+            ):
+                result = main()
+
+        assert result == 1  # Should fail
+        captured = capsys.readouterr()
+        assert "must be positive" in captured.out
+
+    def test_cli_timeout_negative_rejected(self, tmp_path, monkeypatch, capsys):
+        """CLI timeout of negative value is rejected with error."""
+        from adversarial_workflow.cli import main
+
+        # Setup project structure
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir(parents=True)
+        (adv_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
+
+        # Create basic evaluator
+        eval_dir = adv_dir / "evaluators"
+        eval_dir.mkdir(parents=True)
+        (eval_dir / "basic.yml").write_text(
+            """
+name: basic
+description: Basic evaluator
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test
+output_suffix: BASIC
+"""
+        )
+
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test")
+
+        monkeypatch.chdir(tmp_path)
+
+        def mock_run_evaluator(config, file_path, timeout):
+            return 0
+
+        with patch("adversarial_workflow.evaluators.run_evaluator", mock_run_evaluator):
+            with patch(
+                "sys.argv",
+                ["adversarial", "basic", "--timeout", "-5", str(test_file)],
+            ):
+                result = main()
+
+        assert result == 1  # Should fail
+        captured = capsys.readouterr()
+        assert "must be positive" in captured.out

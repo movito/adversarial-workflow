@@ -536,6 +536,42 @@ timeout: 30.5
         with pytest.raises(EvaluatorParseError, match="must be an integer"):
             parse_evaluator_yaml(yml)
 
+    def test_parse_timeout_boolean_true(self, tmp_path):
+        """Error on boolean timeout (YAML parses 'yes'/'true' as True)."""
+        yml = tmp_path / "bool-timeout.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: yes
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="must be an integer.*bool"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_timeout_boolean_false(self, tmp_path):
+        """Error on boolean timeout (YAML parses 'no'/'false' as False)."""
+        yml = tmp_path / "bool-timeout-false.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: false
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="must be an integer.*bool"):
+            parse_evaluator_yaml(yml)
+
     def test_parse_timeout_exceeds_max(self, tmp_path, caplog):
         """Timeout >600s is clamped to 600 with warning."""
         yml = tmp_path / "big-timeout.yml"
