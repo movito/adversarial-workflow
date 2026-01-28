@@ -20,7 +20,7 @@ Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to i
 - 🎯 **Tool-agnostic**: Use with Claude Code, Cursor, Aider, manual coding, or any workflow
 - ✨ **Interactive onboarding**: Guided setup wizard gets you started in <5 minutes
 
-## What's New in v0.6.2
+## What's New in v0.6.3
 
 ### Upgrade
 
@@ -28,12 +28,18 @@ Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to i
 pip install --upgrade adversarial-workflow
 ```
 
+### v0.6.3 - Configurable Timeouts
+
+- **Per-evaluator timeout**: Add `timeout: 300` to evaluator YAML for slow models like Mistral Large
+- **CLI override**: Use `--timeout 400` to override YAML config on-the-fly
+- **Timeout logging**: See which timeout source is used (CLI/YAML/default)
+- **Safety limits**: Maximum 600 seconds to prevent runaway processes
+
 ### v0.6.2 - .env Loading & Stability
 
 - **Automatic .env loading**: API keys in `.env` files are now loaded at CLI startup
 - **Custom evaluator support**: Evaluators using `api_key_env: GEMINI_API_KEY` (or other keys) now work with `.env` files
 - **Better diagnostics**: `adversarial check` correctly reports the number of variables loaded from `.env`
-- **Improved error handling**: Malformed `.env` files show warnings instead of crashing
 
 ### v0.6.0 - Plugin Architecture
 
@@ -439,6 +445,7 @@ Starting with v0.6.0, you can define project-specific evaluators without modifyi
 | `aliases` | No | Alternative command names |
 | `log_prefix` | No | CLI output prefix |
 | `fallback_model` | No | Fallback model if primary fails |
+| `timeout` | No | Timeout in seconds (default: 180, max: 600) |
 | `version` | No | Evaluator version (default: 1.0.0) |
 
 ### Listing Available Evaluators

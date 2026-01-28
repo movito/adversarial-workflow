@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-01-28
+
+### Added
+- **ADV-0029**: Configurable timeout per evaluator
+  - New `timeout` field in evaluator YAML (default: 180s, max: 600s)
+  - CLI `--timeout` flag overrides YAML config
+  - Timeout source logging shows CLI/YAML/default
+  - Solves Mistral Large timeout issues on large documents
+
+### Documentation
+- Updated `docs/CUSTOM_EVALUATORS.md` with timeout field, examples, and troubleshooting
+
 ## [0.6.2] - 2025-01-25
 
 ### Fixed
@@ -376,5 +388,10 @@ This release specifically improves the agent integration experience by:
 
 ---
 
+[0.6.3]: https://github.com/movito/adversarial-workflow/compare/v0.6.2...v0.6.3
+[0.6.2]: https://github.com/movito/adversarial-workflow/compare/v0.6.1...v0.6.2
+[0.6.1]: https://github.com/movito/adversarial-workflow/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/movito/adversarial-workflow/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/movito/adversarial-workflow/compare/v0.4.0...v0.5.0
 [0.2.0]: https://github.com/movito/adversarial-workflow/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/movito/adversarial-workflow/releases/tag/v0.1.0

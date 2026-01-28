@@ -4,18 +4,16 @@
   "last_updated": "2026-01-28",
   "agents": {
     "planner": {
-      "status": "completed",
-      "current_task": "ADV-0029",
-      "brief_note": "Task spec evaluated, handoff ready for feature-developer",
-      "details_link": "delegation/tasks/2-todo/ADV-0029-configurable-timeout-per-evaluator.md",
-      "handoff_file": ".agent-context/ADV-0029-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0029 completed and moved to done",
+      "details_link": null
     },
     "feature-developer": {
-      "status": "ready",
-      "current_task": "ADV-0029",
-      "brief_note": "Awaiting user to invoke in new tab",
-      "details_link": "delegation/tasks/2-todo/ADV-0029-configurable-timeout-per-evaluator.md",
-      "handoff_file": ".agent-context/ADV-0029-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0029 complete",
+      "details_link": null
     },
     "code-reviewer": {
       "status": "idle",
@@ -31,14 +29,14 @@
     }
   },
   "recent_completions": [
+    "ADV-0029: Configurable Timeout per Evaluator",
     "ADV-0028: Fix scripts/project issues",
     "ADV-0026: Fix subprocess test environment",
     "ADV-0023: Exception handling improvements",
     "ADV-0027: Starter kit alignment",
-    "ADV-0022: Fix check() .env variable count",
-    "ADV-0021: .env loading at CLI startup"
+    "ADV-0022: Fix check() .env variable count"
   ],
-  "pending_tasks": ["ADV-0029: Configurable Timeout per Evaluator"],
+  "pending_tasks": [],
   "blocked_items": [],
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
@@ -46,5 +44,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "ADV-0029 ready for feature-developer. Task evaluated ($0.05), handoff created."
+  "notes": "ADV-0029 complete. Ready for next task."
 }

@@ -1,6 +1,6 @@
 # ADV-0029: Configurable Timeout per Evaluator
 
-**Status**: In Progress
+**Status**: Done
 **Priority**: Medium
 **Type**: Feature
 **Estimated Effort**: Medium (4-5 hours)
