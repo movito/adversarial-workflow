@@ -322,16 +322,20 @@ def init_interactive(project_path: str = ".") -> int:
         f"{GREEN}✅ Setup Complete!{RESET}",
         [
             "Created:",
-            "  ✓ .env (with your API keys - added to .gitignore)"
-            if (anthropic_key or openai_key)
-            else "  ⚠️ .env (skipped - no API keys provided)",
+            (
+                "  ✓ .env (with your API keys - added to .gitignore)"
+                if (anthropic_key or openai_key)
+                else "  ⚠️ .env (skipped - no API keys provided)"
+            ),
             "  ✓ .adversarial/config.yml",
             "  ✓ .adversarial/scripts/ (3 workflow scripts)",
             "  ✓ .aider.conf.yml (aider configuration)",
             "",
-            "Your configuration:"
-            if (anthropic_key or openai_key)
-            else "Configuration (no API keys yet):",
+            (
+                "Your configuration:"
+                if (anthropic_key or openai_key)
+                else "Configuration (no API keys yet):"
+            ),
             f"  Author (implementation): {'Claude 3.5 Sonnet (Anthropic)' if anthropic_key else 'GPT-4o (OpenAI)' if openai_key else 'Not configured'}",
             f"  Evaluator: {'GPT-4o (OpenAI)' if openai_key else 'Claude 3.5 Sonnet (Anthropic)' if anthropic_key else 'Not configured'}",
             f"  Cost per workflow: {'~$0.02-0.10' if (anthropic_key and openai_key) else '~$0.05-0.15' if (anthropic_key or openai_key) else 'N/A'}",
@@ -2284,7 +2288,9 @@ def fetch_agent_template(url: str, template_type: str = "standard") -> Optional[
                 )
                 return None
         else:
-            print(f"{RED}❌ ERROR: {template_type} template not found in package{RESET}")
+            print(
+                f"{RED}❌ ERROR: {template_type} template not found in package{RESET}"
+            )
             return None
 
     elif template_type == "custom" and url:
@@ -3082,8 +3088,8 @@ For more information: https://github.com/movito/adversarial-workflow
             "--timeout",
             "-t",
             type=int,
-            default=180,
-            help="Timeout in seconds (default: 180)",
+            default=None,
+            help="Timeout in seconds (default: from evaluator config or 180, max: 600)",
         )
         # Store config for later execution
         eval_parser.set_defaults(evaluator_config=config)
@@ -3096,10 +3102,31 @@ For more information: https://github.com/movito/adversarial-workflow
 
     # Check for evaluator command first (has evaluator_config attribute)
     if hasattr(args, "evaluator_config"):
+        # Determine timeout: CLI flag > YAML config > default (180s)
+        if args.timeout is not None:
+            timeout = args.timeout
+            source = "CLI override"
+        elif args.evaluator_config.timeout != 180:
+            timeout = args.evaluator_config.timeout
+            source = "evaluator config"
+        else:
+            timeout = args.evaluator_config.timeout  # 180 (default)
+            source = "default"
+
+        # Validate CLI timeout (consistent with YAML validation)
+        if timeout > 600:
+            print(
+                f"{YELLOW}Warning: Timeout {timeout}s exceeds maximum (600s), clamping to 600s{RESET}"
+            )
+            timeout = 600
+
+        # Log actual timeout and source
+        print(f"Using timeout: {timeout}s ({source})")
+
         return run_evaluator(
             args.evaluator_config,
             args.file,
-            timeout=args.timeout,
+            timeout=timeout,
         )
 
     # Execute static commands

@@ -351,7 +351,9 @@ class TestBackwardsCompatibility:
 class TestGracefulDegradation:
     """Test graceful degradation on errors."""
 
-    def test_help_works_without_local_evaluators_dir(self, tmp_path, monkeypatch, run_cli):
+    def test_help_works_without_local_evaluators_dir(
+        self, tmp_path, monkeypatch, run_cli
+    ):
         """CLI help works even without .adversarial/evaluators/ directory."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -420,7 +422,9 @@ class TestReviewCommandBackwardsCompatibility:
         # Review should NOT have --timeout flag (that's for evaluators)
         assert "--timeout" not in result.stdout
 
-    def test_review_command_not_overridden_by_evaluator(self, tmp_path, monkeypatch, run_cli):
+    def test_review_command_not_overridden_by_evaluator(
+        self, tmp_path, monkeypatch, run_cli
+    ):
         """Review command cannot be overridden by local evaluator."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -488,7 +492,9 @@ aliases:
         assert "--path" in result_init.stdout
         assert "--interactive" in result_init.stdout
 
-    def test_evaluator_with_conflicting_name_and_alias(self, tmp_path, monkeypatch, run_cli):
+    def test_evaluator_with_conflicting_name_and_alias(
+        self, tmp_path, monkeypatch, run_cli
+    ):
         """Evaluator with conflicting name doesn't crash when alias is processed."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -518,3 +524,52 @@ aliases:
         assert result.returncode == 0
         # 'init' should still be the static command
         assert "init" in result.stdout
+
+
+class TestTimeoutConfiguration:
+    """Test timeout configuration from YAML and CLI."""
+
+    def test_evaluator_config_timeout_in_yaml(self, tmp_path, monkeypatch, run_cli):
+        """Evaluator YAML timeout appears in help text."""
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir(parents=True)
+        (adv_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
+
+        eval_dir = adv_dir / "evaluators"
+        eval_dir.mkdir(parents=True)
+        (eval_dir / "slow-model.yml").write_text(
+            """
+name: slow-model
+description: Slow model evaluator
+model: mistral/mistral-large-latest
+api_key_env: MISTRAL_API_KEY
+prompt: Evaluate this
+output_suffix: SLOW-EVAL
+timeout: 300
+"""
+        )
+
+        monkeypatch.chdir(tmp_path)
+
+        result = run_cli(["slow-model", "--help"], cwd=tmp_path)
+        assert result.returncode == 0
+        # Help should mention timeout flag with updated text
+        assert "--timeout" in result.stdout or "-t" in result.stdout
+        # Help text mentions evaluator config (may wrap across lines)
+        assert "evaluator config" in result.stdout
+        assert "max: 600" in result.stdout
+
+    def test_timeout_help_text_updated(self, tmp_path, monkeypatch, run_cli):
+        """Timeout help text shows it can come from config."""
+        adv_dir = tmp_path / ".adversarial"
+        adv_dir.mkdir(parents=True)
+        (adv_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
+
+        monkeypatch.chdir(tmp_path)
+
+        result = run_cli(["evaluate", "--help"], cwd=tmp_path)
+        assert result.returncode == 0
+        # New help text mentioning evaluator config (may wrap across lines)
+        assert "evaluator config" in result.stdout
+        # Max 600 mentioned
+        assert "max: 600" in result.stdout

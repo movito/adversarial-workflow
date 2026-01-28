@@ -37,6 +37,7 @@ Custom evaluators allow you to:
 | `log_prefix` | string | `""` | CLI output prefix (e.g., "ATHENA") |
 | `fallback_model` | string | `null` | Fallback model if primary fails |
 | `version` | string | `"1.0.0"` | Evaluator version |
+| `timeout` | int | `180` | Timeout in seconds (max: 600). CLI `--timeout` overrides this. |
 
 ### Complete Example
 
@@ -49,6 +50,7 @@ version: 1.2.0
 model: gpt-4o
 fallback_model: gpt-4o-mini
 api_key_env: OPENAI_API_KEY
+timeout: 300  # 5 minutes for complex security analysis
 
 output_suffix: SECURITY-AUDIT
 log_prefix: "SECURITY"
@@ -296,6 +298,25 @@ Common issues:
 - Incorrect indentation
 - Missing colon after field names
 
+### Timeout Issues
+
+**Problem**: "Evaluation timed out" error with slow models
+
+**Solution**: Increase the timeout in your evaluator YAML or use the CLI flag:
+```yaml
+# In your evaluator YAML
+timeout: 300  # 5 minutes
+```
+
+Or override on the command line:
+```bash
+adversarial my-evaluator --timeout 400 large-doc.md
+```
+
+**Note**: Maximum timeout is 600 seconds (10 minutes). Values above 600 are clamped automatically.
+
+**Timeout precedence**: CLI `--timeout` > YAML `timeout` > default (180s)
+
 ### Name Conflicts
 
 **Problem**: "Evaluator 'X' conflicts with CLI command; skipping"
@@ -319,6 +340,7 @@ Protected command names:
 4. **Use aliases sparingly**: Too many aliases can cause confusion
 5. **Version your evaluators**: Track changes with the `version` field
 6. **Test locally first**: Verify the evaluator works before sharing
+7. **Configure timeout for slow models**: Set `timeout: 300` (or higher, up to 600) for models like Mistral Large that need more time on large documents. Use `--timeout` CLI flag for one-off overrides.
 
 ## Sharing Evaluators
 

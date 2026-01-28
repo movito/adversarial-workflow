@@ -272,14 +272,18 @@ class TestEvaluate:
         large_content = "# Test task\n" + "Line content\n" * 600
         task_file.write_text(large_content)
 
-        with patch("shutil.which", return_value="/usr/bin/aider"), patch(
-            "adversarial_workflow.cli.load_config",
-            return_value={"log_directory": ".adversarial/logs/"},
-        ), patch("os.path.exists", return_value=True), patch(
-            "adversarial_workflow.cli.validate_evaluation_output",
-            return_value=(True, "APPROVED", "OK"),
-        ), patch(
-            "adversarial_workflow.cli.verify_token_count"
+        with (
+            patch("shutil.which", return_value="/usr/bin/aider"),
+            patch(
+                "adversarial_workflow.cli.load_config",
+                return_value={"log_directory": ".adversarial/logs/"},
+            ),
+            patch("os.path.exists", return_value=True),
+            patch(
+                "adversarial_workflow.cli.validate_evaluation_output",
+                return_value=(True, "APPROVED", "OK"),
+            ),
+            patch("adversarial_workflow.cli.verify_token_count"),
         ):
             result = evaluate(str(task_file))
 
@@ -293,11 +297,14 @@ class TestEvaluate:
         very_large_content = "# Test task\n" + "Line content\n" * 800
         task_file.write_text(very_large_content)
 
-        with patch("shutil.which", return_value="/usr/bin/aider"), patch(
-            "adversarial_workflow.cli.load_config",
-            return_value={"log_directory": ".adversarial/logs/"},
-        ), patch("os.path.exists", return_value=True), patch(
-            "builtins.input", return_value="n"
+        with (
+            patch("shutil.which", return_value="/usr/bin/aider"),
+            patch(
+                "adversarial_workflow.cli.load_config",
+                return_value={"log_directory": ".adversarial/logs/"},
+            ),
+            patch("os.path.exists", return_value=True),
+            patch("builtins.input", return_value="n"),
         ):  # User says no
             result = evaluate(str(task_file))
             assert result == 0  # Cancelled, not error
@@ -450,14 +457,18 @@ class TestEvaluateIntegration:
 
     def test_evaluate_with_sample_task(self, sample_task_file, mock_aider_command):
         """Test evaluate with sample task file from fixture."""
-        with patch("shutil.which", return_value="/usr/bin/aider"), patch(
-            "adversarial_workflow.cli.load_config",
-            return_value={"log_directory": ".adversarial/logs/"},
-        ), patch("os.path.exists", return_value=True), patch(
-            "adversarial_workflow.cli.validate_evaluation_output",
-            return_value=(True, "APPROVED", "OK"),
-        ), patch(
-            "adversarial_workflow.cli.verify_token_count"
+        with (
+            patch("shutil.which", return_value="/usr/bin/aider"),
+            patch(
+                "adversarial_workflow.cli.load_config",
+                return_value={"log_directory": ".adversarial/logs/"},
+            ),
+            patch("os.path.exists", return_value=True),
+            patch(
+                "adversarial_workflow.cli.validate_evaluation_output",
+                return_value=(True, "APPROVED", "OK"),
+            ),
+            patch("adversarial_workflow.cli.verify_token_count"),
         ):
             result = evaluate(str(sample_task_file))
             assert isinstance(result, int)

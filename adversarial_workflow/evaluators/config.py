@@ -26,6 +26,7 @@ class EvaluatorConfig:
         fallback_model: Fallback model if primary fails
         aliases: Alternative command names
         version: Evaluator version
+        timeout: Timeout in seconds (default: 180, max: 600)
         source: "builtin" or "local" (set internally)
         config_file: Path to YAML file if local (set internally)
     """
@@ -43,6 +44,7 @@ class EvaluatorConfig:
     fallback_model: str | None = None
     aliases: list[str] = field(default_factory=list)
     version: str = "1.0.0"
+    timeout: int = 180  # Timeout in seconds (default: 180, max: 600)
 
     # Metadata (set internally during discovery, not from YAML)
     source: str = "builtin"

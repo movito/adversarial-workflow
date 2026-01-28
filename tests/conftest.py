@@ -144,9 +144,11 @@ def sample_config():
 def mock_file_operations():
     """Mock file system operations for isolated testing."""
     mocks = {}
-    with patch("pathlib.Path.exists") as mock_exists, patch(
-        "pathlib.Path.is_file"
-    ) as mock_is_file, patch("pathlib.Path.is_dir") as mock_is_dir:
+    with (
+        patch("pathlib.Path.exists") as mock_exists,
+        patch("pathlib.Path.is_file") as mock_is_file,
+        patch("pathlib.Path.is_dir") as mock_is_dir,
+    ):
         # Default to files/dirs existing
         mock_exists.return_value = True
         mock_is_file.return_value = True

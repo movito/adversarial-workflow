@@ -122,6 +122,29 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
                     f"Field '{field}' must be a string, got {type(value).__name__}: {value!r}"
                 )
 
+    # Validate timeout if present
+    if "timeout" in data:
+        timeout = data["timeout"]
+        # Handle null/empty values
+        if timeout is None or timeout == "":
+            raise EvaluatorParseError("Field 'timeout' cannot be null or empty")
+        if not isinstance(timeout, int):
+            raise EvaluatorParseError(
+                f"Field 'timeout' must be an integer, got {type(timeout).__name__}: {timeout!r}"
+            )
+        # timeout=0 is invalid (does not disable timeout - use a large value instead)
+        if timeout <= 0:
+            raise EvaluatorParseError(
+                f"Field 'timeout' must be positive (> 0), got {timeout}"
+            )
+        if timeout > 600:
+            logger.warning(
+                "Timeout %ds exceeds maximum (600s), clamping to 600s in %s",
+                timeout,
+                yml_file.name,
+            )
+            data["timeout"] = 600
+
     # Filter to known fields only (log unknown fields)
     known_fields = {
         "name",
@@ -134,6 +157,7 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         "fallback_model",
         "aliases",
         "version",
+        "timeout",
     }
     unknown = set(data.keys()) - known_fields
     if unknown:

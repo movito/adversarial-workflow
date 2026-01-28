@@ -393,6 +393,173 @@ fallback_model: yes
         ):
             parse_evaluator_yaml(yml)
 
+    def test_parse_with_valid_timeout(self, tmp_path):
+        """Parse YAML with valid timeout field."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test
+description: Test evaluator
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: 300
+"""
+        )
+        config = parse_evaluator_yaml(yml)
+
+        assert config.timeout == 300
+
+    def test_parse_timeout_default(self, tmp_path):
+        """Missing timeout uses default 180s."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test
+description: Test evaluator
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+"""
+        )
+        config = parse_evaluator_yaml(yml)
+
+        assert config.timeout == 180  # default
+
+    def test_parse_timeout_null(self, tmp_path):
+        """Error on null timeout."""
+        yml = tmp_path / "null-timeout.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: null
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="cannot be null or empty"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_timeout_empty_string(self, tmp_path):
+        """Error on empty string timeout."""
+        yml = tmp_path / "empty-timeout.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: ""
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="cannot be null or empty"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_timeout_zero(self, tmp_path):
+        """Error on timeout 0 (must be positive)."""
+        yml = tmp_path / "zero-timeout.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: 0
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="must be positive"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_timeout_negative(self, tmp_path):
+        """Error on negative timeout."""
+        yml = tmp_path / "negative-timeout.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: -5
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="must be positive"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_timeout_non_integer(self, tmp_path):
+        """Error on non-integer timeout."""
+        yml = tmp_path / "string-timeout.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: "five minutes"
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="must be an integer"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_timeout_float(self, tmp_path):
+        """Error on float timeout (YAML parses 30.5 as float)."""
+        yml = tmp_path / "float-timeout.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: 30.5
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="must be an integer"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_timeout_exceeds_max(self, tmp_path, caplog):
+        """Timeout >600s is clamped to 600 with warning."""
+        yml = tmp_path / "big-timeout.yml"
+        yml.write_text(
+            """
+name: test
+description: Test
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Test prompt
+output_suffix: TEST
+timeout: 1200
+"""
+        )
+
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            config = parse_evaluator_yaml(yml)
+
+        assert config.timeout == 600  # clamped
+        assert "exceeds maximum" in caplog.text
+        assert "clamping to 600s" in caplog.text
+
 
 class TestDiscoverLocalEvaluators:
     """Tests for discover_local_evaluators function."""

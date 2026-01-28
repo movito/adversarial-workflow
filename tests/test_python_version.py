@@ -4,6 +4,7 @@ Test Python version compatibility requirements.
 This test validates that the project configuration correctly specifies
 Python version requirements to match aider-chat dependency constraints.
 """
+
 import sys
 from pathlib import Path
 

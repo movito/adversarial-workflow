@@ -1,19 +1,21 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-01-26",
+  "last_updated": "2026-01-28",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "v0.6.2 released, housekeeping complete",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADV-0029",
+      "brief_note": "Task spec evaluated, handoff ready for feature-developer",
+      "details_link": "delegation/tasks/2-todo/ADV-0029-configurable-timeout-per-evaluator.md",
+      "handoff_file": ".agent-context/ADV-0029-HANDOFF-feature-developer.md"
     },
     "feature-developer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0028 complete",
-      "details_link": null
+      "status": "ready",
+      "current_task": "ADV-0029",
+      "brief_note": "Awaiting user to invoke in new tab",
+      "details_link": "delegation/tasks/2-todo/ADV-0029-configurable-timeout-per-evaluator.md",
+      "handoff_file": ".agent-context/ADV-0029-HANDOFF-feature-developer.md"
     },
     "code-reviewer": {
       "status": "idle",
@@ -36,7 +38,7 @@
     "ADV-0022: Fix check() .env variable count",
     "ADV-0021: .env loading at CLI startup"
   ],
-  "pending_tasks": [],
+  "pending_tasks": ["ADV-0029: Configurable Timeout per Evaluator"],
   "blocked_items": [],
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
@@ -44,5 +46,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "v0.6.2 released. All ADV-002x tasks complete. Housekeeping done - stale handoffs archived."
+  "notes": "ADV-0029 ready for feature-developer. Task evaluated ($0.05), handoff created."
 }

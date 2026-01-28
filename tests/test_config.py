@@ -59,13 +59,16 @@ custom_setting: test_value
 
     def test_load_config_with_env_overrides(self):
         """Test that environment variables override config file values."""
-        with patch("os.path.exists", return_value=False), patch.dict(
-            os.environ,
-            {
-                "ADVERSARIAL_EVALUATOR_MODEL": "gpt-4-turbo",
-                "ADVERSARIAL_TEST_COMMAND": "cargo test",
-                "ADVERSARIAL_LOG_DIR": "custom_logs/",
-            },
+        with (
+            patch("os.path.exists", return_value=False),
+            patch.dict(
+                os.environ,
+                {
+                    "ADVERSARIAL_EVALUATOR_MODEL": "gpt-4-turbo",
+                    "ADVERSARIAL_TEST_COMMAND": "cargo test",
+                    "ADVERSARIAL_LOG_DIR": "custom_logs/",
+                },
+            ),
         ):
             config = load_config("nonexistent.yml")
 
@@ -127,13 +130,16 @@ test_command: pytest
 
     def test_load_config_partial_env_overrides(self):
         """Test that only set environment variables override config."""
-        with patch("os.path.exists", return_value=False), patch.dict(
-            os.environ,
-            {
-                "ADVERSARIAL_EVALUATOR_MODEL": "gpt-4",
-                # Only set one env var, others should remain default
-            },
-            clear=True,
+        with (
+            patch("os.path.exists", return_value=False),
+            patch.dict(
+                os.environ,
+                {
+                    "ADVERSARIAL_EVALUATOR_MODEL": "gpt-4",
+                    # Only set one env var, others should remain default
+                },
+                clear=True,
+            ),
         ):
             config = load_config("nonexistent.yml")
 
