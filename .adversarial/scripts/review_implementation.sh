@@ -99,6 +99,7 @@ fi
 aider \
   --model "$EVALUATOR_MODEL" \
   --yes \
+  --no-detect-urls \
   --no-gitignore \
   --read $READ_FILES \
   --message "You are a REVIEWER performing critical code review.

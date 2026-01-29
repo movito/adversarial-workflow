@@ -56,6 +56,7 @@ mkdir -p "$LOG_DIR"
 aider \
   --model "$EVALUATOR_MODEL" \
   --yes \
+  --no-detect-urls \
   --no-git \
   --map-tokens 0 \
   --no-gitignore \

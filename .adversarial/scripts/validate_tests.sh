@@ -86,6 +86,7 @@ echo ""
 aider \
   --model "$EVALUATOR_MODEL" \
   --yes \
+  --no-detect-urls \
   --no-gitignore \
   --read "$TASK_FILE" "${ARTIFACTS_DIR}${TASK_NUM}-final-implementation.diff" "${ARTIFACTS_DIR}${TASK_NUM}-test-output.txt" \
   --message "You are a REVIEWER performing test validation and analysis.
