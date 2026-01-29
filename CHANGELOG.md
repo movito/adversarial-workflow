@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.6] - 2026-01-29
 
 ### Fixed
+
 - **Custom evaluator runner now includes --no-detect-urls** - Applied the URL auto-scraping fix to `evaluators/runner.py`, completing the fix for custom/YAML-defined evaluators (mistral-fast, codestral-code, etc.)
 
 ## [0.6.5] - 2026-01-29
