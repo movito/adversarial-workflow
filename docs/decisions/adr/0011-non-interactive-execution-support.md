@@ -324,6 +324,64 @@ done
 
 **Note**: None of these are planned currently. Stdin redirection meets all known needs.
 
+## Addendum: Aider URL Auto-Scraping (v0.6.4-v0.6.6)
+
+**Date**: 2026-01-29
+
+### Context
+
+When running aider with `--yes` (required for non-interactive evaluations), aider automatically confirms **all** prompts, including URL scraping requests. If a task file contains documentation URLs (e.g., `https://docs.mistral.ai/`), aider will:
+
+1. Detect the URL in the file content
+2. Prompt "Scrape this URL?"
+3. Auto-confirm due to `--yes` flag
+4. Fetch and process the URL content
+
+This caused:
+- Unexpected timeouts during evaluations
+- Wasted API tokens on irrelevant web content
+- Confusion about evaluation failures
+
+### Decision
+
+**Add `--no-detect-urls` to all aider invocations** in non-interactive contexts:
+
+```bash
+aider \
+  --model "$EVALUATOR_MODEL" \
+  --yes \
+  --no-detect-urls \  # Prevents URL auto-scraping
+  --no-git \
+  ...
+```
+
+### Implementation (v0.6.4-v0.6.6)
+
+| Version | Files Fixed |
+|---------|-------------|
+| v0.6.4 | `.adversarial/scripts/*.sh` (local repo) |
+| v0.6.5 | `templates/*.sh.template` (pip distribution) |
+| v0.6.6 | `evaluators/runner.py` (custom evaluators) |
+
+### Why Not Make URL Scraping Configurable?
+
+The `--no-detect-urls` flag is applied unconditionally because:
+
+1. **Evaluation context**: Evaluators review task content, not external URLs
+2. **Predictable behavior**: Same result regardless of URL presence in files
+3. **No legitimate use case**: URL scraping during evaluation is never desired
+4. **Performance**: Eliminates network latency and potential timeouts
+
+Users who need URL content in evaluations should include it directly in task files.
+
+### References
+
+- [Aider Options Reference](https://aider.chat/docs/config/options.html)
+- [GitHub Issue #2187](https://github.com/Aider-AI/aider/issues/2187) - Original feature request for scraping control
+- PR #17 (v0.6.4), PR #18 (v0.6.6)
+
+---
+
 ## References
 
 **Investigation Context**:
