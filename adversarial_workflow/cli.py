@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Tuple
 import yaml
 from dotenv import dotenv_values, load_dotenv
 
-__version__ = "0.6.4"
+__version__ = "0.6.5"
 
 # ANSI color codes for better output
 RESET = "\033[0m"

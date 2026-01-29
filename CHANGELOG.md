@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-01-29
+
+### Fixed
+- **Template files now include --no-detect-urls** - Applied the URL auto-scraping fix to distributed template files (`adversarial_workflow/templates/*.sh.template`), completing the fix from v0.6.4 which only updated local scripts
+
 ## [0.6.4] - 2026-01-29
 
 ### Fixed
@@ -393,6 +398,7 @@ This release specifically improves the agent integration experience by:
 
 ---
 
+[0.6.5]: https://github.com/movito/adversarial-workflow/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/movito/adversarial-workflow/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/movito/adversarial-workflow/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/movito/adversarial-workflow/compare/v0.6.1...v0.6.2
