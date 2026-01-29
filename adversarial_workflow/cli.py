@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Tuple
 import yaml
 from dotenv import dotenv_values, load_dotenv
 
-__version__ = "0.6.2"
+__version__ = "0.6.4"
 
 # ANSI color codes for better output
 RESET = "\033[0m"
@@ -180,7 +180,9 @@ def create_env_file_interactive(
     env_content += "# DO NOT COMMIT THIS FILE\n\n"
 
     if anthropic_key:
-        env_content += f"# Anthropic API Key (Claude 3.5 Sonnet)\nANTHROPIC_API_KEY={anthropic_key}\n\n"
+        env_content += (
+            f"# Anthropic API Key (Claude 3.5 Sonnet)\nANTHROPIC_API_KEY={anthropic_key}\n\n"
+        )
 
     if openai_key:
         env_content += f"# OpenAI API Key (GPT-4o)\nOPENAI_API_KEY={openai_key}\n\n"
@@ -255,9 +257,7 @@ def init_interactive(project_path: str = ".") -> int:
             ],
         )
 
-        anthropic_key = prompt_user(
-            "Paste your Anthropic API key (or Enter to skip)", secret=True
-        )
+        anthropic_key = prompt_user("Paste your Anthropic API key (or Enter to skip)", secret=True)
 
         if anthropic_key:
             is_valid, message = validate_api_key(anthropic_key, "anthropic")
@@ -281,9 +281,7 @@ def init_interactive(project_path: str = ".") -> int:
             ],
         )
 
-        openai_key = prompt_user(
-            "Paste your OpenAI API key (or Enter to skip)", secret=True
-        )
+        openai_key = prompt_user("Paste your OpenAI API key (or Enter to skip)", secret=True)
 
         if openai_key:
             is_valid, message = validate_api_key(openai_key, "openai")
@@ -613,9 +611,7 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
         print("   3. Then run: adversarial init")
         print()
         print(f"{BOLD}HELP:{RESET}")
-        print(
-            "   New to git? https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
-        )
+        print("   New to git? https://git-scm.com/book/en/v2/Getting-Started-Installing-Git")
         return 1
 
     # Pre-flight validation: Check package integrity
@@ -649,9 +645,7 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
             print(f"   • {template}")
         print()
         print(f"{BOLD}FIX:{RESET}")
-        print(
-            "   1. Report this issue: https://github.com/movito/adversarial-workflow/issues"
-        )
+        print("   1. Report this issue: https://github.com/movito/adversarial-workflow/issues")
         print(
             "   2. Or try reinstalling: pip install --upgrade --force-reinstall adversarial-workflow"
         )
@@ -1030,13 +1024,9 @@ def check() -> int:
     else:
         status_parts = []
         if error_count > 0:
-            status_parts.append(
-                f"{error_count} error" + ("s" if error_count != 1 else "")
-            )
+            status_parts.append(f"{error_count} error" + ("s" if error_count != 1 else ""))
         if warning_count > 0:
-            status_parts.append(
-                f"{warning_count} warning" + ("s" if warning_count != 1 else "")
-            )
+            status_parts.append(f"{warning_count} warning" + ("s" if warning_count != 1 else ""))
         if info_count > 0:
             status_parts.append(f"{info_count} info")
 
@@ -1088,20 +1078,14 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     # Helper functions for tracking check results
     def check_pass(category: str, message: str, detail: str = None):
         nonlocal passed
-        results[category].append(
-            {"status": "pass", "message": message, "detail": detail}
-        )
+        results[category].append({"status": "pass", "message": message, "detail": detail})
         if not json_output:
             print(f"  {GREEN}✅{RESET} {message}")
         passed += 1
 
-    def check_warn(
-        category: str, message: str, detail: str = None, recommendation: str = None
-    ):
+    def check_warn(category: str, message: str, detail: str = None, recommendation: str = None):
         nonlocal warnings
-        results[category].append(
-            {"status": "warn", "message": message, "detail": detail}
-        )
+        results[category].append({"status": "warn", "message": message, "detail": detail})
         if not json_output:
             print(f"  {YELLOW}⚠️{RESET}  {message}")
             if detail and verbose:
@@ -1110,9 +1094,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
             recommendations.append(recommendation)
         warnings += 1
 
-    def check_fail(
-        category: str, message: str, fix: str = None, recommendation: str = None
-    ):
+    def check_fail(category: str, message: str, fix: str = None, recommendation: str = None):
         nonlocal errors
         results[category].append({"status": "fail", "message": message, "fix": fix})
         if not json_output:
@@ -1124,9 +1106,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         errors += 1
 
     def check_info(category: str, message: str, detail: str = None):
-        results[category].append(
-            {"status": "info", "message": message, "detail": detail}
-        )
+        results[category].append({"status": "info", "message": message, "detail": detail})
         if not json_output:
             print(f"  {CYAN}ℹ️{RESET}  {message}")
             if detail and verbose:
@@ -1258,23 +1238,13 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                 )
                 if git_status.returncode == 0:
                     modified = len(
-                        [
-                            l
-                            for l in git_status.stdout.splitlines()
-                            if l.startswith(" M")
-                        ]
+                        [l for l in git_status.stdout.splitlines() if l.startswith(" M")]
                     )
                     untracked = len(
-                        [
-                            l
-                            for l in git_status.stdout.splitlines()
-                            if l.startswith("??")
-                        ]
+                        [l for l in git_status.stdout.splitlines() if l.startswith("??")]
                     )
                     if modified == 0 and untracked == 0:
-                        check_pass(
-                            "dependencies", f"Git: {version} (working tree clean)"
-                        )
+                        check_pass("dependencies", f"Git: {version} (working tree clean)")
                     else:
                         check_info(
                             "dependencies",
@@ -1311,11 +1281,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
             aider_version = subprocess.run(
                 ["aider", "--version"], capture_output=True, text=True, timeout=2
             )
-            version = (
-                aider_version.stdout.strip()
-                if aider_version.returncode == 0
-                else "unknown"
-            )
+            version = aider_version.stdout.strip() if aider_version.returncode == 0 else "unknown"
             check_pass("dependencies", f"Aider: {version} (functional)")
         except:
             check_pass("dependencies", "Aider: installed")
@@ -1459,9 +1425,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                     json.load(f)
                 check_pass("agent_coordination", "current-state.json - Valid JSON")
             except json.JSONDecodeError as e:
-                check_fail(
-                    "agent_coordination", f"current-state.json - Invalid JSON: {e}"
-                )
+                check_fail("agent_coordination", f"current-state.json - Invalid JSON: {e}")
         else:
             check_info("agent_coordination", "current-state.json not found (optional)")
 
@@ -1505,9 +1469,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                     with open(script_path) as f:
                         content = f.read()
                     if "#!/bin/bash" in content or "#!/usr/bin/env bash" in content:
-                        check_pass(
-                            "workflow_scripts", f"{script_name} - Executable, valid"
-                        )
+                        check_pass("workflow_scripts", f"{script_name} - Executable, valid")
                     else:
                         check_warn(
                             "workflow_scripts",
@@ -1781,9 +1743,7 @@ def verify_token_count(task_file: str, log_file: str) -> None:
             f"   Difference: {expected_tokens - actual_tokens:,} tokens ({100 - int(actual_tokens/expected_tokens*100)}% less)"
         )
         print()
-        print(
-            f"{BOLD}Note:{RESET} Large files may not be fully processed by evaluator."
-        )
+        print(f"{BOLD}Note:{RESET} Large files may not be fully processed by evaluator.")
         print(f"      Consider splitting into smaller documents (<1,000 lines).")
         print()
 
@@ -1964,9 +1924,7 @@ def evaluate(task_file: str) -> int:
             print(f"{RED}❌ ERROR: OpenAI rate limit exceeded{RESET}")
             print()
             print(f"{BOLD}WHY:{RESET}")
-            print(
-                "   Your task file is too large for your OpenAI organization's rate limit"
-            )
+            print("   Your task file is too large for your OpenAI organization's rate limit")
             print()
 
             # Extract file size for helpful message
@@ -2013,9 +1971,7 @@ def evaluate(task_file: str) -> int:
             print()
             print(f"{BOLD}FIX:{RESET}")
             print("   Option 1 (RECOMMENDED): Use WSL (Windows Subsystem for Linux)")
-            print(
-                "     1. Install WSL: https://learn.microsoft.com/windows/wsl/install"
-            )
+            print("     1. Install WSL: https://learn.microsoft.com/windows/wsl/install")
             print("     2. Open WSL terminal")
             print("     3. Reinstall package in WSL: pip install adversarial-workflow")
             print()
@@ -2186,9 +2142,7 @@ def validate(test_command: Optional[str] = None) -> int:
         return 1
 
     try:
-        result = subprocess.run(
-            [script, test_command], timeout=600
-        )  # 10 minutes for tests
+        result = subprocess.run([script, test_command], timeout=600)  # 10 minutes for tests
     except subprocess.TimeoutExpired:
         print(f"{RED}❌ ERROR: Test validation timed out (>10 minutes){RESET}")
         return 1
@@ -2241,9 +2195,7 @@ def select_agent_template() -> Dict[str, str]:
     elif choice == "3":
         print()
         print(f"{CYAN}Custom Template URL:{RESET}")
-        print(
-            "  Example: https://raw.githubusercontent.com/user/repo/main/agent-handoffs.json"
-        )
+        print("  Example: https://raw.githubusercontent.com/user/repo/main/agent-handoffs.json")
         print()
         url = prompt_user("Template URL")
         if url:
@@ -2283,14 +2235,10 @@ def fetch_agent_template(url: str, template_type: str = "standard") -> Optional[
                 with open(template_path, "r") as f:
                     return f.read()
             except Exception as e:
-                print(
-                    f"{RED}❌ ERROR: Could not read {template_type} template: {e}{RESET}"
-                )
+                print(f"{RED}❌ ERROR: Could not read {template_type} template: {e}{RESET}")
                 return None
         else:
-            print(
-                f"{RED}❌ ERROR: {template_type} template not found in package{RESET}"
-            )
+            print(f"{RED}❌ ERROR: {template_type} template not found in package{RESET}")
             return None
 
     elif template_type == "custom" and url:
@@ -2390,9 +2338,11 @@ def agent_onboard(project_path: str = ".") -> int:
             return 0
 
     # 3. Interactive questions (4 max)
-    use_delegation = prompt_user(
-        "Use delegation/tasks/ structure? (recommended)", "Y"
-    ).lower() in ["y", "yes", ""]
+    use_delegation = prompt_user("Use delegation/tasks/ structure? (recommended)", "Y").lower() in [
+        "y",
+        "yes",
+        "",
+    ]
 
     organize_docs = prompt_user("Organize root docs into docs/?", "n").lower() in [
         "y",
@@ -2469,9 +2419,7 @@ def agent_onboard(project_path: str = ".") -> int:
                     print(
                         f"  {CYAN}ℹ️{RESET}  Original tasks/ preserved (remove manually if desired)"
                     )
-                    print(
-                        f"  {CYAN}ℹ️{RESET}  Rollback: rm -rf tasks && mv tasks.backup tasks"
-                    )
+                    print(f"  {CYAN}ℹ️{RESET}  Rollback: rm -rf tasks && mv tasks.backup tasks")
 
                 except Exception as e:
                     print(f"  {RED}❌{RESET} Migration failed: {e}")
@@ -2485,9 +2433,7 @@ def agent_onboard(project_path: str = ".") -> int:
         print(f"{BOLD}Documentation Organization:{RESET}")
 
         # Find markdown files in root
-        root_docs = [
-            f for f in os.listdir(".") if f.endswith(".md") and not f.startswith(".")
-        ]
+        root_docs = [f for f in os.listdir(".") if f.endswith(".md") and not f.startswith(".")]
 
         if len(root_docs) > 0:
             print(f"  Found {len(root_docs)} markdown file(s) in root")
@@ -2507,9 +2453,7 @@ def agent_onboard(project_path: str = ".") -> int:
                         moved_count += 1
 
                 if moved_count > 0:
-                    print(
-                        f"  {GREEN}✅{RESET} Organized {moved_count} doc(s) into docs/"
-                    )
+                    print(f"  {GREEN}✅{RESET} Organized {moved_count} doc(s) into docs/")
                 else:
                     print(f"  {CYAN}ℹ️{RESET}  No docs needed organizing")
 
@@ -2562,9 +2506,7 @@ def agent_onboard(project_path: str = ".") -> int:
                 print(f"  {RED}❌{RESET} Failed to fetch agent template")
                 return 1
         else:
-            print(
-                f"  {CYAN}ℹ️{RESET}  Skipped agent-handoffs.json (manual setup requested)"
-            )
+            print(f"  {CYAN}ℹ️{RESET}  Skipped agent-handoffs.json (manual setup requested)")
 
         # Render current-state.json
         current_state_template = templates_dir / "current-state.json.template"
@@ -2579,9 +2521,7 @@ def agent_onboard(project_path: str = ".") -> int:
         # Render README.md
         readme_template = templates_dir / "README.md.template"
         if readme_template.exists():
-            render_template(
-                str(readme_template), ".agent-context/README.md", template_vars
-            )
+            render_template(str(readme_template), ".agent-context/README.md", template_vars)
             print(f"  {GREEN}✅{RESET} Created .agent-context/README.md")
 
         # Copy AGENT-SYSTEM-GUIDE.md if it exists and isn't already there
@@ -2620,9 +2560,7 @@ def agent_onboard(project_path: str = ".") -> int:
 
         except Exception as e:
             print(f"  {YELLOW}⚠️{RESET}  Could not update config: {e}")
-            print(
-                f"     Manually set task_directory: delegation/tasks/ in .adversarial/config.yml"
-            )
+            print(f"     Manually set task_directory: delegation/tasks/ in .adversarial/config.yml")
 
     # 9. Update .gitignore
     print()
@@ -2676,9 +2614,7 @@ def agent_onboard(project_path: str = ".") -> int:
         verification_checks.append((f"current-state.json invalid: {e}", False))
 
     # Check directories exist
-    verification_checks.append(
-        (".agent-context/ exists", os.path.exists(".agent-context"))
-    )
+    verification_checks.append((".agent-context/ exists", os.path.exists(".agent-context")))
 
     if use_delegation:
         verification_checks.append(
@@ -2783,9 +2719,7 @@ def split(
 
         # Check if splitting is recommended
         if lines <= max_lines:
-            print(
-                f"{GREEN}✅ File is under recommended limit ({max_lines} lines){RESET}"
-            )
+            print(f"{GREEN}✅ File is under recommended limit ({max_lines} lines){RESET}")
             print("No splitting needed.")
             return 0
 
@@ -2803,9 +2737,7 @@ def split(
             splits = split_by_phases(content)
             print(f"\n💡 Suggested splits (by phases):")
         else:
-            print(
-                f"{RED}Error: Unknown strategy '{strategy}'. Use 'sections' or 'phases'.{RESET}"
-            )
+            print(f"{RED}Error: Unknown strategy '{strategy}'. Use 'sections' or 'phases'.{RESET}")
             return 1
 
         # Display split preview
@@ -2977,26 +2909,18 @@ For more information: https://github.com/movito/adversarial-workflow
     subparsers.add_parser("doctor", help="Alias for 'check'")
 
     # health command
-    health_parser = subparsers.add_parser(
-        "health", help="Comprehensive system health check"
-    )
+    health_parser = subparsers.add_parser("health", help="Comprehensive system health check")
     health_parser.add_argument(
         "--verbose", "-v", action="store_true", help="Show detailed diagnostics"
     )
-    health_parser.add_argument(
-        "--json", action="store_true", help="Output in JSON format"
-    )
+    health_parser.add_argument("--json", action="store_true", help="Output in JSON format")
 
     # agent command (with subcommands)
     agent_parser = subparsers.add_parser("agent", help="Agent coordination commands")
-    agent_subparsers = agent_parser.add_subparsers(
-        dest="agent_subcommand", help="Agent subcommand"
-    )
+    agent_subparsers = agent_parser.add_subparsers(dest="agent_subcommand", help="Agent subcommand")
 
     # agent onboard subcommand
-    onboard_parser = agent_subparsers.add_parser(
-        "onboard", help="Set up agent coordination system"
-    )
+    onboard_parser = agent_subparsers.add_parser("onboard", help="Set up agent coordination system")
     onboard_parser.add_argument(
         "--path", default=".", help="Project path (default: current directory)"
     )
@@ -3005,12 +2929,8 @@ For more information: https://github.com/movito/adversarial-workflow
     subparsers.add_parser("review", help="Run Phase 3: Code review")
 
     # validate command
-    validate_parser = subparsers.add_parser(
-        "validate", help="Run Phase 4: Test validation"
-    )
-    validate_parser.add_argument(
-        "test_command", nargs="?", help="Test command to run (optional)"
-    )
+    validate_parser = subparsers.add_parser("validate", help="Run Phase 4: Test validation")
+    validate_parser.add_argument("test_command", nargs="?", help="Test command to run (optional)")
 
     # split command
     split_parser = subparsers.add_parser(
@@ -3056,9 +2976,7 @@ For more information: https://github.com/movito/adversarial-workflow
             # Only warn for user-defined evaluators, not built-ins
             # Built-in conflicts are intentional (e.g., 'review' command vs 'review' evaluator)
             if getattr(config, "source", None) != "builtin":
-                logger.warning(
-                    "Evaluator '%s' conflicts with CLI command; skipping", name
-                )
+                logger.warning("Evaluator '%s' conflicts with CLI command; skipping", name)
             # Mark as registered to prevent alias re-registration attempts
             registered_configs.add(id(config))
             continue

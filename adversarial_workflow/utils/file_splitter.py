@@ -141,9 +141,7 @@ def split_by_sections(content: str, max_lines: int = 500) -> List[Dict[str, Any]
         is_section_boundary = re.match(r"^#+\s+", line.strip())
         approaching_limit = len(current_split_lines) >= max_lines * 0.8
 
-        if len(current_split_lines) >= max_lines or (
-            is_section_boundary and approaching_limit
-        ):
+        if len(current_split_lines) >= max_lines or (is_section_boundary and approaching_limit):
             # Create split
             split_content = "\n".join(current_split_lines)
             splits.append(
@@ -318,9 +316,7 @@ def split_at_lines(content: str, line_numbers: List[int]) -> List[Dict[str, Any]
     return splits
 
 
-def generate_split_files(
-    original: str, splits: List[Dict[str, Any]], output_dir: str
-) -> List[str]:
+def generate_split_files(original: str, splits: List[Dict[str, Any]], output_dir: str) -> List[str]:
     """Generate split files with metadata and cross-references.
 
     Args:

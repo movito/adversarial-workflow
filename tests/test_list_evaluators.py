@@ -53,9 +53,7 @@ aliases:
         result = run_cli(["--help"])
         assert "list-evaluators" in result.stdout
 
-    def test_list_evaluators_skips_alias_duplicates(
-        self, tmp_path, monkeypatch, run_cli
-    ):
+    def test_list_evaluators_skips_alias_duplicates(self, tmp_path, monkeypatch, run_cli):
         """Aliases do not cause duplicate entries in output."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)
@@ -80,9 +78,7 @@ aliases:
         assert result.stdout.count("Knowledge evaluation") == 1
         assert "aliases: knowledge, research" in result.stdout
 
-    def test_list_evaluators_shows_version_if_not_default(
-        self, tmp_path, monkeypatch, run_cli
-    ):
+    def test_list_evaluators_shows_version_if_not_default(self, tmp_path, monkeypatch, run_cli):
         """Shows version only when it differs from default 1.0.0."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
         eval_dir.mkdir(parents=True)

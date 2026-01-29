@@ -12,7 +12,7 @@ Usage:
     adversarial validate "pytest"
 """
 
-__version__ = "0.6.2"
+__version__ = "0.6.4"
 __author__ = "Fredrik Matheson"
 __license__ = "MIT"
 

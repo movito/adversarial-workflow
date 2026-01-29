@@ -51,9 +51,7 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
 
     # Ensure parsed data is a dict (YAML can parse scalars, lists, etc.)
     if not isinstance(data, dict):
-        raise EvaluatorParseError(
-            f"YAML must be a mapping, got {type(data).__name__}: {yml_file}"
-        )
+        raise EvaluatorParseError(f"YAML must be a mapping, got {type(data).__name__}: {yml_file}")
 
     # Validate required fields exist
     required = [
@@ -91,9 +89,7 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     elif isinstance(aliases, str):
         data["aliases"] = [aliases]
     elif not isinstance(aliases, list):
-        raise EvaluatorParseError(
-            f"aliases must be string or list, got {type(aliases).__name__}"
-        )
+        raise EvaluatorParseError(f"aliases must be string or list, got {type(aliases).__name__}")
 
     # Validate alias names - must be strings with valid format
     for alias in data.get("aliases", []):
@@ -131,18 +127,14 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         # Check for bool before int (bool is subclass of int in Python)
         # YAML parses 'yes'/'true' as True, 'no'/'false' as False
         if isinstance(timeout, bool):
-            raise EvaluatorParseError(
-                f"Field 'timeout' must be an integer, got bool: {timeout!r}"
-            )
+            raise EvaluatorParseError(f"Field 'timeout' must be an integer, got bool: {timeout!r}")
         if not isinstance(timeout, int):
             raise EvaluatorParseError(
                 f"Field 'timeout' must be an integer, got {type(timeout).__name__}: {timeout!r}"
             )
         # timeout=0 is invalid (does not disable timeout - use a large value instead)
         if timeout <= 0:
-            raise EvaluatorParseError(
-                f"Field 'timeout' must be positive (> 0), got {timeout}"
-            )
+            raise EvaluatorParseError(f"Field 'timeout' must be positive (> 0), got {timeout}")
         if timeout > 600:
             logger.warning(
                 "Timeout %ds exceeds maximum (600s), clamping to 600s in %s",
@@ -167,9 +159,7 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     }
     unknown = set(data.keys()) - known_fields
     if unknown:
-        logger.warning(
-            "Unknown fields in %s: %s", yml_file.name, ", ".join(sorted(unknown))
-        )
+        logger.warning("Unknown fields in %s: %s", yml_file.name, ", ".join(sorted(unknown)))
 
     # Build filtered data dict
     filtered_data = {k: v for k, v in data.items() if k in known_fields}

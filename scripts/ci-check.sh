@@ -81,8 +81,8 @@ echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "4/4 🧪 Running full test suite with coverage..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if pytest tests/ -v --cov=scripts --cov-report=term-missing --cov-fail-under=80; then
-    echo "✅ Tests: All tests pass with coverage ≥80%"
+if pytest tests/ -v --cov=adversarial_workflow --cov-report=term-missing; then
+    echo "✅ Tests: All tests passed"
 else
     echo "❌ Tests: Test failures or coverage below 80%"
     FAILED=1

@@ -94,9 +94,7 @@ class TestCheckEnvCount:
         """
         # Create .env with 3 variables
         (tmp_path / ".env").write_text(
-            "OPENAI_API_KEY=sk-test\n"
-            "ANTHROPIC_API_KEY=ant-test\n"
-            "CUSTOM_KEY=custom-value\n"
+            "OPENAI_API_KEY=sk-test\n" "ANTHROPIC_API_KEY=ant-test\n" "CUSTOM_KEY=custom-value\n"
         )
 
         # Remove keys from environment to isolate test

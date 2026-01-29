@@ -106,9 +106,7 @@ def mock_subprocess():
     """Mock subprocess.run calls to avoid running actual aider commands."""
     with patch("subprocess.run") as mock_run:
         # Default successful aider run
-        mock_run.return_value = Mock(
-            returncode=0, stdout="Aider completed successfully", stderr=""
-        )
+        mock_run.return_value = Mock(returncode=0, stdout="Aider completed successfully", stderr="")
         yield mock_run
 
 
@@ -203,13 +201,9 @@ Plan evaluation completed successfully.
                 stderr="",
             )
         elif command_type == "implement":
-            return Mock(
-                returncode=0, stdout="Implementation completed successfully", stderr=""
-            )
+            return Mock(returncode=0, stdout="Implementation completed successfully", stderr="")
         else:
-            return Mock(
-                returncode=0, stdout=f"{command_type} completed successfully", stderr=""
-            )
+            return Mock(returncode=0, stdout=f"{command_type} completed successfully", stderr="")
 
     with patch("subprocess.run") as mock_run:
         mock_run.side_effect = lambda *args, **kwargs: _mock_aider()

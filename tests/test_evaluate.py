@@ -49,9 +49,7 @@ class TestEvaluate:
 
     @patch("shutil.which")
     @patch("adversarial_workflow.cli.load_config")
-    def test_evaluate_aider_not_found(
-        self, mock_load_config, mock_which, tmp_path, capsys
-    ):
+    def test_evaluate_aider_not_found(self, mock_load_config, mock_which, tmp_path, capsys):
         """Test evaluate when aider is not available."""
         # Create a test file
         task_file = tmp_path / "test_task.md"
@@ -411,9 +409,7 @@ class TestVerifyTokenCount:
 
     @patch("adversarial_workflow.cli.estimate_file_tokens")
     @patch("adversarial_workflow.cli.extract_token_count_from_log")
-    def test_verify_token_count_normal(
-        self, mock_extract, mock_estimate, tmp_path, capsys
-    ):
+    def test_verify_token_count_normal(self, mock_extract, mock_estimate, tmp_path, capsys):
         """Test normal token count verification."""
         task_file = tmp_path / "task.md"
         log_file = tmp_path / "log.md"
@@ -433,9 +429,7 @@ class TestVerifyTokenCount:
 
     @patch("adversarial_workflow.cli.estimate_file_tokens")
     @patch("adversarial_workflow.cli.extract_token_count_from_log")
-    def test_verify_token_count_low_warning(
-        self, mock_extract, mock_estimate, tmp_path, capsys
-    ):
+    def test_verify_token_count_low_warning(self, mock_extract, mock_estimate, tmp_path, capsys):
         """Test token count verification warns on suspiciously low usage."""
         task_file = tmp_path / "task.md"
         log_file = tmp_path / "log.md"

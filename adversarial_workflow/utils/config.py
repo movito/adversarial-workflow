@@ -24,9 +24,7 @@ def load_config(config_path: str = ".adversarial/config.yml") -> dict[str, Any]:
         with open(config_path) as f:
             file_config = yaml.safe_load(f) or {}
             if not isinstance(file_config, dict):
-                raise ValueError(
-                    f"Config file must be a mapping, got {type(file_config).__name__}"
-                )
+                raise ValueError(f"Config file must be a mapping, got {type(file_config).__name__}")
             config.update(file_config)
 
     # Override with environment variables

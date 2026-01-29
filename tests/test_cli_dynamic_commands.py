@@ -78,9 +78,7 @@ output_suffix: CUSTOM-TEST
         monkeypatch.chdir(tmp_path)
 
         result = run_cli(["--help"], cwd=tmp_path)
-        assert (
-            "custom" in result.stdout
-        ), f"'custom' not found in help output:\n{result.stdout}"
+        assert "custom" in result.stdout, f"'custom' not found in help output:\n{result.stdout}"
         assert "Custom test evaluator" in result.stdout
 
     def test_multiple_local_evaluators_in_help(self, tmp_path, monkeypatch, run_cli):
@@ -351,9 +349,7 @@ class TestBackwardsCompatibility:
 class TestGracefulDegradation:
     """Test graceful degradation on errors."""
 
-    def test_help_works_without_local_evaluators_dir(
-        self, tmp_path, monkeypatch, run_cli
-    ):
+    def test_help_works_without_local_evaluators_dir(self, tmp_path, monkeypatch, run_cli):
         """CLI help works even without .adversarial/evaluators/ directory."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -422,9 +418,7 @@ class TestReviewCommandBackwardsCompatibility:
         # Review should NOT have --timeout flag (that's for evaluators)
         assert "--timeout" not in result.stdout
 
-    def test_review_command_not_overridden_by_evaluator(
-        self, tmp_path, monkeypatch, run_cli
-    ):
+    def test_review_command_not_overridden_by_evaluator(self, tmp_path, monkeypatch, run_cli):
         """Review command cannot be overridden by local evaluator."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)
@@ -492,9 +486,7 @@ aliases:
         assert "--path" in result_init.stdout
         assert "--interactive" in result_init.stdout
 
-    def test_evaluator_with_conflicting_name_and_alias(
-        self, tmp_path, monkeypatch, run_cli
-    ):
+    def test_evaluator_with_conflicting_name_and_alias(self, tmp_path, monkeypatch, run_cli):
         """Evaluator with conflicting name doesn't crash when alias is processed."""
         adv_dir = tmp_path / ".adversarial"
         adv_dir.mkdir(parents=True)

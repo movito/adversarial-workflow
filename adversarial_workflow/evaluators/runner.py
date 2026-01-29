@@ -227,10 +227,7 @@ def _execute_script(
 
     # Validate output
     file_basename = Path(file_path).stem
-    log_file = (
-        Path(project_config["log_directory"])
-        / f"{file_basename}-{config.output_suffix}.md"
-    )
+    log_file = Path(project_config["log_directory"]) / f"{file_basename}-{config.output_suffix}.md"
 
     is_valid, verdict, message = validate_evaluation_output(str(log_file))
 
@@ -241,9 +238,7 @@ def _execute_script(
     return _report_verdict(verdict, log_file, config)
 
 
-def _report_verdict(
-    verdict: str | None, log_file: Path, config: EvaluatorConfig
-) -> int:
+def _report_verdict(verdict: str | None, log_file: Path, config: EvaluatorConfig) -> int:
     """Report the evaluation verdict to terminal."""
     print()
     if verdict == "APPROVED":

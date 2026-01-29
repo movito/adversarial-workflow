@@ -47,9 +47,7 @@ def validate_evaluation_output(
         "concerns",
     ]
 
-    has_evaluation_content = any(
-        marker in content_lower for marker in evaluation_markers
-    )
+    has_evaluation_content = any(marker in content_lower for marker in evaluation_markers)
     if not has_evaluation_content:
         return (
             False,
