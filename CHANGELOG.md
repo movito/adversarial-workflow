@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.6] - 2026-01-29
+
+### Fixed
+- **Custom evaluator runner now includes --no-detect-urls** - Applied the URL auto-scraping fix to `evaluators/runner.py`, completing the fix for custom/YAML-defined evaluators (mistral-fast, codestral-code, etc.)
+
 ## [0.6.5] - 2026-01-29
 
 ### Fixed
@@ -398,6 +403,7 @@ This release specifically improves the agent integration experience by:
 
 ---
 
+[0.6.6]: https://github.com/movito/adversarial-workflow/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/movito/adversarial-workflow/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/movito/adversarial-workflow/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/movito/adversarial-workflow/compare/v0.6.2...v0.6.3

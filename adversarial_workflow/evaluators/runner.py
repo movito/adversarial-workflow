@@ -139,6 +139,7 @@ def _run_custom_evaluator(
             "--model",
             config.model,
             "--yes",
+            "--no-detect-urls",
             "--no-git",
             "--no-auto-commits",
             "--message-file",
