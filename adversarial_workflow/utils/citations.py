@@ -253,8 +253,9 @@ async def check_url_async(
             final_url = str(response.url) if str(response.url) != url else None
             status = classify_response(response.status, dict(response.headers))
 
-            # If redirect, note the status
-            if final_url and response.history:
+            # If redirect to an available page, mark as redirect (informational)
+            # Keep broken/blocked status if redirect leads to error page
+            if final_url and response.history and status == URLStatus.AVAILABLE:
                 status = URLStatus.REDIRECT
 
             return URLResult(
@@ -512,7 +513,7 @@ def generate_blocked_tasks(
 
     for i, result in enumerate(blocked, 1):
         status_label = "⚠️ Blocked" if result.status == URLStatus.BLOCKED else "❌ Broken"
-        reason = result.error or f"HTTP {result.status_code}" if result.status_code else "Unknown"
+        reason = result.error or (f"HTTP {result.status_code}" if result.status_code else "Unknown")
 
         content += f"""### {i}. {status_label}
 

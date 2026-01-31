@@ -269,6 +269,27 @@ class TestBlockedTaskGeneration:
         assert "https://dead-link.com" in content
         assert "❌ Broken" in content
 
+    def test_generate_tasks_with_error_no_status_code(self):
+        """Test task file shows error message when status_code is None (e.g., timeout)."""
+        results = [
+            URLResult(
+                "https://timeout.com", URLStatus.BROKEN, status_code=None, error="Timeout"
+            ),
+        ]
+        content = generate_blocked_tasks(results, "test.md")
+        assert "https://timeout.com" in content
+        assert "Timeout" in content
+        assert "Unknown" not in content  # Should NOT show "Unknown" when error exists
+
+    def test_generate_tasks_no_error_no_status_code(self):
+        """Test task file shows Unknown when both error and status_code are None."""
+        results = [
+            URLResult("https://mystery.com", URLStatus.BROKEN, status_code=None, error=None),
+        ]
+        content = generate_blocked_tasks(results, "test.md")
+        assert "https://mystery.com" in content
+        assert "Unknown" in content
+
     def test_write_tasks_to_file(self, tmp_path):
         """Test writing task file to disk."""
         output_path = tmp_path / "blocked-urls.md"
