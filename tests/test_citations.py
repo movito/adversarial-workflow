@@ -430,13 +430,6 @@ class TestVerifyDocument:
 
     def test_verify_document_with_urls(self, tmp_path):
         """Test verification with mocked URL checks."""
-        # Re-import to ensure we have fresh references
-        from adversarial_workflow.utils.citations import (
-            URLResult,
-            URLStatus,
-            verify_document,
-        )
-
         doc_path = tmp_path / "with_urls.md"
         doc_path.write_text("Check https://example.com for details.")
 
@@ -455,13 +448,6 @@ class TestPrintSummary:
 
     def test_print_summary(self, capsys):
         """Test summary output."""
-        # Re-import to ensure we have fresh references
-        from adversarial_workflow.utils.citations import (
-            URLResult,
-            URLStatus,
-            print_verification_summary,
-        )
-
         results = [
             URLResult("https://a.com", URLStatus.AVAILABLE, status_code=200),
             URLResult("https://b.com", URLStatus.BLOCKED, status_code=403),
@@ -486,7 +472,7 @@ class TestCLICheckCitations:
         assert result.returncode == 0
         assert "Verify URLs" in result.stdout or "check-citations" in result.stdout
 
-    def test_check_citations_file_not_found(self, run_cli, tmp_path):
+    def test_check_citations_file_not_found(self, run_cli):
         """Test error when file doesn't exist."""
         result = run_cli(["check-citations", "nonexistent.md"])
         assert result.returncode != 0
