@@ -21,7 +21,7 @@ import os
 import re
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -182,13 +182,13 @@ def get_cache_key(url: str) -> str:
     return hashlib.md5(url.encode()).hexdigest()
 
 
-def classify_response(status_code: int, headers: dict, content: Optional[str] = None) -> URLStatus:
+def classify_response(status_code: int, _headers: dict, content: Optional[str] = None) -> URLStatus:
     """
     Classify HTTP response into a URL status.
 
     Args:
         status_code: HTTP status code
-        headers: Response headers
+        _headers: Response headers (reserved for future use)
         content: Optional response body content (for bot detection)
 
     Returns:
@@ -317,7 +317,7 @@ async def check_urls_parallel(
             for url in urls
         ]
 
-    results = []
+    url_to_result: dict[str, URLResult] = {}
     urls_to_check = []
     current_time = time.time()
 
@@ -328,39 +328,38 @@ async def check_urls_parallel(
             if cache_key in cache:
                 cached = cache[cache_key]
                 if cached.get("expires", 0) > current_time:
-                    results.append(URLResult.from_dict(cached["result"]))
+                    url_to_result[url] = URLResult.from_dict(cached["result"])
                     continue
             urls_to_check.append(url)
     else:
-        urls_to_check = urls
+        urls_to_check = list(urls)
 
-    if not urls_to_check:
-        return results
+    if urls_to_check:
+        # Create semaphore for concurrency limiting
+        semaphore = asyncio.Semaphore(concurrency)
 
-    # Create semaphore for concurrency limiting
-    semaphore = asyncio.Semaphore(concurrency)
+        async def check_with_semaphore(session, url):
+            async with semaphore:
+                return await check_url_async(url, timeout, session)
 
-    async def check_with_semaphore(session, url):
-        async with semaphore:
-            return await check_url_async(url, timeout, session)
+        # Check remaining URLs
+        connector = aiohttp.TCPConnector(limit=concurrency, limit_per_host=5)
+        async with aiohttp.ClientSession(connector=connector) as session:
+            tasks = [check_with_semaphore(session, url) for url in urls_to_check]
+            checked_results = await asyncio.gather(*tasks)
 
-    # Check remaining URLs
-    connector = aiohttp.TCPConnector(limit=concurrency, limit_per_host=5)
-    async with aiohttp.ClientSession(connector=connector) as session:
-        tasks = [check_with_semaphore(session, url) for url in urls_to_check]
-        checked_results = await asyncio.gather(*tasks)
+        # Update cache and store results
+        for result in checked_results:
+            if cache is not None:
+                cache_key = get_cache_key(result.url)
+                cache[cache_key] = {
+                    "result": result.to_dict(),
+                    "expires": current_time + cache_ttl,
+                }
+            url_to_result[result.url] = result
 
-    # Update cache and combine results
-    for result in checked_results:
-        if cache is not None:
-            cache_key = get_cache_key(result.url)
-            cache[cache_key] = {
-                "result": result.to_dict(),
-                "expires": current_time + cache_ttl,
-            }
-        results.append(result)
-
-    return results
+    # Return results in original URL order
+    return [url_to_result[url] for url in urls]
 
 
 def check_urls(
@@ -459,7 +458,7 @@ def mark_urls_inline(document: str, results: list[URLResult]) -> str:
             # Check if badge already exists after this URL
             end_pos = match.end() + offset
             remaining = marked[end_pos:]
-            if remaining.startswith(" [✅") or remaining.startswith(" [⚠️") or remaining.startswith(" [❌") or remaining.startswith(" [🔄"):
+            if remaining.startswith((" [✅", " [⚠️", " [❌", " [🔄")):
                 continue  # Already marked
 
             # Insert badge after URL
@@ -491,7 +490,7 @@ def generate_blocked_tasks(
     if not blocked:
         return ""
 
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     content = f"""# Blocked Citation Verification Tasks
 
 **Source**: {document_path}
@@ -528,7 +527,7 @@ def generate_blocked_tasks(
 
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(content)
 
     return content
@@ -556,7 +555,7 @@ def verify_document(
     Returns:
         Tuple of (marked_document, results, blocked_tasks)
     """
-    with open(document_path) as f:
+    with open(document_path, encoding="utf-8") as f:
         document = f.read()
 
     # Extract URLs
@@ -597,7 +596,7 @@ def print_verification_summary(results: list[URLResult]) -> None:
     redirect = sum(1 for r in results if r.status == URLStatus.REDIRECT)
 
     total = len(results)
-    print(f"\n📋 Citation Verification Summary")
+    print("\n📋 Citation Verification Summary")
     print(f"   Total URLs checked: {total}")
     print(f"   ✅ Available: {available}")
     print(f"   🔄 Redirect: {redirect}")

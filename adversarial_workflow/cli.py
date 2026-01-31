@@ -2823,7 +2823,7 @@ def list_evaluators() -> int:
 def check_citations(
     file_path: str,
     output_tasks: Optional[str] = None,
-    mark_inline: bool = True,
+    mark_inline: bool = False,
     concurrency: int = 10,
     timeout: int = 10,
 ) -> int:
@@ -2858,7 +2858,7 @@ def check_citations(
     print()
 
     # Read document
-    with open(file_path) as f:
+    with open(file_path, encoding="utf-8") as f:
         document = f.read()
 
     # Extract URLs
@@ -2890,9 +2890,9 @@ def check_citations(
     if mark_inline and results:
         marked_document = mark_urls_inline(document, results)
         if marked_document != document:
-            with open(file_path, "w") as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(marked_document)
-            print(f"\n   ✅ Updated document with status badges")
+            print("\n   ✅ Updated document with status badges")
 
     # Generate blocked tasks if requested or if there are blocked URLs
     if blocked_count > 0:
@@ -3070,14 +3070,8 @@ For more information: https://github.com/movito/adversarial-workflow
     citations_parser.add_argument(
         "--mark-inline",
         action="store_true",
-        default=True,
-        help="Mark URLs inline with status badges (default: true)",
-    )
-    citations_parser.add_argument(
-        "--no-mark-inline",
-        action="store_false",
-        dest="mark_inline",
-        help="Don't modify the document",
+        default=False,
+        help="Mark URLs inline with status badges (modifies document)",
     )
     citations_parser.add_argument(
         "--concurrency",
