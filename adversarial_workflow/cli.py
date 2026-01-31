@@ -13,6 +13,7 @@ Commands:
     review - Run Phase 3: Code review
     validate - Run Phase 4: Test validation
     split - Split large task files into smaller evaluable chunks
+    check-citations - Verify URLs in documents before evaluation
 """
 
 import argparse
@@ -29,7 +30,7 @@ from typing import Dict, List, Optional, Tuple
 import yaml
 from dotenv import dotenv_values, load_dotenv
 
-__version__ = "0.6.6"
+__version__ = "0.7.0"
 
 # ANSI color codes for better output
 RESET = "\033[0m"
@@ -2819,6 +2820,98 @@ def list_evaluators() -> int:
     return 0
 
 
+def check_citations(
+    file_path: str,
+    output_tasks: Optional[str] = None,
+    mark_inline: bool = True,
+    concurrency: int = 10,
+    timeout: int = 10,
+) -> int:
+    """
+    Check citations (URLs) in a document.
+
+    Args:
+        file_path: Path to document to check
+        output_tasks: Optional path to write blocked URL tasks
+        mark_inline: Whether to mark URLs inline with status badges
+        concurrency: Maximum concurrent URL checks
+        timeout: Timeout per URL in seconds
+
+    Returns:
+        0 on success, 1 on error
+    """
+    from adversarial_workflow.utils.citations import (
+        extract_urls,
+        check_urls,
+        mark_urls_inline,
+        generate_blocked_tasks,
+        print_verification_summary,
+        URLStatus,
+    )
+
+    # Check file exists
+    if not os.path.exists(file_path):
+        print(f"{RED}Error: File not found: {file_path}{RESET}")
+        return 1
+
+    print(f"🔗 Checking citations in: {file_path}")
+    print()
+
+    # Read document
+    with open(file_path) as f:
+        document = f.read()
+
+    # Extract URLs
+    extracted = extract_urls(document)
+    urls = [e.url for e in extracted]
+
+    if not urls:
+        print(f"{YELLOW}No URLs found in document.{RESET}")
+        return 0
+
+    print(f"   Found {len(urls)} URLs to check")
+    print(f"   Checking with concurrency={concurrency}, timeout={timeout}s...")
+    print()
+
+    # Check URLs
+    results = check_urls(
+        urls,
+        concurrency=concurrency,
+        timeout=timeout,
+    )
+
+    # Print summary
+    print_verification_summary(results)
+
+    # Count blocked/broken
+    blocked_count = sum(1 for r in results if r.status in (URLStatus.BLOCKED, URLStatus.BROKEN))
+
+    # Mark document inline if requested
+    if mark_inline and results:
+        marked_document = mark_urls_inline(document, results)
+        if marked_document != document:
+            with open(file_path, "w") as f:
+                f.write(marked_document)
+            print(f"\n   ✅ Updated document with status badges")
+
+    # Generate blocked tasks if requested or if there are blocked URLs
+    if blocked_count > 0:
+        if output_tasks:
+            output_path = Path(output_tasks)
+        else:
+            # Default to .adversarial/blocked-citations/
+            output_dir = Path.cwd() / ".adversarial" / "blocked-citations"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            base_name = Path(file_path).stem
+            output_path = output_dir / f"{base_name}-blocked-urls.md"
+
+        task_content = generate_blocked_tasks(results, file_path, output_path)
+        if task_content:
+            print(f"   📋 Blocked URL tasks: {output_path}")
+
+    return 0
+
+
 def main():
     """Main CLI entry point."""
     import logging
@@ -2862,6 +2955,7 @@ def main():
         "validate",
         "review",
         "list-evaluators",
+        "check-citations",
     }
 
     parser = argparse.ArgumentParser(
@@ -2879,6 +2973,7 @@ Examples:
   adversarial review                    # Review implementation
   adversarial validate "npm test"       # Validate with tests
   adversarial split large-task.md       # Split large files
+  adversarial check-citations doc.md    # Verify URLs in document
 
 For more information: https://github.com/movito/adversarial-workflow
         """,
@@ -2961,6 +3056,44 @@ For more information: https://github.com/movito/adversarial-workflow
         help="List all available evaluators (built-in and local)",
     )
 
+    # check-citations command
+    citations_parser = subparsers.add_parser(
+        "check-citations",
+        help="Verify URLs in a document before evaluation",
+    )
+    citations_parser.add_argument("file", help="Document to check citations in")
+    citations_parser.add_argument(
+        "--output-tasks",
+        "-o",
+        help="Output file for blocked URL tasks (markdown)",
+    )
+    citations_parser.add_argument(
+        "--mark-inline",
+        action="store_true",
+        default=True,
+        help="Mark URLs inline with status badges (default: true)",
+    )
+    citations_parser.add_argument(
+        "--no-mark-inline",
+        action="store_false",
+        dest="mark_inline",
+        help="Don't modify the document",
+    )
+    citations_parser.add_argument(
+        "--concurrency",
+        "-c",
+        type=int,
+        default=10,
+        help="Maximum concurrent URL checks (default: 10)",
+    )
+    citations_parser.add_argument(
+        "--timeout",
+        "-t",
+        type=int,
+        default=10,
+        help="Timeout per URL in seconds (default: 10)",
+    )
+
     # Dynamic evaluator registration
     try:
         evaluators = get_all_evaluators()
@@ -3009,6 +3142,11 @@ For more information: https://github.com/movito/adversarial-workflow
             default=None,
             help="Timeout in seconds (default: from evaluator config or 180, max: 600)",
         )
+        eval_parser.add_argument(
+            "--check-citations",
+            action="store_true",
+            help="Verify URLs in document before evaluation",
+        )
         # Store config for later execution
         eval_parser.set_defaults(evaluator_config=config)
 
@@ -3043,6 +3181,14 @@ For more information: https://github.com/movito/adversarial-workflow
 
         # Log actual timeout and source
         print(f"Using timeout: {timeout}s ({source})")
+
+        # Check citations first if requested
+        if getattr(args, "check_citations", False):
+            print()
+            result = check_citations(args.file, mark_inline=True)
+            if result != 0:
+                print(f"{YELLOW}Warning: Citation check had issues, continuing with evaluation...{RESET}")
+            print()
 
         return run_evaluator(
             args.evaluator_config,
@@ -3083,6 +3229,14 @@ For more information: https://github.com/movito/adversarial-workflow
         )
     elif args.command == "list-evaluators":
         return list_evaluators()
+    elif args.command == "check-citations":
+        return check_citations(
+            args.file,
+            output_tasks=args.output_tasks,
+            mark_inline=args.mark_inline,
+            concurrency=args.concurrency,
+            timeout=args.timeout,
+        )
     else:
         parser.print_help()
         return 1

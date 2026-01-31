@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "adversarial-workflow"
 
-version = "0.6.6"
+version = "0.7.0"
 
 description = "Multi-stage AI evaluation system for task plans, code review, and test validation"
 readme = "README.md"
@@ -30,6 +30,7 @@ dependencies = [
     "pyyaml>=6.0",
     "python-dotenv>=0.19.0",
     "aider-chat>=0.86.0",
+    "aiohttp>=3.8.0",
 ]
 
 [project.optional-dependencies]
@@ -71,3 +72,4 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+asyncio_mode = "auto"
