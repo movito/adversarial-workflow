@@ -296,14 +296,23 @@ async def check_urls_parallel(
 
     Args:
         urls: List of URLs to check
-        concurrency: Maximum concurrent requests
-        timeout: Timeout per request in seconds
+        concurrency: Maximum concurrent requests (must be >= 1)
+        timeout: Timeout per request in seconds (must be >= 1)
         cache: Optional cache dictionary
         cache_ttl: Cache TTL in seconds (default: 24 hours)
 
     Returns:
         List of URLResult objects
+
+    Raises:
+        ValueError: If concurrency or timeout is less than 1
     """
+    # Validate parameters to prevent deadlocks
+    if concurrency < 1:
+        raise ValueError(f"concurrency must be >= 1, got {concurrency}")
+    if timeout < 1:
+        raise ValueError(f"timeout must be >= 1, got {timeout}")
+
     try:
         import aiohttp
     except ImportError:

@@ -401,6 +401,20 @@ class TestSyncURLChecking:
             assert results[0].status == URLStatus.AVAILABLE
 
 
+class TestParameterValidation:
+    """Tests for parameter validation."""
+
+    def test_check_urls_parallel_rejects_zero_concurrency(self):
+        """Test that concurrency=0 raises ValueError."""
+        with pytest.raises(ValueError, match="concurrency must be >= 1"):
+            asyncio.run(check_urls_parallel(["https://example.com"], concurrency=0))
+
+    def test_check_urls_parallel_rejects_zero_timeout(self):
+        """Test that timeout=0 raises ValueError."""
+        with pytest.raises(ValueError, match="timeout must be >= 1"):
+            asyncio.run(check_urls_parallel(["https://example.com"], timeout=0))
+
+
 class TestVerifyDocument:
     """Tests for full document verification."""
 
