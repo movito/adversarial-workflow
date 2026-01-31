@@ -435,6 +435,15 @@ class TestParameterValidation:
         with pytest.raises(ValueError, match="timeout must be >= 1"):
             asyncio.run(check_urls_parallel(["https://example.com"], timeout=0))
 
+    def test_check_urls_rejects_call_from_async_context(self):
+        """Test that check_urls() raises RuntimeError when called from async context."""
+
+        async def call_sync_from_async():
+            return check_urls(["https://example.com"])
+
+        with pytest.raises(RuntimeError, match="cannot be called from within an async context"):
+            asyncio.run(call_sync_from_async())
+
 
 class TestVerifyDocument:
     """Tests for full document verification."""

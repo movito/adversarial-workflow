@@ -17,6 +17,7 @@ Status categories:
 import asyncio
 import hashlib
 import json
+import logging
 import os
 import re
 import time
@@ -25,6 +26,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Optional
+
+# Module logger for debugging URL check failures
+logger = logging.getLogger(__name__)
 
 
 class URLStatus(Enum):
@@ -274,6 +278,8 @@ async def check_url_async(
         )
     except Exception as e:
         error_name = type(e).__name__
+        # Log full exception for debugging while returning truncated message
+        logger.debug("URL check failed for %s: %s", url, e, exc_info=True)
         return URLResult(
             url=url,
             status=URLStatus.BROKEN,
@@ -391,7 +397,23 @@ def check_urls(
 
     Returns:
         List of URLResult objects
+
+    Raises:
+        RuntimeError: If called from within an async context (event loop running).
+            Use check_urls_parallel() directly from async code.
     """
+    # Guard against calling from async context
+    try:
+        asyncio.get_running_loop()
+        raise RuntimeError(
+            "check_urls() cannot be called from within an async context. "
+            "Use check_urls_parallel() directly instead."
+        )
+    except RuntimeError as e:
+        # No running loop - this is expected, proceed
+        if "no running event loop" not in str(e).lower():
+            raise
+
     # Load cache
     cache_path = get_cache_path(cache_dir)
     cache = load_cache(cache_path)
