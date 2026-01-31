@@ -2854,6 +2854,14 @@ def check_citations(
         print(f"{RED}Error: File not found: {file_path}{RESET}")
         return 1
 
+    # Validate parameters
+    if concurrency < 1:
+        print(f"{RED}Error: Concurrency must be at least 1, got {concurrency}{RESET}")
+        return 1
+    if timeout < 1:
+        print(f"{RED}Error: Timeout must be at least 1 second, got {timeout}{RESET}")
+        return 1
+
     print(f"🔗 Checking citations in: {file_path}")
     print()
 
@@ -3176,10 +3184,10 @@ For more information: https://github.com/movito/adversarial-workflow
         # Log actual timeout and source
         print(f"Using timeout: {timeout}s ({source})")
 
-        # Check citations first if requested
+        # Check citations first if requested (read-only, doesn't modify file)
         if getattr(args, "check_citations", False):
             print()
-            result = check_citations(args.file, mark_inline=True)
+            result = check_citations(args.file, mark_inline=False)
             if result != 0:
                 print(f"{YELLOW}Warning: Citation check had issues, continuing with evaluation...{RESET}")
             print()

@@ -431,7 +431,7 @@ class TestVerifyDocument:
                 URLResult("https://example.com", URLStatus.AVAILABLE, status_code=200)
             ]
 
-            marked, results, tasks = verify_document(doc_path)
+            marked, results, _tasks = verify_document(doc_path)
             assert "[✅ Verified | 200 OK]" in marked
             assert len(results) == 1
 

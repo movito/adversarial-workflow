@@ -450,7 +450,7 @@ def mark_urls_inline(document: str, results: list[URLResult]) -> str:
     offset = 0  # Track offset as we insert badges
 
     for match in URL_PATTERN.finditer(document):
-        url = match.group().rstrip(".,;:")
+        url = match.group().rstrip(".,;:!?")  # Same stripping as extract_urls
         if url in url_results:
             result = url_results[url]
             badge = get_status_badge(result)
