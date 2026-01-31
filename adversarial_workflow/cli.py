@@ -2841,12 +2841,12 @@ def check_citations(
         0 on success, 1 on error
     """
     from adversarial_workflow.utils.citations import (
-        extract_urls,
-        check_urls,
-        mark_urls_inline,
-        generate_blocked_tasks,
-        print_verification_summary,
         URLStatus,
+        check_urls,
+        extract_urls,
+        generate_blocked_tasks,
+        mark_urls_inline,
+        print_verification_summary,
     )
 
     # Check file exists
@@ -3189,7 +3189,9 @@ For more information: https://github.com/movito/adversarial-workflow
             print()
             result = check_citations(args.file, mark_inline=False)
             if result != 0:
-                print(f"{YELLOW}Warning: Citation check had issues, continuing with evaluation...{RESET}")
+                print(
+                    f"{YELLOW}Warning: Citation check had issues, continuing with evaluation...{RESET}"
+                )
             print()
 
         return run_evaluator(
