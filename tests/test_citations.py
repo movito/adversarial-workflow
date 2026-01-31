@@ -13,12 +13,12 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 
 from adversarial_workflow.utils.citations import (
-    DEFAULT_CONFIG,
     BOT_DETECTION_PATTERNS,
+    DEFAULT_CONFIG,
     URL_PATTERN,
+    ExtractedURL,
     URLResult,
     URLStatus,
-    ExtractedURL,
     check_url_async,
     check_urls,
     check_urls_parallel,
@@ -272,9 +272,7 @@ class TestBlockedTaskGeneration:
     def test_generate_tasks_with_error_no_status_code(self):
         """Test task file shows error message when status_code is None (e.g., timeout)."""
         results = [
-            URLResult(
-                "https://timeout.com", URLStatus.BROKEN, status_code=None, error="Timeout"
-            ),
+            URLResult("https://timeout.com", URLStatus.BROKEN, status_code=None, error="Timeout"),
         ]
         content = generate_blocked_tasks(results, "test.md")
         assert "https://timeout.com" in content
@@ -398,7 +396,12 @@ class TestAsyncURLChecking:
         assert isinstance(result, URLResult)
         assert result.url == "https://invalid-url-that-will-fail.test"
         # Status should be set (either success or failure)
-        assert result.status in [URLStatus.AVAILABLE, URLStatus.BLOCKED, URLStatus.BROKEN, URLStatus.REDIRECT]
+        assert result.status in [
+            URLStatus.AVAILABLE,
+            URLStatus.BLOCKED,
+            URLStatus.BROKEN,
+            URLStatus.REDIRECT,
+        ]
 
 
 class TestSyncURLChecking:
@@ -406,9 +409,7 @@ class TestSyncURLChecking:
 
     def test_check_urls_with_cache(self, tmp_path):
         """Test URL checking with caching."""
-        with patch(
-            "adversarial_workflow.utils.citations.check_urls_parallel"
-        ) as mock_parallel:
+        with patch("adversarial_workflow.utils.citations.check_urls_parallel") as mock_parallel:
             mock_parallel.return_value = [
                 URLResult("https://example.com", URLStatus.AVAILABLE, status_code=200)
             ]

@@ -458,7 +458,11 @@ def get_status_badge(result: URLResult) -> str:
             return f"[❌ Broken | {result.status_code}]"
         return "[❌ Broken | Unreachable]"
     elif result.status == URLStatus.REDIRECT:
-        dest = result.final_url[:30] + "..." if result.final_url and len(result.final_url) > 30 else result.final_url
+        dest = (
+            result.final_url[:30] + "..."
+            if result.final_url and len(result.final_url) > 30
+            else result.final_url
+        )
         return f"[🔄 Redirect | → {dest}]"
     return "[❓ Unknown]"
 
