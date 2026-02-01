@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-02-01
+
+### Added
+- **Citation Verification Workflow** - New feature to check all URLs in documents before evaluation
+  - New `adversarial check-citations` CLI command
+  - `--check-citations` flag for evaluators
+  - Async parallel URL checking (up to 100 URLs in <30 seconds)
+  - 4 status categories: ✅ Available, ⚠️ Blocked, ❌ Broken, 🔄 Redirect
+  - 24-hour caching to reduce repeated checks
+  - Bot detection (captcha, cloudflare, access denied pages)
+  - Task generation for manual verification of blocked URLs
+  - `--output-tasks` flag to generate markdown checklists
+  - `--mark-inline` flag to annotate URLs with status badges
+
+### Dependencies
+- Added `aiohttp>=3.8.0` for async HTTP requests
+
+### Documentation
+- Added ADR-0014: Agent-Evaluator Interaction Patterns
+- Added URL auto-scraping addendum to ADR-0011
+
 ## [0.6.6] - 2026-01-29
 
 ### Fixed

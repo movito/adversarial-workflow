@@ -46,8 +46,10 @@ Thumbs.db
 htmlcov/
 *.cover
 
-# Adversarial workflow artifacts (keep config, exclude logs)
+# Adversarial workflow artifacts (keep config, exclude logs and cache)
 .adversarial/logs/
+.adversarial/url_cache.json
+.adversarial/blocked-citations/
 release-*.txt
 release-*.diff
 
