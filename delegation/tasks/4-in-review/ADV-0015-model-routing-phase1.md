@@ -1,6 +1,6 @@
 # ADV-0015: Model Routing Layer - Phase 1
 
-**Status**: In Progress
+**Status**: In Review
 **Priority**: Medium
 **Estimated Effort**: 2-3 days
 **Depends On**: ADV-0013 (Library CLI Core)
