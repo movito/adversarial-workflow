@@ -1,8 +1,11 @@
 # ADV-0013 Review Starter: Library CLI Core
 
 **Task**: ADV-0013 - Evaluator Library CLI Core
-**Status**: Ready for Code Review
+**Status**: Ready for Code Review (Bug Fixes Applied)
 **Implementation Agent**: feature-developer
+**Bug Fixes**: planner (CodeRabbit/BugBot triage)
+**Branch**: `feat/adv-0013-library-cli-core` → `main`
+**PR**: https://github.com/movito/adversarial-workflow/pull/20
 **Date**: 2026-02-03
 
 ---
@@ -99,14 +102,33 @@ This task implements CLI commands for browsing, installing, and updating evaluat
 
 ---
 
+## Automated Review Findings (Resolved)
+
+CodeRabbit and BugBot identified issues that have been fixed in commit `5015207`:
+
+| Issue | Severity | File | Resolution |
+|-------|----------|------|------------|
+| YAML `---` separator causes multi-document parsing | CRITICAL | `commands.py` | Strip separator before concatenation |
+| Cross-provider file collisions (`fast-check.yml`) | CRITICAL | `commands.py` | Changed to `{provider}-{name}.yml` format |
+| `ValueError` escapes exception handler | MAJOR | `commands.py` | Added to exception tuple |
+| `HTTPError` handler unreachable (subclass of URLError) | MEDIUM | `client.py` | Reordered exception handlers |
+| UTC timestamp mislabeled (naive datetime + "Z") | LOW | `commands.py` | Use `datetime.now(timezone.utc)` |
+| Unused `is_online` method | MEDIUM | `client.py` | Removed |
+| Unused test fixture parameters | MINOR | `test_*.py` | Fixed with underscore prefixes |
+
+**Deferred**: Duplicated ANSI color codes (non-blocking, aesthetic only)
+
+---
+
 ## Review Focus Areas
 
-1. **Error Handling**: Network failures, malformed responses, file I/O errors
-2. **Cache Implementation**: TTL behavior, stale cache fallback
-3. **Provenance Format**: `_meta` block structure per ADR-0004
-4. **Test Coverage**: Edge cases, offline scenarios
-5. **Code Style**: Consistency with existing codebase
-6. **Security**: URL handling, file path sanitization
+1. **Bug Fixes Verification**: Confirm the CodeRabbit/BugBot fixes are correct
+2. **Error Handling**: Network failures, malformed responses, file I/O errors
+3. **Cache Implementation**: TTL behavior, stale cache fallback
+4. **Provenance Format**: `_meta` block structure per ADR-0004
+5. **Test Coverage**: Edge cases, offline scenarios
+6. **Code Style**: Consistency with existing codebase
+7. **Security**: URL handling, file path sanitization
 
 ---
 
