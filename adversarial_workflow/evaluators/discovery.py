@@ -205,7 +205,7 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         if min_context:
             if isinstance(min_context, bool):
                 raise EvaluatorParseError(
-                    f"model_requirement.min_context must be an integer, got bool"
+                    "model_requirement.min_context must be an integer, got bool"
                 )
             if not isinstance(min_context, int):
                 raise EvaluatorParseError(
@@ -215,8 +215,8 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         model_requirement = ModelRequirement(
             family=family,
             tier=tier,
-            min_version=min_version if min_version else "",
-            min_context=min_context if min_context else 0,
+            min_version=min_version,
+            min_context=min_context,
         )
 
     # Filter to known fields only (log unknown fields)

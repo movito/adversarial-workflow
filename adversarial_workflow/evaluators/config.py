@@ -20,8 +20,8 @@ class ModelRequirement:
     WHAT capability is needed from HOW to access it.
 
     Attributes:
-        family: Model family (e.g., "claude", "gpt", "gemini", "mistral", "llama")
-        tier: Performance tier (e.g., "opus", "sonnet", "haiku", "flagship", "mini")
+        family: Model family (e.g., "claude", "gpt", "o", "gemini", "mistral", "codestral", "llama")
+        tier: Performance tier (e.g., "opus", "sonnet", "haiku", "flagship", "mini", "latest")
         min_version: Optional minimum model generation (e.g., "4" for Claude 4+)
         min_context: Optional minimum context window in tokens (e.g., 128000)
     """

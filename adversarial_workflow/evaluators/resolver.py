@@ -11,7 +11,7 @@ to actual model IDs using an embedded registry. It supports:
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
     from adversarial_workflow.evaluators.config import EvaluatorConfig, ModelRequirement
@@ -19,8 +19,6 @@ if TYPE_CHECKING:
 
 class ResolutionError(Exception):
     """Raised when model resolution fails."""
-
-    pass
 
 
 class ModelResolver:
@@ -39,7 +37,7 @@ class ModelResolver:
 
     # Default registry - matches adversarial-evaluator-library/providers/registry.yml
     # Updated 2026-02-03 per Library team handoff (ADR-0005)
-    DEFAULT_REGISTRY: dict[str, dict[str, dict[str, list[str] | str]]] = {
+    DEFAULT_REGISTRY: ClassVar[dict[str, dict[str, dict[str, list[str] | str]]]] = {
         "claude": {
             "opus": {
                 "models": ["claude-4-opus-20260115", "claude-opus-4-5-20251101"],
@@ -117,7 +115,7 @@ class ModelResolver:
     }
 
     # API key environment variable mapping by family
-    API_KEY_MAP: dict[str, str] = {
+    API_KEY_MAP: ClassVar[dict[str, str]] = {
         "claude": "ANTHROPIC_API_KEY",
         "gpt": "OPENAI_API_KEY",
         "o": "OPENAI_API_KEY",
@@ -172,6 +170,10 @@ class ModelResolver:
         Raises:
             ResolutionError: If family or tier not found in registry
         """
+        # TODO(Phase 2): ModelRequirement.min_version and ModelRequirement.min_context
+        # are currently parsed but not used for filtering. Phase 1 only performs
+        # family/tier matching. Phase 2 will implement filtering by min_version
+        # and min_context requirements.
         family = self.DEFAULT_REGISTRY.get(req.family)
         if not family:
             raise ResolutionError(f"Unknown model family: {req.family}")
@@ -185,6 +187,11 @@ class ModelResolver:
         if not models:
             raise ResolutionError(f"No models defined for {req.family}/{req.tier}")
         model_id = models[0]  # type: ignore[index]
+
+        # Apply provider prefix for LiteLLM compatibility
+        prefix = tier_data.get("prefix", "")
+        if prefix:
+            model_id = f"{prefix}{model_id}"
 
         # Determine API key env from family
         api_key_env = self._get_api_key_env(req.family)

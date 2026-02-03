@@ -549,7 +549,7 @@ timeout: yes
 """
         )
 
-        with pytest.raises(EvaluatorParseError, match="must be an integer.*bool"):
+        with pytest.raises(EvaluatorParseError, match=r"must be an integer.*bool"):
             parse_evaluator_yaml(yml)
 
     def test_parse_timeout_boolean_false(self, tmp_path):
@@ -567,7 +567,7 @@ timeout: false
 """
         )
 
-        with pytest.raises(EvaluatorParseError, match="must be an integer.*bool"):
+        with pytest.raises(EvaluatorParseError, match=r"must be an integer.*bool"):
             parse_evaluator_yaml(yml)
 
     def test_parse_timeout_exceeds_max(self, tmp_path, caplog):
@@ -684,7 +684,7 @@ output_suffix: TEST
 """
         )
 
-        with pytest.raises(EvaluatorParseError, match="model_requirement.family"):
+        with pytest.raises(EvaluatorParseError, match=r"model_requirement\.family"):
             parse_evaluator_yaml(yml)
 
     def test_parse_yaml_model_requirement_missing_tier(self, tmp_path):
@@ -701,7 +701,7 @@ output_suffix: TEST
 """
         )
 
-        with pytest.raises(EvaluatorParseError, match="model_requirement.tier"):
+        with pytest.raises(EvaluatorParseError, match=r"model_requirement\.tier"):
             parse_evaluator_yaml(yml)
 
     def test_parse_yaml_model_requirement_invalid_type(self, tmp_path):
@@ -717,7 +717,7 @@ output_suffix: TEST
 """
         )
 
-        with pytest.raises(EvaluatorParseError, match="model_requirement.*mapping"):
+        with pytest.raises(EvaluatorParseError, match=r"model_requirement.*mapping"):
             parse_evaluator_yaml(yml)
 
     def test_parse_yaml_model_requirement_family_not_string(self, tmp_path):
@@ -735,7 +735,7 @@ output_suffix: TEST
 """
         )
 
-        with pytest.raises(EvaluatorParseError, match="family.*string"):
+        with pytest.raises(EvaluatorParseError, match=r"family.*string"):
             parse_evaluator_yaml(yml)
 
     def test_parse_yaml_model_requirement_tier_not_string(self, tmp_path):
@@ -753,7 +753,7 @@ output_suffix: TEST
 """
         )
 
-        with pytest.raises(EvaluatorParseError, match="tier.*string"):
+        with pytest.raises(EvaluatorParseError, match=r"tier.*string"):
             parse_evaluator_yaml(yml)
 
     def test_parse_yaml_model_requirement_min_context_not_int(self, tmp_path):
@@ -772,7 +772,7 @@ output_suffix: TEST
 """
         )
 
-        with pytest.raises(EvaluatorParseError, match="min_context.*integer"):
+        with pytest.raises(EvaluatorParseError, match=r"min_context.*integer"):
             parse_evaluator_yaml(yml)
 
     def test_parse_yaml_backwards_compatible_legacy_only(self, tmp_path):

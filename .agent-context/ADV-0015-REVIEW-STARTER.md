@@ -3,7 +3,7 @@
 **Task**: ADV-0015 - Model Routing Layer - Phase 1
 **Task File**: `delegation/tasks/4-in-review/ADV-0015-model-routing-phase1.md`
 **Branch**: feat/adv-0015-model-routing-phase1 → main
-**PR**: Not yet created (CI triggers on pull_request)
+**PR**: #21
 
 ## Implementation Summary
 
@@ -30,7 +30,7 @@ Implemented Phase 1 of the model routing layer with dual-field support. Evaluato
 
 ## Test Results
 
-```
+```text
 350 passed in 7.74s
 Coverage: 55%
 - 28 new tests for ModelResolver
