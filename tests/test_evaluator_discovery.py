@@ -834,6 +834,50 @@ output_suffix: TEST
         with pytest.raises(EvaluatorParseError, match=r"min_context.*integer"):
             parse_evaluator_yaml(yml)
 
+    def test_parse_yaml_explicit_null_api_key_env(self, tmp_path):
+        """Explicit null api_key_env defaults to empty string (not None)."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: null-api-eval
+description: Evaluator with null api_key_env
+prompt: "Test prompt"
+output_suffix: TEST
+api_key_env: null
+model_requirement:
+  family: claude
+  tier: opus
+"""
+        )
+        config = parse_evaluator_yaml(yml)
+
+        # api_key_env should be empty string, not None
+        assert config.api_key_env == ""
+        assert config.model == ""
+        assert config.model_requirement is not None
+
+    def test_parse_yaml_explicit_null_model(self, tmp_path):
+        """Explicit null model defaults to empty string (not None)."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: null-model-eval
+description: Evaluator with null model
+prompt: "Test prompt"
+output_suffix: TEST
+model: null
+model_requirement:
+  family: gemini
+  tier: flash
+"""
+        )
+        config = parse_evaluator_yaml(yml)
+
+        # model should be empty string, not None
+        assert config.model == ""
+        assert config.api_key_env == ""
+        assert config.model_requirement is not None
+
     def test_parse_yaml_backwards_compatible_legacy_only(self, tmp_path):
         """Legacy evaluator format still works (backwards compatibility)."""
         yml = tmp_path / "test.yml"

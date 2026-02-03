@@ -245,9 +245,10 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
     filtered_data = {k: v for k, v in data.items() if k in scalar_fields}
 
     # Set defaults for optional model/api_key_env when model_requirement is present
-    if "model" not in filtered_data:
+    # Also handle explicit null values (YAML parses empty or null as None)
+    if "model" not in filtered_data or filtered_data["model"] is None:
         filtered_data["model"] = ""
-    if "api_key_env" not in filtered_data:
+    if "api_key_env" not in filtered_data or filtered_data["api_key_env"] is None:
         filtered_data["api_key_env"] = ""
 
     # Create config with metadata and model_requirement
