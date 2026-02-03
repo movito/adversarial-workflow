@@ -670,6 +670,27 @@ output_suffix: TEST
         assert config.model_requirement.min_version == "4"
         assert config.model_requirement.min_context == 128000
 
+    def test_parse_yaml_model_requirement_min_version_zero(self, tmp_path):
+        """min_version: 0 (int) is converted to string "0"."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: claude
+  tier: opus
+  min_version: 0
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+        config = parse_evaluator_yaml(yml)
+
+        assert config.model_requirement is not None
+        assert config.model_requirement.min_version == "0"
+        assert isinstance(config.model_requirement.min_version, str)
+
     def test_parse_yaml_model_requirement_missing_family(self, tmp_path):
         """Error when model_requirement is missing family."""
         yml = tmp_path / "test.yml"

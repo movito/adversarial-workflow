@@ -191,14 +191,13 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
 
         # Validate optional min_version is string if present
         min_version = req_data.get("min_version", "")
-        if min_version and not isinstance(min_version, str):
-            # Allow integers to be converted to strings
-            if isinstance(min_version, int) and not isinstance(min_version, bool):
-                min_version = str(min_version)
-            else:
-                raise EvaluatorParseError(
-                    f"model_requirement.min_version must be a string, got {type(min_version).__name__}"
-                )
+        # Convert integers to strings first (YAML parses '0' as int 0)
+        if isinstance(min_version, int) and not isinstance(min_version, bool):
+            min_version = str(min_version)
+        elif min_version and not isinstance(min_version, str):
+            raise EvaluatorParseError(
+                f"model_requirement.min_version must be a string, got {type(min_version).__name__}"
+            )
 
         # Validate optional min_context is integer if present
         min_context = req_data.get("min_context", 0)
