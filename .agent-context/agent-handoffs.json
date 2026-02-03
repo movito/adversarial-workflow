@@ -1,24 +1,24 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-01-28",
+  "last_updated": "2026-02-03",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0029 completed and moved to done",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADR-0005 contract review",
+      "brief_note": "Interface contract received and accepted",
+      "details_link": "docs/decisions/adr/library-refs/ADR-0005-library-workflow-interface-contract.md"
     },
     "feature-developer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0029 complete",
-      "details_link": null
+      "status": "in_progress",
+      "current_task": "ADV-0013",
+      "brief_note": "Library CLI Core - implementation started",
+      "details_link": "delegation/tasks/3-in-progress/ADV-0013-library-cli-core.md"
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0026 approved",
+      "brief_note": "Ready for ADV-0013 review when complete",
       "details_link": null
     },
     "test-runner": {
@@ -31,18 +31,25 @@
   "recent_completions": [
     "ADV-0029: Configurable Timeout per Evaluator",
     "ADV-0028: Fix scripts/project issues",
-    "ADV-0026: Fix subprocess test environment",
-    "ADV-0023: Exception handling improvements",
-    "ADV-0027: Starter kit alignment",
-    "ADV-0022: Fix check() .env variable count"
+    "ADV-0026: Fix subprocess test environment"
   ],
-  "pending_tasks": [],
+  "pending_tasks": [
+    "ADV-0013: Library CLI Core (in progress)",
+    "ADV-0014: Library CLI Enhancements (backlog)",
+    "ADV-0015: Model Routing Phase 1 (backlog)"
+  ],
   "blocked_items": [],
+  "architecture_status": {
+    "ADR-0004": "ACCEPTED - Model routing layer architecture",
+    "ADR-0005": "ACCEPTED - Interface contract with library team",
+    "registry_schema": "1.0 - Published in library repo",
+    "next_milestone": "v0.8.0 with resolution engine"
+  },
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "ADV-0029 complete. Ready for next task."
+  "notes": "Interface contract (ADR-0005) received from library team. Registry schema v1.0 published. Ready for Phase 1 implementation."
 }
