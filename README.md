@@ -20,13 +20,43 @@ Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to i
 - 🎯 **Tool-agnostic**: Use with Claude Code, Cursor, Aider, manual coding, or any workflow
 - ✨ **Interactive onboarding**: Guided setup wizard gets you started in <5 minutes
 
-## What's New in v0.6.3
+## What's New in v0.7.0
 
 ### Upgrade
 
 ```bash
 pip install --upgrade adversarial-workflow
 ```
+
+### v0.7.0 - Evaluator Library
+
+Browse, install, and update evaluators from the community [adversarial-evaluator-library](https://github.com/movito/adversarial-evaluator-library):
+
+```bash
+# Browse available evaluators
+adversarial library list
+
+# Filter by provider or category
+adversarial library list --provider google
+adversarial library list --category quick-check
+
+# Install evaluators
+adversarial library install google/gemini-flash openai/fast-check
+
+# Check for updates
+adversarial library check-updates
+
+# Update installed evaluators
+adversarial library update --all
+```
+
+**Key Features:**
+- Index caching with 1-hour TTL for faster lookups
+- Offline support with stale cache fallback
+- Provenance tracking via `_meta` block in installed files
+- Diff preview before applying updates
+
+See [Evaluator Library](#evaluator-library) for full documentation.
 
 ### v0.6.3 - Configurable Timeouts
 
@@ -398,6 +428,74 @@ adversarial split task.md --dry-run     # Preview split without creating files
 adversarial review                      # Phase 3: Review implementation
 adversarial validate "pytest"           # Phase 4: Validate with tests
 adversarial list-evaluators             # List all available evaluators
+```
+
+## Evaluator Library
+
+Browse and install pre-configured evaluators from the community [adversarial-evaluator-library](https://github.com/movito/adversarial-evaluator-library).
+
+### Quick Start
+
+```bash
+# Browse available evaluators
+adversarial library list
+
+# Filter by provider or category
+adversarial library list --provider google
+adversarial library list --category quick-check
+
+# Install an evaluator
+adversarial library install google/gemini-flash
+
+# Use it immediately
+adversarial gemini-flash task.md
+```
+
+### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `adversarial library list` | Browse available evaluators |
+| `adversarial library install <provider>/<name>` | Install evaluator to project |
+| `adversarial library check-updates` | Check for updates to installed evaluators |
+| `adversarial library update <name>` | Update an evaluator (with diff preview) |
+
+### Philosophy: Copy, Don't Link
+
+Installed evaluators are **copied** to your project, not referenced at runtime:
+- Projects remain self-contained and work offline
+- You can customize your local copies freely
+- Updates are explicit and user-controlled
+
+### Provenance Tracking
+
+Installed evaluators include metadata for tracking updates:
+
+```yaml
+_meta:
+  source: adversarial-evaluator-library
+  source_path: google/gemini-flash
+  version: "1.2.0"
+  installed: "2026-02-03T10:00:00Z"
+
+name: gemini-flash
+# ... rest of evaluator config
+```
+
+### Options
+
+```bash
+# Bypass cache (1-hour TTL by default)
+adversarial library list --no-cache
+
+# Force overwrite existing files
+adversarial library install google/gemini-flash --force
+
+# Update all outdated evaluators
+adversarial library update --all
+
+# Preview changes without applying
+adversarial library update gemini-flash --diff-only
 ```
 
 ## Custom Evaluators

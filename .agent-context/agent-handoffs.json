@@ -4,22 +4,22 @@
   "last_updated": "2026-02-03",
   "agents": {
     "planner": {
-      "status": "completed",
-      "current_task": "ADR-0005 contract review",
-      "brief_note": "Interface contract received and accepted",
-      "details_link": "docs/decisions/adr/library-refs/ADR-0005-library-workflow-interface-contract.md"
+      "status": "active",
+      "current_task": "ADV-0013 review coordination",
+      "brief_note": "Bug fixes applied, awaiting code-reviewer approval",
+      "details_link": ".agent-context/ADV-0013-REVIEW-STARTER.md"
     },
     "feature-developer": {
-      "status": "in_progress",
+      "status": "completed",
       "current_task": "ADV-0013",
-      "brief_note": "Library CLI Core - implementation started",
-      "details_link": "delegation/tasks/3-in-progress/ADV-0013-library-cli-core.md"
+      "brief_note": "Library CLI Core - implementation complete, bug fixes applied by planner",
+      "details_link": "delegation/tasks/4-in-review/ADV-0013-library-cli-core.md"
     },
     "code-reviewer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "Ready for ADV-0013 review when complete",
-      "details_link": null
+      "status": "pending",
+      "current_task": "ADV-0013",
+      "brief_note": "Ready to review Library CLI Core (incl. CodeRabbit/BugBot fixes)",
+      "details_link": ".agent-context/ADV-0013-REVIEW-STARTER.md"
     },
     "test-runner": {
       "status": "idle",
@@ -34,16 +34,27 @@
     "ADV-0026: Fix subprocess test environment"
   ],
   "pending_tasks": [
-    "ADV-0013: Library CLI Core (in progress)",
+    "ADV-0013: Library CLI Core (in review, PR #20)",
     "ADV-0014: Library CLI Enhancements (backlog)",
-    "ADV-0015: Model Routing Phase 1 (backlog)"
+    "ADV-0015: Model Routing Phase 1 (backlog, library-ready)"
   ],
   "blocked_items": [],
   "architecture_status": {
     "ADR-0004": "ACCEPTED - Model routing layer architecture",
     "ADR-0005": "ACCEPTED - Interface contract with library team",
-    "registry_schema": "1.0 - Published in library repo",
+    "registry_schema": "1.0 - Published in library repo (7 families, 18 evaluators)",
     "next_milestone": "v0.8.0 with resolution engine"
+  },
+  "library_team_update": {
+    "date": "2026-02-03",
+    "status": "Phase 2 Interface Ready",
+    "deliverables": [
+      "Provider Registry (providers/registry.yml)",
+      "Schema v1.0 (7 families, 10+ tiers)",
+      "All 18 evaluators have model_requirement",
+      "Dual-field support active"
+    ],
+    "pr": "https://github.com/movito/adversarial-evaluator-library/pull/3"
   },
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
@@ -51,5 +62,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "Interface contract (ADR-0005) received from library team. Registry schema v1.0 published. Ready for Phase 1 implementation."
+  "notes": "Library team delivered Phase 2 interface (2026-02-03). ADV-0015 ready to implement once ADV-0013 merges."
 }

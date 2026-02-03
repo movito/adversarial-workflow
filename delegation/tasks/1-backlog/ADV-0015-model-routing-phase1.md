@@ -5,12 +5,40 @@
 **Estimated Effort**: 2-3 days
 **Depends On**: ADV-0013 (Library CLI Core)
 **Source**: Cross-project architecture alignment (ADR-0004)
+**Library Status**: ✅ Interface Ready (2026-02-03)
 
 ---
 
 ## Summary
 
 Implement Phase 1 of the model routing layer: support for both legacy `model` string field and structured `model_requirement` field in evaluator configurations. This enables gradual migration to the new routing architecture without breaking existing evaluators.
+
+---
+
+## Library Team Update (2026-02-03)
+
+The adversarial-evaluator-library team has completed Phase 2 interface implementation per ADR-0005:
+
+| Deliverable | Status | Details |
+|-------------|--------|---------|
+| Provider Registry | ✅ Published | `providers/registry.yml` |
+| Schema v1.0 | ✅ Final | 7 families, 10+ tiers, litellm prefixes |
+| Evaluator Updates | ✅ Complete | All 18 evaluators have `model_requirement` |
+| Dual-Field Support | ✅ Active | Legacy `model` + new `model_requirement` |
+
+**Registry Families Available:**
+
+| Family | Vendor | Tiers | litellm_prefix |
+|--------|--------|-------|----------------|
+| gpt | OpenAI | flagship, standard, mini | `""` |
+| o | OpenAI | flagship, mini | `""` |
+| claude | Anthropic | opus, sonnet, haiku | `"anthropic/"` |
+| gemini | Google | pro, flash | `"gemini/"` |
+| mistral | Mistral | large, small | `"mistral/"` |
+| codestral | Mistral | latest | `"mistral/"` |
+| llama | Meta | large, medium | varies by host |
+
+**Library PR**: https://github.com/movito/adversarial-evaluator-library/pull/3
 
 ---
 
@@ -92,23 +120,38 @@ class EvaluatorConfig:
 class ModelResolver:
     """Resolves model requirements to actual model IDs."""
 
-    # Default registry (embedded in code for Phase 1)
+    # Default registry - matches adversarial-evaluator-library/providers/registry.yml
+    # Updated 2026-02-03 per Library team handoff
     DEFAULT_REGISTRY = {
         "claude": {
-            "opus": ["claude-4-opus-20260115", "claude-opus-4-5-20251101"],
-            "sonnet": ["claude-4-sonnet-20260115"],
-            "haiku": ["claude-4-haiku-20260115"],
+            "opus": {"models": ["claude-4-opus-20260115", "claude-opus-4-5-20251101"], "prefix": "anthropic/"},
+            "sonnet": {"models": ["claude-4-sonnet-20260115"], "prefix": "anthropic/"},
+            "haiku": {"models": ["claude-4-haiku-20260115"], "prefix": "anthropic/"},
         },
-        "openai": {
-            "gpt4o": ["gpt-4o", "gpt-4o-2024-08-06"],
-            "gpt4": ["gpt-4-turbo", "gpt-4"],
-            "gpt4o-mini": ["gpt-4o-mini"],
+        "gpt": {
+            "flagship": {"models": ["gpt-4o", "gpt-4o-2024-08-06"], "prefix": ""},
+            "standard": {"models": ["gpt-4-turbo", "gpt-4"], "prefix": ""},
+            "mini": {"models": ["gpt-4o-mini"], "prefix": ""},
+        },
+        "o": {
+            "flagship": {"models": ["o1", "o1-2024-12-17"], "prefix": ""},
+            "mini": {"models": ["o3-mini"], "prefix": ""},
         },
         "gemini": {
-            "pro": ["gemini/gemini-2.5-pro"],
-            "flash": ["gemini/gemini-2.5-flash"],
+            "pro": {"models": ["gemini-2.5-pro"], "prefix": "gemini/"},
+            "flash": {"models": ["gemini-2.5-flash"], "prefix": "gemini/"},
         },
-        # ... other families
+        "mistral": {
+            "large": {"models": ["mistral-large-latest"], "prefix": "mistral/"},
+            "small": {"models": ["mistral-small-latest"], "prefix": "mistral/"},
+        },
+        "codestral": {
+            "latest": {"models": ["codestral-latest"], "prefix": "mistral/"},
+        },
+        "llama": {
+            "large": {"models": ["llama-3.3-70b"], "prefix": ""},  # varies by host
+            "medium": {"models": ["llama-3.1-8b"], "prefix": ""},
+        },
     }
 
     def resolve(self, config: EvaluatorConfig) -> tuple[str, str]:
