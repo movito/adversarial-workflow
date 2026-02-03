@@ -42,4 +42,52 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 
 ---
 
-*Last updated: 2026-01-28*
+---
+
+## Library Module (`adversarial_workflow/library/`)
+
+### ADV-0013: YAML document separator stripping for concatenation
+- When concatenating YAML content (e.g., adding provenance headers), strip leading `---` document separator
+- Without stripping, results in multi-document YAML that some parsers reject
+- Pattern: `if yaml_content.startswith("---"): yaml_content = yaml_content[3:].lstrip("\n")`
+
+### ADV-0013: Cross-provider file collision prevention
+- Use `{provider}-{name}.yml` naming instead of just `{name}.yml`
+- Example: `google-gemini-flash.yml` vs `openai-gpt-4o.yml`
+- Prevents collisions when different providers have evaluators with same name
+
+### ADV-0013: HTTPError must be caught before URLError
+- `urllib.error.HTTPError` is a subclass of `urllib.error.URLError`
+- Catch HTTPError first to get proper HTTP status codes
+- Pattern: `except HTTPError as e: ... except URLError as e: ...`
+
+### ADV-0013: Timezone-aware UTC timestamps
+- Use `datetime.now(timezone.utc)` not `datetime.now()` with appended "Z"
+- Proper format: `.isoformat(timespec="seconds").replace("+00:00", "Z")`
+- Prevents naive datetime + fake "Z" suffix
+
+### ADV-0013: Cache with stale fallback for offline resilience
+- Implement TTL-based cache with `get_stale()` method for expired-but-usable data
+- On network error, fall back to stale cache before raising exception
+- Pattern in `CacheManager` with separate `get()` and `get_stale()` methods
+
+### ADV-0013: Provenance tracking via `_meta` block
+- Installed library items should include machine-readable provenance
+- Structure: `_meta: { source, source_path, version, installed }`
+- Enables update checking and audit trails
+
+---
+
+## Testing (`tests/`)
+
+### ADV-0013: pytest fixtures cannot be renamed with underscore
+- Built-in fixtures like `capsys` cannot be renamed to `_capsys`
+- Either use the fixture or remove the parameter entirely
+- Don't try to suppress "unused" warnings by renaming fixtures
+
+### ADV-0013: Integration tests should be marked for selective execution
+- Use `pytest.mark.network` or similar for tests requiring network
+- Allows `pytest -m "not network"` for offline CI runs
+- Pattern: `pytestmark = pytest.mark.network` at module level
+
+*Last updated: 2026-02-03*

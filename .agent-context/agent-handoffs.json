@@ -4,22 +4,22 @@
   "last_updated": "2026-02-03",
   "agents": {
     "planner": {
-      "status": "active",
-      "current_task": "ADV-0013 review coordination",
-      "brief_note": "Bug fixes applied, awaiting code-reviewer approval",
-      "details_link": ".agent-context/ADV-0013-REVIEW-STARTER.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0013 completed, ready for next task",
+      "details_link": null
     },
     "feature-developer": {
-      "status": "completed",
-      "current_task": "ADV-0013",
-      "brief_note": "Library CLI Core - implementation complete, bug fixes applied by planner",
-      "details_link": "delegation/tasks/4-in-review/ADV-0013-library-cli-core.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "Ready for ADV-0014 or ADV-0015",
+      "details_link": null
     },
     "code-reviewer": {
-      "status": "pending",
-      "current_task": "ADV-0013",
-      "brief_note": "Ready to review Library CLI Core (incl. CodeRabbit/BugBot fixes)",
-      "details_link": ".agent-context/ADV-0013-REVIEW-STARTER.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0013 approved and merged",
+      "details_link": ".agent-context/reviews/ADV-0013-review.md"
     },
     "test-runner": {
       "status": "idle",
@@ -29,12 +29,11 @@
     }
   },
   "recent_completions": [
+    "ADV-0013: Library CLI Core (PR #20 merged, 2026-02-03)",
     "ADV-0029: Configurable Timeout per Evaluator",
-    "ADV-0028: Fix scripts/project issues",
-    "ADV-0026: Fix subprocess test environment"
+    "ADV-0028: Fix scripts/project issues"
   ],
   "pending_tasks": [
-    "ADV-0013: Library CLI Core (in review, PR #20)",
     "ADV-0014: Library CLI Enhancements (backlog)",
     "ADV-0015: Model Routing Phase 1 (backlog, library-ready)"
   ],
@@ -62,5 +61,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "Library team delivered Phase 2 interface (2026-02-03). ADV-0015 ready to implement once ADV-0013 merges."
+  "notes": "ADV-0013 merged. Library team Phase 2 interface ready. ADV-0015 can proceed with model routing implementation."
 }
