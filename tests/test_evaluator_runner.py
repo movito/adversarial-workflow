@@ -301,11 +301,11 @@ class TestModelResolutionInRunner:
             run_evaluator(legacy_config, str(test_file))
 
             # Verify aider was called with the legacy model
-            if mock_run.called:
-                call_args = mock_run.call_args
-                cmd = call_args[0][0]
-                model_idx = cmd.index("--model") + 1
-                assert cmd[model_idx] == "gpt-4o"
+            assert mock_run.called, "aider should have been called"
+            call_args = mock_run.call_args
+            cmd = call_args[0][0]
+            model_idx = cmd.index("--model") + 1
+            assert cmd[model_idx] == "gpt-4o"
 
     def test_model_requirement_resolves_correctly(self, tmp_path, monkeypatch):
         """Evaluator with model_requirement gets resolved to actual model ID."""
@@ -341,13 +341,13 @@ class TestModelResolutionInRunner:
             run_evaluator(config, str(test_file))
 
             # Verify aider was called with a resolved claude model
-            if mock_run.called:
-                call_args = mock_run.call_args
-                cmd = call_args[0][0]
-                model_idx = cmd.index("--model") + 1
-                resolved_model = cmd[model_idx]
-                assert "claude" in resolved_model.lower()
-                assert "opus" in resolved_model.lower()
+            assert mock_run.called, "aider should have been called"
+            call_args = mock_run.call_args
+            cmd = call_args[0][0]
+            model_idx = cmd.index("--model") + 1
+            resolved_model = cmd[model_idx]
+            assert "claude" in resolved_model.lower()
+            assert "opus" in resolved_model.lower()
 
     def test_model_requirement_precedence_over_legacy(self, tmp_path, monkeypatch):
         """model_requirement takes precedence when both fields present."""
@@ -360,7 +360,7 @@ class TestModelResolutionInRunner:
         (config_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
 
         monkeypatch.chdir(tmp_path)
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")  # For resolved model
+        monkeypatch.setenv("GEMINI_API_KEY", "test-key")  # For resolved gemini model
 
         # Mock aider to capture the model argument
         mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
@@ -385,13 +385,13 @@ class TestModelResolutionInRunner:
             run_evaluator(config, str(test_file))
 
             # Verify aider was called with resolved gemini model, not legacy gpt-4o
-            if mock_run.called:
-                call_args = mock_run.call_args
-                cmd = call_args[0][0]
-                model_idx = cmd.index("--model") + 1
-                resolved_model = cmd[model_idx]
-                assert "gemini" in resolved_model.lower()
-                assert "gpt" not in resolved_model.lower()
+            assert mock_run.called, "aider should have been called"
+            call_args = mock_run.call_args
+            cmd = call_args[0][0]
+            model_idx = cmd.index("--model") + 1
+            resolved_model = cmd[model_idx]
+            assert "gemini" in resolved_model.lower()
+            assert "gpt" not in resolved_model.lower()
 
     def test_resolution_failure_falls_back_to_legacy(self, tmp_path, monkeypatch, capsys):
         """Resolution failure falls back to legacy model with warning."""
