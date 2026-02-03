@@ -487,6 +487,29 @@ As part of this task, update the following documentation:
 
 ---
 
+## Code Review Notes (PR #20)
+
+### Issues Identified by CodeRabbit/BugBot
+
+| Issue | Severity | Resolution |
+|-------|----------|------------|
+| YAML document separator (`---`) causes multi-document parsing | CRITICAL | Strip leading separator before concatenation |
+| Cross-provider file collisions (`fast-check.yml` naming) | CRITICAL | Changed to `{provider}-{name}.yml` format |
+| ValueError escapes exception handler | MAJOR | Added to exception tuple |
+| HTTPError handler unreachable (caught by URLError) | MEDIUM | Reordered exception handlers |
+| UTC timestamp mislabeled (naive datetime + "Z") | LOW | Use `datetime.now(timezone.utc)` |
+| Unused `is_online` method | MEDIUM | Removed |
+| Duplicated ANSI color codes | MEDIUM | Deferred (not blocking) |
+| Test linting issues (unused params) | MINOR | Fixed with underscore prefixes |
+
+### Fix Commit
+
+- **Commit**: `5015207`
+- **Branch**: `feat/adv-0013-library-cli-core`
+- **CI Status**: All 12 checks pass
+
+---
+
 ## Related Documents
 
 - **Proposal**: `docs/proposals/AWF-evaluator-library-cli-integration.md`
