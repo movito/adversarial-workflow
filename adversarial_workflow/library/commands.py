@@ -302,7 +302,9 @@ def library_install(
                 continue
 
         # Add provenance header
-        full_content = generate_provenance_header(provider, name, index.version) + yaml_content_clean
+        full_content = (
+            generate_provenance_header(provider, name, index.version) + yaml_content_clean
+        )
 
         # Write file
         try:
