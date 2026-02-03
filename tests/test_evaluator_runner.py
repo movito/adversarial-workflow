@@ -267,7 +267,7 @@ class TestUtilsModule:
 class TestModelResolutionInRunner:
     """Test model resolution integration with runner (ADV-0015)."""
 
-    def test_legacy_model_field_still_works(self, sample_config, tmp_path, monkeypatch, capsys):
+    def test_legacy_model_field_still_works(self, tmp_path, monkeypatch):
         """Legacy evaluator with only model field still works (backwards compat)."""
         # Create test file and config
         test_file = tmp_path / "test.md"
@@ -434,11 +434,11 @@ class TestModelResolutionInRunner:
                 assert len(fallback_warnings) > 0
 
             # Verify aider was called with legacy model
-            if mock_run.called:
-                call_args = mock_run.call_args
-                cmd = call_args[0][0]
-                model_idx = cmd.index("--model") + 1
-                assert cmd[model_idx] == "gpt-4o"
+            assert mock_run.called, "aider should have been called with fallback model"
+            call_args = mock_run.call_args
+            cmd = call_args[0][0]
+            model_idx = cmd.index("--model") + 1
+            assert cmd[model_idx] == "gpt-4o"
 
     def test_resolution_error_when_no_fallback(self, tmp_path, monkeypatch, capsys):
         """ResolutionError when model_requirement fails and no legacy fallback."""

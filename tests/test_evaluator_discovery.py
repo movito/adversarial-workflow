@@ -691,6 +691,44 @@ output_suffix: TEST
         assert config.model_requirement.min_version == "0"
         assert isinstance(config.model_requirement.min_version, str)
 
+    def test_parse_yaml_model_requirement_min_version_false(self, tmp_path):
+        """Error when min_version is boolean false."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: claude
+  tier: opus
+  min_version: false
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match=r"min_version.*bool"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_yaml_model_requirement_min_context_false(self, tmp_path):
+        """Error when min_context is boolean false."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: claude
+  tier: opus
+  min_context: false
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match=r"min_context.*bool"):
+            parse_evaluator_yaml(yml)
+
     def test_parse_yaml_model_requirement_missing_family(self, tmp_path):
         """Error when model_requirement is missing family."""
         yml = tmp_path / "test.yml"

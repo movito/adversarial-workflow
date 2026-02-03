@@ -191,8 +191,13 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
 
         # Validate optional min_version is string if present
         min_version = req_data.get("min_version", "")
-        # Convert integers to strings first (YAML parses '0' as int 0)
-        if isinstance(min_version, int) and not isinstance(min_version, bool):
+        # Reject booleans explicitly (YAML parses 'yes'/'no'/'true'/'false' as bool)
+        if isinstance(min_version, bool):
+            raise EvaluatorParseError(
+                f"model_requirement.min_version must be a string, got bool: {min_version!r}"
+            )
+        # Convert integers to strings (YAML parses '0' as int 0)
+        if isinstance(min_version, int):
             min_version = str(min_version)
         elif min_version and not isinstance(min_version, str):
             raise EvaluatorParseError(
@@ -201,15 +206,13 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
 
         # Validate optional min_context is integer if present
         min_context = req_data.get("min_context", 0)
-        if min_context:
-            if isinstance(min_context, bool):
-                raise EvaluatorParseError(
-                    "model_requirement.min_context must be an integer, got bool"
-                )
-            if not isinstance(min_context, int):
-                raise EvaluatorParseError(
-                    f"model_requirement.min_context must be an integer, got {type(min_context).__name__}"
-                )
+        # Reject booleans explicitly (YAML parses 'yes'/'no'/'true'/'false' as bool)
+        if isinstance(min_context, bool):
+            raise EvaluatorParseError("model_requirement.min_context must be an integer, got bool")
+        if min_context and not isinstance(min_context, int):
+            raise EvaluatorParseError(
+                f"model_requirement.min_context must be an integer, got {type(min_context).__name__}"
+            )
 
         model_requirement = ModelRequirement(
             family=family,
