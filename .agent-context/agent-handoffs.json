@@ -4,16 +4,16 @@
   "last_updated": "2026-02-03",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0013 completed, ready for next task",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADV-0015",
+      "brief_note": "Task starter prepared for feature-developer",
+      "details_link": ".agent-context/ADV-0015-HANDOFF-feature-developer.md"
     },
     "feature-developer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "Ready for ADV-0014 or ADV-0015",
-      "details_link": null
+      "status": "pending",
+      "current_task": "ADV-0015",
+      "brief_note": "Awaiting assignment - Model Routing Phase 1",
+      "details_link": "delegation/tasks/1-backlog/ADV-0015-model-routing-phase1.md"
     },
     "code-reviewer": {
       "status": "idle",
