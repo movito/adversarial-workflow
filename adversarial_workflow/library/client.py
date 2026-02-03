@@ -77,10 +77,11 @@ class LibraryClient:
             )
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 return response.read().decode("utf-8")
+        except urllib.error.HTTPError as e:
+            # HTTPError must be caught before URLError (HTTPError subclasses URLError)
+            raise NetworkError(f"HTTP error {e.code} fetching {url}: {e.reason}") from e
         except urllib.error.URLError as e:
             raise NetworkError(f"Failed to fetch {url}: {e}") from e
-        except urllib.error.HTTPError as e:
-            raise NetworkError(f"HTTP error {e.code} fetching {url}: {e.reason}") from e
         except TimeoutError as e:
             raise NetworkError(f"Timeout fetching {url}") from e
         except OSError as e:
@@ -158,20 +159,6 @@ class LibraryClient:
         path = EVALUATOR_PATH_TEMPLATE.format(provider=provider, name=name)
         url = f"{self.base_url}/{path}"
         return self._fetch_url(url)
-
-    def is_online(self) -> bool:
-        """
-        Check if the library is reachable.
-
-        Returns:
-            True if the library can be reached, False otherwise.
-        """
-        try:
-            url = f"{self.base_url}/{INDEX_PATH}"
-            self._fetch_url(url)
-            return True
-        except LibraryClientError:
-            return False
 
     def get_cache_age(self) -> Optional[float]:
         """

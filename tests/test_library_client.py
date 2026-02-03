@@ -248,12 +248,12 @@ class TestLibraryClient:
 
             with patch("urllib.request.urlopen", return_value=mock_response) as mock_urlopen:
                 # First call
-                index1, from_cache1 = client.fetch_index()
+                _index1, from_cache1 = client.fetch_index()
                 assert not from_cache1
                 assert mock_urlopen.call_count == 1
 
                 # Second call should use cache
-                index2, from_cache2 = client.fetch_index()
+                _index2, from_cache2 = client.fetch_index()
                 assert from_cache2
                 assert mock_urlopen.call_count == 1  # Not called again
 
@@ -278,6 +278,8 @@ class TestLibraryClient:
 
     def test_fetch_index_network_error_uses_stale_cache(self):
         """Test fallback to stale cache on network error."""
+        import urllib.error
+
         with tempfile.TemporaryDirectory() as tmpdir:
             # Pre-populate cache
             cache = CacheManager(cache_dir=Path(tmpdir))
@@ -285,7 +287,10 @@ class TestLibraryClient:
 
             client = LibraryClient(cache_dir=Path(tmpdir))
 
-            with patch("urllib.request.urlopen", side_effect=Exception("Network error")):
+            with patch(
+                "urllib.request.urlopen",
+                side_effect=urllib.error.URLError("Network error"),
+            ):
                 index, from_cache = client.fetch_index()
                 assert from_cache
                 assert index.version == "1.2.0"

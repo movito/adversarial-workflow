@@ -20,13 +20,43 @@ Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to i
 - 🎯 **Tool-agnostic**: Use with Claude Code, Cursor, Aider, manual coding, or any workflow
 - ✨ **Interactive onboarding**: Guided setup wizard gets you started in <5 minutes
 
-## What's New in v0.6.3
+## What's New in v0.7.0
 
 ### Upgrade
 
 ```bash
 pip install --upgrade adversarial-workflow
 ```
+
+### v0.7.0 - Evaluator Library
+
+Browse, install, and update evaluators from the community [adversarial-evaluator-library](https://github.com/movito/adversarial-evaluator-library):
+
+```bash
+# Browse available evaluators
+adversarial library list
+
+# Filter by provider or category
+adversarial library list --provider google
+adversarial library list --category quick-check
+
+# Install evaluators
+adversarial library install google/gemini-flash openai/fast-check
+
+# Check for updates
+adversarial library check-updates
+
+# Update installed evaluators
+adversarial library update --all
+```
+
+**Key Features:**
+- Index caching with 1-hour TTL for faster lookups
+- Offline support with stale cache fallback
+- Provenance tracking via `_meta` block in installed files
+- Diff preview before applying updates
+
+See [Evaluator Library](#evaluator-library) for full documentation.
 
 ### v0.6.3 - Configurable Timeouts
 

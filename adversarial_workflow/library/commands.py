@@ -2,7 +2,7 @@
 
 import difflib
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
@@ -62,7 +62,7 @@ def format_table(
 
 def generate_provenance_header(provider: str, name: str, version: str) -> str:
     """Generate the provenance header for installed evaluators."""
-    timestamp = datetime.now().isoformat(timespec="seconds") + "Z"
+    timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     return f"""# Installed from adversarial-evaluator-library
 # Source: {provider}/{name}
 # Version: {version}
@@ -102,6 +102,7 @@ def scan_installed_evaluators() -> List[InstalledEvaluatorMeta]:
             if data and "_meta" in data:
                 meta = InstalledEvaluatorMeta.from_dict(data["_meta"])
                 if meta and meta.source == "adversarial-evaluator-library":
+                    meta.file_path = str(yaml_file)  # Track file path for updates
                     installed.append(meta)
         except (yaml.YAMLError, OSError):
             # Skip files that can't be parsed
@@ -265,10 +266,10 @@ def library_install(
             print("  Use 'adversarial library list' to see available evaluators.")
             continue
 
-        # Check if file already exists
-        dest_path = evaluators_dir / f"{name}.yml"
+        # Check if file already exists (use provider-name format to avoid collisions)
+        dest_path = evaluators_dir / f"{provider}-{name}.yml"
         if dest_path.exists() and not force:
-            print(f"{YELLOW}Skipping: {name}.yml already exists{RESET}")
+            print(f"{YELLOW}Skipping: {provider}-{name}.yml already exists{RESET}")
             print(f"  Use {CYAN}--force{RESET} to overwrite.")
             continue
 
@@ -281,12 +282,18 @@ def library_install(
             print(f"    {e}")
             continue
 
+        # Strip leading YAML document separator to prevent multi-document issues
+        yaml_content_clean = yaml_content.lstrip()
+        if yaml_content_clean.startswith("---"):
+            # Remove the document separator and any following newline
+            yaml_content_clean = yaml_content_clean[3:].lstrip("\n")
+
         # Validate YAML
         try:
-            parsed = yaml.safe_load(yaml_content)
+            parsed = yaml.safe_load(yaml_content_clean)
             if not parsed:
                 raise ValueError("Empty YAML content")
-        except yaml.YAMLError as e:
+        except (yaml.YAMLError, ValueError) as e:
             print(f"  {RED}Error: Invalid YAML in evaluator{RESET}")
             print(f"    {e}")
             if skip_validation:
@@ -295,7 +302,7 @@ def library_install(
                 continue
 
         # Add provenance header
-        full_content = generate_provenance_header(provider, name, index.version) + yaml_content
+        full_content = generate_provenance_header(provider, name, index.version) + yaml_content_clean
 
         # Write file
         try:
@@ -510,8 +517,14 @@ def library_update(
             print(f"    {e}")
             continue
 
-        # Read current content
-        current_path = evaluators_dir / f"{meta.name}.yml"
+        # Read current content using tracked file path
+        if meta.file_path:
+            current_path = Path(meta.file_path)
+        else:
+            # Fallback: check both old and new naming conventions
+            new_path = evaluators_dir / f"{meta.provider}-{meta.name}.yml"
+            old_path = evaluators_dir / f"{meta.name}.yml"
+            current_path = new_path if new_path.exists() else old_path
         try:
             with open(current_path, "r", encoding="utf-8") as f:
                 current_content = f.read()
@@ -521,8 +534,12 @@ def library_update(
             continue
 
         # Generate new content with updated provenance
+        # Strip leading YAML document separator to prevent multi-document issues
+        new_yaml_clean = new_yaml.lstrip()
+        if new_yaml_clean.startswith("---"):
+            new_yaml_clean = new_yaml_clean[3:].lstrip("\n")
         new_content = (
-            generate_provenance_header(entry.provider, entry.name, index.version) + new_yaml
+            generate_provenance_header(entry.provider, entry.name, index.version) + new_yaml_clean
         )
 
         # Show diff

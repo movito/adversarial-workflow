@@ -143,7 +143,7 @@ class TestScanInstalledEvaluators:
 class TestLibraryList:
     """Tests for library list command."""
 
-    def _mock_fetch_index(self, *args, **kwargs):
+    def _mock_fetch_index(self, *_args, **_kwargs):
         """Mock fetch_index to return sample data."""
         return IndexData.from_dict(SAMPLE_INDEX), False
 
@@ -207,13 +207,13 @@ class TestLibraryList:
 class TestLibraryInstall:
     """Tests for library install command."""
 
-    def _mock_fetch_index(self, *args, **kwargs):
+    def _mock_fetch_index(self, *_args, **_kwargs):
         return IndexData.from_dict(SAMPLE_INDEX), False
 
-    def _mock_fetch_evaluator(self, provider, name):
+    def _mock_fetch_evaluator(self, _provider, _name):
         return SAMPLE_EVALUATOR_YAML
 
-    def test_install_success(self, capsys):
+    def test_install_success(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             eval_dir = Path(tmpdir) / ".adversarial" / "evaluators"
 
@@ -240,11 +240,11 @@ class TestLibraryInstall:
                 result = library_install(["google/gemini-flash"])
                 assert result == 0
 
-                # Verify file was created
-                assert (eval_dir / "gemini-flash.yml").exists()
+                # Verify file was created with provider-name format
+                assert (eval_dir / "google-gemini-flash.yml").exists()
 
                 # Verify provenance header
-                content = (eval_dir / "gemini-flash.yml").read_text()
+                content = (eval_dir / "google-gemini-flash.yml").read_text()
                 assert "_meta:" in content
                 assert "source: adversarial-evaluator-library" in content
 
@@ -279,8 +279,8 @@ class TestLibraryInstall:
             eval_dir = Path(tmpdir) / ".adversarial" / "evaluators"
             eval_dir.mkdir(parents=True)
 
-            # Create existing file
-            (eval_dir / "gemini-flash.yml").write_text("existing content")
+            # Create existing file with new naming convention
+            (eval_dir / "google-gemini-flash.yml").write_text("existing content")
 
             with (
                 patch.object(
@@ -300,13 +300,13 @@ class TestLibraryInstall:
                 captured = capsys.readouterr()
                 assert "already exists" in captured.out
 
-    def test_install_with_force(self, capsys):
+    def test_install_with_force(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             eval_dir = Path(tmpdir) / ".adversarial" / "evaluators"
             eval_dir.mkdir(parents=True)
 
-            # Create existing file
-            (eval_dir / "gemini-flash.yml").write_text("existing content")
+            # Create existing file with new naming convention
+            (eval_dir / "google-gemini-flash.yml").write_text("existing content")
 
             with (
                 patch.object(
@@ -331,15 +331,15 @@ class TestLibraryInstall:
                 result = library_install(["google/gemini-flash"], force=True)
                 assert result == 0
 
-                # Verify file was overwritten
-                content = (eval_dir / "gemini-flash.yml").read_text()
+                # Verify file was overwritten with new naming convention
+                content = (eval_dir / "google-gemini-flash.yml").read_text()
                 assert "_meta:" in content
 
 
 class TestLibraryCheckUpdates:
     """Tests for library check-updates command."""
 
-    def _mock_fetch_index(self, *args, **kwargs):
+    def _mock_fetch_index(self, *_args, **_kwargs):
         return IndexData.from_dict(SAMPLE_INDEX), False
 
     def test_no_installed_evaluators(self, capsys):

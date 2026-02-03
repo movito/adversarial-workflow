@@ -1,7 +1,7 @@
 """Data models for the evaluator library client."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 
@@ -51,7 +51,7 @@ class IndexData:
             version=data.get("version", "unknown"),
             evaluators=evaluators,
             categories=data.get("categories", {}),
-            fetched_at=datetime.now(),
+            fetched_at=datetime.now(timezone.utc),
         )
 
     def get_evaluator(self, provider: str, name: str) -> Optional[EvaluatorEntry]:
@@ -78,6 +78,7 @@ class InstalledEvaluatorMeta:
     source_path: str
     version: str
     installed: str
+    file_path: Optional[str] = None  # Path to the installed file
 
     @classmethod
     def from_dict(cls, data: Dict) -> Optional["InstalledEvaluatorMeta"]:

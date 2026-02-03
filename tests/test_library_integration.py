@@ -26,7 +26,7 @@ class TestRealLibraryFetch:
         """Test fetching the real index.json from GitHub."""
         with tempfile.TemporaryDirectory() as tmpdir:
             client = LibraryClient(cache_dir=Path(tmpdir))
-            index, from_cache = client.fetch_index(no_cache=True)
+            index, _from_cache = client.fetch_index(no_cache=True)
 
             assert index.version  # Has a version
             assert len(index.evaluators) > 0  # Has evaluators
@@ -49,13 +49,11 @@ class TestRealLibraryFetch:
         captured = capsys.readouterr()
         assert "evaluators available" in captured.out.lower() or "evaluator" in captured.out.lower()
 
-    def test_real_library_install(self, capsys):
+    def test_real_library_install(self):
         """Test installing an evaluator from the real library."""
         with tempfile.TemporaryDirectory() as tmpdir:
             eval_dir = Path(tmpdir) / ".adversarial" / "evaluators"
 
-            # Temporarily change working directory
-            import os
             from unittest.mock import patch
 
             with patch(
@@ -65,11 +63,11 @@ class TestRealLibraryFetch:
                 result = library_install(["google/gemini-flash"])
                 assert result == 0
 
-                # Verify file was created
-                assert (eval_dir / "gemini-flash.yml").exists()
+                # Verify file was created with provider-name format
+                assert (eval_dir / "google-gemini-flash.yml").exists()
 
                 # Verify content
-                content = (eval_dir / "gemini-flash.yml").read_text()
+                content = (eval_dir / "google-gemini-flash.yml").read_text()
                 assert "_meta:" in content
                 assert "adversarial-evaluator-library" in content
 
