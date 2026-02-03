@@ -4,16 +4,16 @@
   "last_updated": "2026-02-03",
   "agents": {
     "planner": {
-      "status": "completed",
-      "current_task": "ADV-0015",
-      "brief_note": "Task starter prepared for feature-developer",
-      "details_link": ".agent-context/ADV-0015-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0015 implementation complete, awaiting PR merge",
+      "details_link": null
     },
     "feature-developer": {
-      "status": "pending",
+      "status": "awaiting_merge",
       "current_task": "ADV-0015",
-      "brief_note": "Awaiting assignment - Model Routing Phase 1",
-      "details_link": "delegation/tasks/1-backlog/ADV-0015-model-routing-phase1.md"
+      "brief_note": "PR #21 review fixes complete, all CI green, ready to merge",
+      "details_link": "https://github.com/movito/adversarial-workflow/pull/21"
     },
     "code-reviewer": {
       "status": "idle",
@@ -34,8 +34,8 @@
     "ADV-0028: Fix scripts/project issues"
   ],
   "pending_tasks": [
-    "ADV-0014: Library CLI Enhancements (backlog)",
-    "ADV-0015: Model Routing Phase 1 (backlog, library-ready)"
+    "ADV-0015: Model Routing Phase 1 - PR #21 ready to merge",
+    "ADV-0014: Library CLI Enhancements (backlog)"
   ],
   "blocked_items": [],
   "architecture_status": {
@@ -44,16 +44,17 @@
     "registry_schema": "1.0 - Published in library repo (7 families, 18 evaluators)",
     "next_milestone": "v0.8.0 with resolution engine"
   },
-  "library_team_update": {
-    "date": "2026-02-03",
-    "status": "Phase 2 Interface Ready",
-    "deliverables": [
-      "Provider Registry (providers/registry.yml)",
-      "Schema v1.0 (7 families, 10+ tiers)",
-      "All 18 evaluators have model_requirement",
-      "Dual-field support active"
+  "pr_21_status": {
+    "branch": "feat/adv-0015-model-routing-phase1",
+    "latest_commit": "d312a41",
+    "ci_status": "PASS (all 12 jobs)",
+    "review_issues_fixed": [
+      "CodeRabbit: Updated docstrings, removed redundant code, added ClassVar",
+      "Bugbot r2760146399: Wrong API key in test + weak assertion",
+      "Bugbot r2760650605: min_version: 0 not converted to string",
+      "Bugbot r2760897290: Explicit null api_key_env causes TypeError"
     ],
-    "pr": "https://github.com/movito/adversarial-evaluator-library/pull/3"
+    "ready_to_merge": true
   },
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
@@ -61,5 +62,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "ADV-0013 merged. Library team Phase 2 interface ready. ADV-0015 can proceed with model routing implementation."
+  "notes": "ADV-0015 implementation complete. PR #21 has all review issues fixed (CodeRabbit + 3 Bugbot issues). CI passes. Ready to merge to main."
 }
