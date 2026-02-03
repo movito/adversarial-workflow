@@ -10,16 +10,16 @@
       "details_link": "docs/decisions/adr/library-refs/ADR-0005-library-workflow-interface-contract.md"
     },
     "feature-developer": {
-      "status": "in_progress",
+      "status": "completed",
       "current_task": "ADV-0013",
-      "brief_note": "Library CLI Core - implementation started",
-      "details_link": "delegation/tasks/3-in-progress/ADV-0013-library-cli-core.md"
+      "brief_note": "Library CLI Core - implementation complete, awaiting review",
+      "details_link": "delegation/tasks/4-in-review/ADV-0013-library-cli-core.md"
     },
     "code-reviewer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "Ready for ADV-0013 review when complete",
-      "details_link": null
+      "status": "pending",
+      "current_task": "ADV-0013",
+      "brief_note": "Ready to review Library CLI Core implementation",
+      "details_link": ".agent-context/ADV-0013-REVIEW-STARTER.md"
     },
     "test-runner": {
       "status": "idle",
@@ -34,7 +34,7 @@
     "ADV-0026: Fix subprocess test environment"
   ],
   "pending_tasks": [
-    "ADV-0013: Library CLI Core (in progress)",
+    "ADV-0013: Library CLI Core (in review)",
     "ADV-0014: Library CLI Enhancements (backlog)",
     "ADV-0015: Model Routing Phase 1 (backlog)"
   ],

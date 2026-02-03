@@ -400,6 +400,74 @@ adversarial validate "pytest"           # Phase 4: Validate with tests
 adversarial list-evaluators             # List all available evaluators
 ```
 
+## Evaluator Library
+
+Browse and install pre-configured evaluators from the community [adversarial-evaluator-library](https://github.com/movito/adversarial-evaluator-library).
+
+### Quick Start
+
+```bash
+# Browse available evaluators
+adversarial library list
+
+# Filter by provider or category
+adversarial library list --provider google
+adversarial library list --category quick-check
+
+# Install an evaluator
+adversarial library install google/gemini-flash
+
+# Use it immediately
+adversarial gemini-flash task.md
+```
+
+### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `adversarial library list` | Browse available evaluators |
+| `adversarial library install <provider>/<name>` | Install evaluator to project |
+| `adversarial library check-updates` | Check for updates to installed evaluators |
+| `adversarial library update <name>` | Update an evaluator (with diff preview) |
+
+### Philosophy: Copy, Don't Link
+
+Installed evaluators are **copied** to your project, not referenced at runtime:
+- Projects remain self-contained and work offline
+- You can customize your local copies freely
+- Updates are explicit and user-controlled
+
+### Provenance Tracking
+
+Installed evaluators include metadata for tracking updates:
+
+```yaml
+_meta:
+  source: adversarial-evaluator-library
+  source_path: google/gemini-flash
+  version: "1.2.0"
+  installed: "2026-02-03T10:00:00Z"
+
+name: gemini-flash
+# ... rest of evaluator config
+```
+
+### Options
+
+```bash
+# Bypass cache (1-hour TTL by default)
+adversarial library list --no-cache
+
+# Force overwrite existing files
+adversarial library install google/gemini-flash --force
+
+# Update all outdated evaluators
+adversarial library update --all
+
+# Preview changes without applying
+adversarial library update gemini-flash --diff-only
+```
+
 ## Custom Evaluators
 
 Starting with v0.6.0, you can define project-specific evaluators without modifying the package.

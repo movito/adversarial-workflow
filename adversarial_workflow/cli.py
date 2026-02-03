@@ -2959,6 +2959,7 @@ def main():
         "health",
         "quickstart",
         "agent",
+        "library",
         "split",
         "validate",
         "review",
@@ -2982,6 +2983,8 @@ Examples:
   adversarial validate "npm test"       # Validate with tests
   adversarial split large-task.md       # Split large files
   adversarial check-citations doc.md    # Verify URLs in document
+  adversarial library list              # Browse available evaluators
+  adversarial library install google/gemini-flash  # Install evaluator
 
 For more information: https://github.com/movito/adversarial-workflow
         """,
@@ -3026,6 +3029,78 @@ For more information: https://github.com/movito/adversarial-workflow
     onboard_parser = agent_subparsers.add_parser("onboard", help="Set up agent coordination system")
     onboard_parser.add_argument(
         "--path", default=".", help="Project path (default: current directory)"
+    )
+
+    # library command (with subcommands)
+    library_parser = subparsers.add_parser(
+        "library", help="Browse and install evaluators from the community library"
+    )
+    library_subparsers = library_parser.add_subparsers(
+        dest="library_subcommand", help="Library subcommand"
+    )
+
+    # library list subcommand
+    library_list_parser = library_subparsers.add_parser(
+        "list", help="List available evaluators from the library"
+    )
+    library_list_parser.add_argument(
+        "--provider", "-p", help="Filter by provider (e.g., google, openai)"
+    )
+    library_list_parser.add_argument(
+        "--category", "-c", help="Filter by category (e.g., quick-check, deep-reasoning)"
+    )
+    library_list_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Show detailed information"
+    )
+    library_list_parser.add_argument(
+        "--no-cache", action="store_true", help="Bypass cache and fetch fresh data"
+    )
+
+    # library install subcommand
+    library_install_parser = library_subparsers.add_parser(
+        "install", help="Install evaluator(s) from the library"
+    )
+    library_install_parser.add_argument(
+        "evaluators", nargs="+", help="Evaluator(s) to install (format: provider/name)"
+    )
+    library_install_parser.add_argument(
+        "--force", "-f", action="store_true", help="Overwrite existing files"
+    )
+    library_install_parser.add_argument(
+        "--skip-validation", action="store_true", help="Skip YAML validation (advanced)"
+    )
+
+    # library check-updates subcommand
+    library_check_parser = library_subparsers.add_parser(
+        "check-updates", help="Check for updates to installed evaluators"
+    )
+    library_check_parser.add_argument(
+        "name", nargs="?", help="Specific evaluator to check (optional)"
+    )
+    library_check_parser.add_argument(
+        "--no-cache", action="store_true", help="Bypass cache and fetch fresh data"
+    )
+
+    # library update subcommand
+    library_update_parser = library_subparsers.add_parser(
+        "update", help="Update installed evaluator(s) to newer versions"
+    )
+    library_update_parser.add_argument("name", nargs="?", help="Evaluator name to update")
+    library_update_parser.add_argument(
+        "--all",
+        "-a",
+        action="store_true",
+        dest="all_evaluators",
+        help="Update all outdated evaluators",
+    )
+    library_update_parser.add_argument(
+        "--yes", "-y", action="store_true", help="Skip confirmation prompts"
+    )
+    library_update_parser.add_argument(
+        "--diff-only", action="store_true", help="Show diff without applying changes"
+    )
+    library_update_parser.add_argument(
+        "--no-cache", action="store_true", help="Bypass cache and fetch fresh data"
     )
 
     # review command (static - reviews git changes, no file argument)
@@ -3219,6 +3294,49 @@ For more information: https://github.com/movito/adversarial-workflow
             # No subcommand provided
             print(f"{RED}Error: agent command requires a subcommand{RESET}")
             print("Usage: adversarial agent onboard")
+            return 1
+    elif args.command == "library":
+        from adversarial_workflow.library import (
+            library_check_updates,
+            library_install,
+            library_list,
+            library_update,
+        )
+
+        if args.library_subcommand == "list":
+            return library_list(
+                provider=args.provider,
+                category=args.category,
+                verbose=args.verbose,
+                no_cache=args.no_cache,
+            )
+        elif args.library_subcommand == "install":
+            return library_install(
+                evaluator_specs=args.evaluators,
+                force=args.force,
+                skip_validation=args.skip_validation,
+            )
+        elif args.library_subcommand == "check-updates":
+            return library_check_updates(
+                name=args.name,
+                no_cache=args.no_cache,
+            )
+        elif args.library_subcommand == "update":
+            return library_update(
+                name=args.name,
+                all_evaluators=args.all_evaluators,
+                yes=args.yes,
+                diff_only=args.diff_only,
+                no_cache=args.no_cache,
+            )
+        else:
+            # No subcommand provided
+            print(f"{RED}Error: library command requires a subcommand{RESET}")
+            print("Usage:")
+            print("  adversarial library list")
+            print("  adversarial library install <provider>/<name>")
+            print("  adversarial library check-updates")
+            print("  adversarial library update <name>")
             return 1
     elif args.command == "review":
         return review()

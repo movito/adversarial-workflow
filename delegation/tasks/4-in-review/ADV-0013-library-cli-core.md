@@ -1,6 +1,6 @@
 # ADV-0013: Evaluator Library CLI Core
 
-**Status**: In Progress
+**Status**: In Review
 **Priority**: Medium
 **Estimated Effort**: 2-3 days
 **Source**: Proposal from gas-taxes project (AWF-evaluator-library-cli-integration.md)
