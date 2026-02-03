@@ -1,4 +1,9 @@
-"""Generic evaluator runner."""
+"""Generic evaluator runner.
+
+Supports dual-field model specification (ADV-0015):
+- Legacy: model + api_key_env fields (backwards compatible)
+- New: model_requirement field (resolved via ModelResolver)
+"""
 
 from __future__ import annotations
 
@@ -14,6 +19,7 @@ from ..utils.colors import BOLD, GREEN, RED, RESET, YELLOW
 from ..utils.config import load_config
 from ..utils.validation import validate_evaluation_output
 from .config import EvaluatorConfig
+from .resolver import ModelResolver, ResolutionError
 
 
 def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -> int:
@@ -43,20 +49,28 @@ def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -
         return 1
     project_config = load_config()
 
-    # 3. Check aider available
+    # 3. Resolve model (ADV-0015: dual-field support)
+    resolver = ModelResolver()
+    try:
+        resolved_model, resolved_api_key_env = resolver.resolve(config)
+    except ResolutionError as e:
+        print(f"{RED}Error: {e}{RESET}")
+        return 1
+
+    # 4. Check aider available
     if not shutil.which("aider"):
         print(f"{RED}Error: Aider not found{RESET}")
         _print_aider_help()
         return 1
 
-    # 4. Check API key
-    api_key = os.environ.get(config.api_key_env)
+    # 5. Check API key (using resolved api_key_env)
+    api_key = os.environ.get(resolved_api_key_env)
     if not api_key:
-        print(f"{RED}Error: {config.api_key_env} not set{RESET}")
-        print(f"   Set in .env or export {config.api_key_env}=your-key")
+        print(f"{RED}Error: {resolved_api_key_env} not set{RESET}")
+        print(f"   Set in .env or export {resolved_api_key_env}=your-key")
         return 1
 
-    # 5. Pre-flight file size check
+    # 6. Pre-flight file size check
     line_count, estimated_tokens = _check_file_size(file_path)
     if line_count > 500 or estimated_tokens > 20000:
         _warn_large_file(line_count, estimated_tokens)
@@ -65,11 +79,11 @@ def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -
                 print("Evaluation cancelled.")
                 return 0
 
-    # 6. Determine execution method
+    # 7. Determine execution method
     if config.source == "builtin":
         return _run_builtin_evaluator(config, file_path, project_config, timeout)
     else:
-        return _run_custom_evaluator(config, file_path, project_config, timeout)
+        return _run_custom_evaluator(config, file_path, project_config, timeout, resolved_model)
 
 
 def _run_builtin_evaluator(
@@ -99,8 +113,17 @@ def _run_custom_evaluator(
     file_path: str,
     project_config: dict,
     timeout: int,
+    resolved_model: str,
 ) -> int:
-    """Run a custom evaluator by invoking aider directly."""
+    """Run a custom evaluator by invoking aider directly.
+
+    Args:
+        config: Evaluator configuration
+        file_path: Path to file to evaluate
+        project_config: Project configuration dict
+        timeout: Timeout in seconds
+        resolved_model: Resolved model ID from ModelResolver
+    """
     # Prepare output path
     logs_dir = Path(project_config["log_directory"])
     logs_dir.mkdir(parents=True, exist_ok=True)
@@ -131,13 +154,13 @@ def _run_custom_evaluator(
     prefix = config.log_prefix or config.name.upper()
 
     try:
-        print(f"{prefix}: Using model {config.model}")
+        print(f"{prefix}: Using model {resolved_model}")
 
         # Build aider command
         cmd = [
             "aider",
             "--model",
-            config.model,
+            resolved_model,
             "--yes",
             "--no-detect-urls",
             "--no-git",
@@ -168,7 +191,7 @@ def _run_custom_evaluator(
 
 **Source**: {file_path}
 **Evaluator**: {config.name}
-**Model**: {config.model}
+**Model**: {resolved_model}
 **Generated**: {timestamp}
 
 ---

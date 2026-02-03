@@ -594,6 +594,206 @@ timeout: 1200
         assert "exceeds maximum" in caplog.text
         assert "clamping to 600s" in caplog.text
 
+    # ========== model_requirement tests (ADV-0015) ==========
+
+    def test_parse_yaml_with_model_requirement_only(self, tmp_path):
+        """Parse evaluator with model_requirement instead of legacy model field."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: gemini
+  tier: flash
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+        config = parse_evaluator_yaml(yml)
+
+        assert config.model_requirement is not None
+        assert config.model_requirement.family == "gemini"
+        assert config.model_requirement.tier == "flash"
+        assert config.model_requirement.min_version == ""  # default
+        assert config.model_requirement.min_context == 0  # default
+        assert config.model == ""  # not required when model_requirement present
+        assert config.api_key_env == ""
+
+    def test_parse_yaml_with_both_fields(self, tmp_path):
+        """Parse dual-field format (library format) with both model and model_requirement."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model: gemini/gemini-2.5-flash
+api_key_env: GEMINI_API_KEY
+model_requirement:
+  family: gemini
+  tier: flash
+  min_version: "2.5"
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+        config = parse_evaluator_yaml(yml)
+
+        assert config.model == "gemini/gemini-2.5-flash"  # legacy present
+        assert config.api_key_env == "GEMINI_API_KEY"
+        assert config.model_requirement is not None
+        assert config.model_requirement.family == "gemini"
+        assert config.model_requirement.tier == "flash"
+        assert config.model_requirement.min_version == "2.5"
+
+    def test_parse_yaml_with_full_model_requirement(self, tmp_path):
+        """Parse model_requirement with all optional fields."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: claude
+  tier: opus
+  min_version: "4"
+  min_context: 128000
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+        config = parse_evaluator_yaml(yml)
+
+        assert config.model_requirement is not None
+        assert config.model_requirement.family == "claude"
+        assert config.model_requirement.tier == "opus"
+        assert config.model_requirement.min_version == "4"
+        assert config.model_requirement.min_context == 128000
+
+    def test_parse_yaml_model_requirement_missing_family(self, tmp_path):
+        """Error when model_requirement is missing family."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  tier: opus
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="model_requirement.family"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_yaml_model_requirement_missing_tier(self, tmp_path):
+        """Error when model_requirement is missing tier."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: claude
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="model_requirement.tier"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_yaml_model_requirement_invalid_type(self, tmp_path):
+        """Error when model_requirement is not a mapping."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement: "claude/opus"
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="model_requirement.*mapping"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_yaml_model_requirement_family_not_string(self, tmp_path):
+        """Error when model_requirement.family is not a string."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: 123
+  tier: opus
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="family.*string"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_yaml_model_requirement_tier_not_string(self, tmp_path):
+        """Error when model_requirement.tier is not a string."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: claude
+  tier: yes
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="tier.*string"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_yaml_model_requirement_min_context_not_int(self, tmp_path):
+        """Error when model_requirement.min_context is not an integer."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: claude
+  tier: opus
+  min_context: "large"
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+
+        with pytest.raises(EvaluatorParseError, match="min_context.*integer"):
+            parse_evaluator_yaml(yml)
+
+    def test_parse_yaml_backwards_compatible_legacy_only(self, tmp_path):
+        """Legacy evaluator format still works (backwards compatibility)."""
+        yml = tmp_path / "test.yml"
+        yml.write_text(
+            """
+name: legacy-eval
+description: Legacy evaluator with only model field
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: "Test prompt"
+output_suffix: TEST
+"""
+        )
+        config = parse_evaluator_yaml(yml)
+
+        assert config.model == "gpt-4o"
+        assert config.api_key_env == "OPENAI_API_KEY"
+        assert config.model_requirement is None
+
 
 class TestDiscoverLocalEvaluators:
     """Tests for discover_local_evaluators function."""
