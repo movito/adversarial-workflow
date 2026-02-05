@@ -29,7 +29,8 @@
     }
   },
   "recent_completions": [
-    "ADV-0030: BugBot fixes - Code Review APPROVED (2026-02-05)",
+    "v0.8.1 Released (2026-02-05) - BugBot fixes",
+    "ADV-0030: BugBot fixes - PR #23 MERGED",
     "v0.8.0 Released (2026-02-05)",
     "ADV-0014: Library CLI Enhancements - PR #22 MERGED",
     "ADV-0015: Model Routing Phase 1 - PR #21 MERGED"
@@ -39,8 +40,8 @@
   ],
   "blocked_items": [],
   "architecture_status": {
-    "current_version": "0.8.0",
-    "next_patch": "0.8.1 (merging now)",
+    "current_version": "0.8.1",
+    "next_patch": null,
     "next_minor": "0.9.0 (ADV-0031 library evaluator execution)",
     "registry_schema": "1.0 - Published in library repo"
   },
@@ -49,5 +50,5 @@
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "ADV-0030 code review APPROVED. Merging PR #23 and releasing v0.8.1. ADV-0031 waiting in 2-todo."
+  "notes": "v0.8.1 released with BugBot fixes. ADV-0031 (library evaluator execution) is next in queue."
 }
