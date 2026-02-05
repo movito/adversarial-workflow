@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-02-05
+
+### Added
+- **ADV-0013: Evaluator Library CLI Core** - Full integration with shared evaluator library
+  - `adversarial library list` - Browse available evaluators with provider/category filtering
+  - `adversarial library install <provider/name>` - Install evaluators from library
+  - `adversarial library check-updates` - Check for newer versions of installed evaluators
+  - `adversarial library update` - Update installed evaluators to latest versions
+  - Provenance tracking header in installed evaluator files
+  - Smart caching with configurable TTL (default 1 hour)
+
+- **ADV-0014: Evaluator Library CLI Enhancements** - Quality-of-life improvements
+  - `adversarial library info <provider/name>` - Show detailed evaluator information
+  - `--dry-run` flag for install/update commands - Preview changes without applying
+  - `--category` flag for batch installation - Install all evaluators in a category
+  - `--yes` flag for non-interactive mode - CI/CD pipeline support
+  - Configuration system via `.adversarial/config.yml` and environment variables
+  - `ADVERSARIAL_LIBRARY_URL` - Override default library URL
+  - `ADVERSARIAL_LIBRARY_NO_CACHE` - Disable caching
+  - `ADVERSARIAL_LIBRARY_CACHE_TTL` - Configure cache duration
+
+- **ADV-0015: Model Routing Layer - Phase 1** - Portable model specifications
+  - `ModelRequirement` dataclass for structured model requirements (family/tier/constraints)
+  - `ModelResolver` with embedded registry matching 7 model families
+  - Dual-field support: both `model` and `model_requirement` work in evaluator YAML
+  - 5-step resolution order with graceful fallback and warnings
+  - Full backwards compatibility - existing evaluators work unchanged
+  - Supported families: claude, gpt, o, gemini, mistral, codestral, llama
+
+### Technical
+- New `adversarial_workflow/library/` module with client, cache, commands, config, models
+- New `adversarial_workflow/evaluators/resolver.py` for model resolution
+- Extended `EvaluatorConfig` with `model_requirement` field
+- 374 tests passing (264 new tests for library and model routing)
+
+### Documentation
+- ADR-0004: Model routing layer architecture
+- ADR-0005: Interface contract with evaluator library team
+
 ## [0.7.0] - 2026-02-01
 
 ### Added
@@ -425,6 +464,8 @@ This release specifically improves the agent integration experience by:
 
 ---
 
+[0.8.0]: https://github.com/movito/adversarial-workflow/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/movito/adversarial-workflow/compare/v0.6.6...v0.7.0
 [0.6.6]: https://github.com/movito/adversarial-workflow/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/movito/adversarial-workflow/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/movito/adversarial-workflow/compare/v0.6.3...v0.6.4
