@@ -20,10 +20,12 @@ from .client import (
 )
 from .commands import (
     library_check_updates,
+    library_info,
     library_install,
     library_list,
     library_update,
 )
+from .config import LibraryConfig, get_library_config
 from .models import EvaluatorEntry, IndexData, InstalledEvaluatorMeta, UpdateInfo
 
 __all__ = [
@@ -42,8 +44,12 @@ __all__ = [
     "CacheManager",
     "DEFAULT_CACHE_DIR",
     "DEFAULT_CACHE_TTL",
+    # Config
+    "LibraryConfig",
+    "get_library_config",
     # Commands
     "library_list",
+    "library_info",
     "library_install",
     "library_check_updates",
     "library_update",

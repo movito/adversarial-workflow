@@ -1,6 +1,6 @@
 # ADV-0014: Evaluator Library CLI Enhancements
 
-**Status**: Backlog
+**Status**: In Review
 **Priority**: Low
 **Estimated Effort**: 1-2 days
 **Depends On**: ADV-0013 (Library CLI Core)

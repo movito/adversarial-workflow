@@ -7,8 +7,10 @@ Run with: pytest tests/test_library_integration.py -v
 Skip in CI with: pytest -m "not network"
 """
 
+import sys
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -17,6 +19,13 @@ from adversarial_workflow.library.commands import library_install, library_list
 
 # Mark all tests in this module as requiring network access
 pytestmark = pytest.mark.network
+
+
+@pytest.fixture(autouse=True)
+def mock_isatty():
+    """Mock stdin.isatty() to return True for all tests in this module."""
+    with patch.object(sys.stdin, "isatty", return_value=True):
+        yield
 
 
 class TestRealLibraryFetch:

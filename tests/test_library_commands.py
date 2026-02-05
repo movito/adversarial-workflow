@@ -2,6 +2,7 @@
 
 import json
 import os
+import sys
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -18,6 +19,17 @@ from adversarial_workflow.library.commands import (
     scan_installed_evaluators,
 )
 from adversarial_workflow.library.models import IndexData
+
+
+@pytest.fixture(autouse=True)
+def mock_isatty():
+    """Mock stdin.isatty() to return True for all tests in this module.
+
+    This allows testing interactive commands without requiring --yes flag.
+    """
+    with patch.object(sys.stdin, "isatty", return_value=True):
+        yield
+
 
 # Sample test data
 SAMPLE_INDEX = {

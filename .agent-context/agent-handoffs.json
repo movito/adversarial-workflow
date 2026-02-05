@@ -4,16 +4,17 @@
   "last_updated": "2026-02-05",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0015 merged to main, ready for next task",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADV-0014",
+      "brief_note": "✅ COMPLETE: Task moved to todo, handoff created",
+      "details_link": "delegation/tasks/2-todo/ADV-0014-library-cli-enhancements.md",
+      "handoff_file": ".agent-context/ADV-0014-HANDOFF-feature-developer.md"
     },
     "feature-developer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0015 PR #21 merged successfully",
-      "details_link": null
+      "status": "assigned",
+      "current_task": "ADV-0014",
+      "brief_note": "Library CLI enhancements: info, --dry-run, --category, --yes, config",
+      "details_link": "delegation/tasks/2-todo/ADV-0014-library-cli-enhancements.md"
     },
     "code-reviewer": {
       "status": "idle",
@@ -35,14 +36,14 @@
     "ADV-0028: Fix scripts/project issues"
   ],
   "pending_tasks": [
-    "ADV-0014: Library CLI Enhancements (backlog)"
+    "ADV-0014: Library CLI Enhancements - Ready for implementation"
   ],
   "blocked_items": [],
   "architecture_status": {
     "ADR-0004": "ACCEPTED - Model routing layer architecture",
     "ADR-0005": "ACCEPTED - Interface contract with library team",
     "registry_schema": "1.0 - Published in library repo (7 families, 18 evaluators)",
-    "next_milestone": "v0.8.0 with resolution engine - COMPLETE"
+    "next_milestone": "v0.9.0 with library CLI enhancements"
   },
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
@@ -50,5 +51,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "ADV-0015 Model Routing Phase 1 merged to main. 110 tests passing. Dual-field support with embedded registry now available. Ready for Phase 2 or next priority task."
+  "notes": "ADV-0014 ready for implementation. Builds on ADV-0013 (Library CLI Core). Adds info command, --dry-run, --category, --yes flags, and configuration system."
 }
