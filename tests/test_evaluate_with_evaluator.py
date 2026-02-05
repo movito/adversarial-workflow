@@ -114,8 +114,6 @@ output_suffix: MY-EVAL
         )
 
         monkeypatch.chdir(tmp_path)
-        # Don't set API key - let it fail at API key check
-        # This way we can verify the evaluator selection message
 
         task_file = tmp_path / "task.md"
         task_file.write_text("# Test task")
@@ -125,10 +123,10 @@ output_suffix: MY-EVAL
             cwd=tmp_path,
         )
 
-        # Should show "Using evaluator" message even though it fails at API key check
+        # Should show "Using evaluator" message - the key assertion
         assert "Using evaluator: my-evaluator" in result.stdout
-        # Should fail with API key error (not evaluator not found)
-        assert "OPENAI_API_KEY" in result.stdout or result.returncode == 1
+        # Should use the evaluator's model (shown in output)
+        assert "gpt-4o-mini" in result.stdout
 
     def test_evaluator_selected_by_alias(self, tmp_path, monkeypatch, run_cli):
         """Evaluator can be selected by its alias."""
@@ -154,7 +152,6 @@ aliases:
         )
 
         monkeypatch.chdir(tmp_path)
-        # Don't set API key - let it fail at API key check
 
         task_file = tmp_path / "task.md"
         task_file.write_text("# Test task")
@@ -188,7 +185,6 @@ output_suffix: SHORT
         )
 
         monkeypatch.chdir(tmp_path)
-        # Don't set API key - let it fail at API key check
 
         task_file = tmp_path / "task.md"
         task_file.write_text("# Test task")
@@ -227,7 +223,6 @@ output_suffix: LOCAL
         )
 
         monkeypatch.chdir(tmp_path)
-        # Don't set API key to let it fail at API key check
 
         task_file = tmp_path / "task.md"
         task_file.write_text("# Test task")
@@ -239,7 +234,7 @@ output_suffix: LOCAL
 
         # Should NOT show "Using evaluator" message (uses builtin)
         assert "Using evaluator:" not in result.stdout
-        # Should show timeout from default (this appears before API key check)
+        # Should show timeout from default
         assert "Using timeout:" in result.stdout
 
 

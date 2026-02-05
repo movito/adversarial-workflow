@@ -3284,7 +3284,7 @@ For more information: https://github.com/movito/adversarial-workflow
                 print("Available evaluators:")
                 # Show unique evaluators (avoid duplicates from aliases)
                 seen = set()
-                for name, cfg in sorted(local_evaluators.items()):
+                for _, cfg in sorted(local_evaluators.items()):
                     if id(cfg) not in seen:
                         print(f"  {cfg.name}")
                         if cfg.aliases:
