@@ -47,4 +47,18 @@
 None specifically, but follows patterns from ADV-0013 (Library CLI Core).
 
 ---
-**Ready for code-reviewer agent in new tab**
+
+## Round 2 Fixes (2026-02-05)
+
+Addressed all HIGH and MEDIUM priority findings from Round 1:
+
+1. **HIGH: Config precedence bug** - Fixed by reordering: `CACHE_TTL` is now processed before `NO_CACHE`, so `NO_CACHE` always wins
+2. **MEDIUM: Non-TTY detection** - Added `not dry_run` condition so dry-run works in CI/CD without `--yes`
+3. **MEDIUM: Dry-run success count** - Added `preview_success` flag to only count successful previews
+
+Added new test: `test_config_no_cache_takes_precedence_over_ttl`
+
+All 374 tests passing. CI passed on GitHub Actions (12/12 jobs).
+
+---
+**Ready for code-reviewer Round 2 in new tab**
