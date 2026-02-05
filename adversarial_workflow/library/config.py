@@ -40,6 +40,9 @@ def get_library_config(config_path: Optional[Path] = None) -> LibraryConfig:
         try:
             with open(config_file, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
+            # Handle non-dict YAML (list, scalar, etc.) gracefully
+            if not isinstance(data, dict):
+                data = {}
             lib_config = data.get("library", {})
 
             if "url" in lib_config:

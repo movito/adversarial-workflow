@@ -4,23 +4,22 @@
   "last_updated": "2026-02-05",
   "agents": {
     "planner": {
-      "status": "completed",
-      "current_task": "ADV-0031",
-      "brief_note": "Created ADV-0031 (Library Evaluator Execution) task and handoff",
-      "details_link": "delegation/tasks/2-todo/ADV-0031-library-evaluator-execution.md",
-      "handoff_file": ".agent-context/ADV-0031-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0030 APPROVED, ADV-0031 ready for assignment",
+      "details_link": null
     },
     "feature-developer": {
-      "status": "assigned",
-      "current_task": "ADV-0030",
-      "brief_note": "BugBot fixes for v0.8.1 (on fix/v0.8.1-bugbot-issues branch)",
-      "details_link": "delegation/tasks/3-in-progress/ADV-0030-bugbot-fixes-v081.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0030 complete, merging PR #23",
+      "details_link": null
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0014 Round 2 APPROVED",
-      "details_link": ".agent-context/reviews/ADV-0014-review-round2.md"
+      "brief_note": "ADV-0030 Round 1 APPROVED",
+      "details_link": ".agent-context/reviews/ADV-0030-review.md"
     },
     "test-runner": {
       "status": "idle",
@@ -30,27 +29,25 @@
     }
   },
   "recent_completions": [
+    "ADV-0030: BugBot fixes - Code Review APPROVED (2026-02-05)",
     "v0.8.0 Released (2026-02-05)",
     "ADV-0014: Library CLI Enhancements - PR #22 MERGED",
-    "ADV-0015: Model Routing Phase 1 - PR #21 MERGED",
-    "ADV-0013: Library CLI Core - PR #20 MERGED"
+    "ADV-0015: Model Routing Phase 1 - PR #21 MERGED"
   ],
   "pending_tasks": [
-    "ADV-0030: BugBot fixes for v0.8.1 patch (branch: fix/v0.8.1-bugbot-issues)",
     "ADV-0031: Library Evaluator Execution - Add --evaluator flag"
   ],
   "blocked_items": [],
   "architecture_status": {
     "current_version": "0.8.0",
-    "next_patch": "0.8.1 (BugBot fixes - ADV-0030)",
-    "next_minor": "0.9.0 (Library evaluator execution - ADV-0031)",
+    "next_patch": "0.8.1 (merging now)",
+    "next_minor": "0.9.0 (ADV-0031 library evaluator execution)",
     "registry_schema": "1.0 - Published in library repo"
   },
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
-    "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
-    "archive": ".agent-context/archive/"
+    "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "v0.8.0 released. ADV-0030 (BugBot fixes) in progress on separate branch. ADV-0031 (library evaluator execution) created to enable running installed evaluators via --evaluator flag."
+  "notes": "ADV-0030 code review APPROVED. Merging PR #23 and releasing v0.8.1. ADV-0031 waiting in 2-todo."
 }
