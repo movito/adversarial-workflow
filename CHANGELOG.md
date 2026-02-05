@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-02-05
+
+### Fixed
+- **Category confirmation in CI/CD** - `--category --dry-run` no longer hangs in non-TTY environments
+- **Dry-run exit codes** - Dry-run now returns exit code 1 when all evaluator previews fail
+- **Config robustness** - Non-dict YAML config files (lists, scalars) no longer crash the library client
+- **Library URL configuration** - `ADVERSARIAL_LIBRARY_REF` environment variable now properly configures git ref for library access
+
+### Technical
+- 379 tests passing (+5 new tests for BugBot fixes)
+- Addresses Cursor BugBot findings from PR #22
+
 ## [0.8.0] - 2026-02-05
 
 ### Added
@@ -464,6 +476,7 @@ This release specifically improves the agent integration experience by:
 
 ---
 
+[0.8.1]: https://github.com/movito/adversarial-workflow/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/movito/adversarial-workflow/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/movito/adversarial-workflow/compare/v0.6.6...v0.7.0
 [0.6.6]: https://github.com/movito/adversarial-workflow/compare/v0.6.5...v0.6.6
