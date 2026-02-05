@@ -68,12 +68,15 @@ class LibraryClient:
         # Store ref for potential use (e.g., logging, debugging)
         self.ref = config.ref
 
-        # Use explicit arguments if provided, otherwise use config with ref
+        # URL precedence: explicit arg > config.url (if customized) > default template
         if base_url:
-            # Explicit base_url takes precedence
+            # Explicit base_url argument takes highest precedence
             self.base_url = base_url.rstrip("/")
+        elif config.url != DEFAULT_LIBRARY_URL:
+            # User has customized the URL (via env var or config file), use it directly
+            self.base_url = config.url.rstrip("/")
         else:
-            # Build URL from template using config ref
+            # Use default template with ref for branch switching
             self.base_url = DEFAULT_LIBRARY_URL_TEMPLATE.format(ref=config.ref)
         self.timeout = timeout
         self.cache = CacheManager(

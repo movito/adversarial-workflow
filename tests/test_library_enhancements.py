@@ -717,3 +717,30 @@ class TestLibraryConfig:
             client = LibraryClient()
             assert "main" in client.base_url
             assert client.ref == "main"
+
+    def test_config_url_wired_up_in_client(self):
+        """Test that ADVERSARIAL_LIBRARY_URL env var is actually used by client.
+
+        BugBot PR #23 follow-up: The url field was loaded from config but
+        never used by LibraryClient. Now custom URLs should be honored.
+        """
+        from adversarial_workflow.library.client import LibraryClient
+
+        # Test that custom URL from env var is used
+        custom_url = "https://my-private-mirror.example.com/library"
+        with patch.dict(os.environ, {"ADVERSARIAL_LIBRARY_URL": custom_url}):
+            client = LibraryClient()
+            # The base URL should be the custom URL (without trailing slash)
+            assert client.base_url == custom_url
+
+        # Test that default URL uses the template (not config.url default)
+        with patch.dict(os.environ, {}, clear=True):
+            # Remove any existing env vars that might interfere
+            for key in list(os.environ.keys()):
+                if key.startswith("ADVERSARIAL_LIBRARY"):
+                    del os.environ[key]
+
+            client = LibraryClient()
+            # Should use default template with main ref
+            assert "raw.githubusercontent.com" in client.base_url
+            assert "main" in client.base_url

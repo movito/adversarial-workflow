@@ -7,14 +7,14 @@
       "status": "completed",
       "current_task": "ADV-0030",
       "brief_note": "✅ COMPLETE: Created v0.8.1 patch task for BugBot fixes",
-      "details_link": "delegation/tasks/2-todo/ADV-0030-bugbot-fixes-v081.md",
+      "details_link": "delegation/tasks/3-in-progress/ADV-0030-bugbot-fixes-v081.md",
       "handoff_file": ".agent-context/ADV-0030-HANDOFF-feature-developer.md"
     },
     "feature-developer": {
       "status": "assigned",
       "current_task": "ADV-0030",
       "brief_note": "Fix 4 BugBot issues for v0.8.1 patch release",
-      "details_link": "delegation/tasks/2-todo/ADV-0030-bugbot-fixes-v081.md"
+      "details_link": "delegation/tasks/3-in-progress/ADV-0030-bugbot-fixes-v081.md"
     },
     "code-reviewer": {
       "status": "idle",
