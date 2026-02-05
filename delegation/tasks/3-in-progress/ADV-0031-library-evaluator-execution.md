@@ -1,6 +1,6 @@
 # ADV-0031: Library Evaluator Execution
 
-**Status**: Todo
+**Status**: In Progress
 **Priority**: HIGH
 **Created**: 2026-02-05
 **Type**: Feature
