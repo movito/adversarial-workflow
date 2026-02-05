@@ -4,21 +4,22 @@
   "last_updated": "2026-02-05",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0014 APPROVED and moved to done",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADV-0031",
+      "brief_note": "Created ADV-0031 (Library Evaluator Execution) task and handoff",
+      "details_link": "delegation/tasks/2-todo/ADV-0031-library-evaluator-execution.md",
+      "handoff_file": ".agent-context/ADV-0031-HANDOFF-feature-developer.md"
     },
     "feature-developer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0014 implementation complete, awaiting PR merge",
-      "details_link": null
+      "status": "assigned",
+      "current_task": "ADV-0030",
+      "brief_note": "BugBot fixes for v0.8.1 (on fix/v0.8.1-bugbot-issues branch)",
+      "details_link": "delegation/tasks/3-in-progress/ADV-0030-bugbot-fixes-v081.md"
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0014 Round 2 APPROVED - all issues resolved",
+      "brief_note": "ADV-0014 Round 2 APPROVED",
       "details_link": ".agent-context/reviews/ADV-0014-review-round2.md"
     },
     "test-runner": {
@@ -29,19 +30,21 @@
     }
   },
   "recent_completions": [
-    "ADV-0014: Library CLI Enhancements - Code review APPROVED (2026-02-05)",
-    "ADV-0015: Model Routing Phase 1 - PR #21 MERGED (2026-02-05)",
-    "ADV-0013: Library CLI Core (PR #20 merged, 2026-02-03)"
+    "v0.8.0 Released (2026-02-05)",
+    "ADV-0014: Library CLI Enhancements - PR #22 MERGED",
+    "ADV-0015: Model Routing Phase 1 - PR #21 MERGED",
+    "ADV-0013: Library CLI Core - PR #20 MERGED"
   ],
   "pending_tasks": [
-    "ADV-0014: PR ready to merge (374 tests passing, 12 CI jobs SUCCESS)"
+    "ADV-0030: BugBot fixes for v0.8.1 patch (branch: fix/v0.8.1-bugbot-issues)",
+    "ADV-0031: Library Evaluator Execution - Add --evaluator flag"
   ],
   "blocked_items": [],
   "architecture_status": {
-    "ADR-0004": "ACCEPTED - Model routing layer architecture",
-    "ADR-0005": "ACCEPTED - Interface contract with library team",
-    "registry_schema": "1.0 - Published in library repo (7 families, 18 evaluators)",
-    "next_milestone": "v0.9.0 with library CLI enhancements - READY"
+    "current_version": "0.8.0",
+    "next_patch": "0.8.1 (BugBot fixes - ADV-0030)",
+    "next_minor": "0.9.0 (Library evaluator execution - ADV-0031)",
+    "registry_schema": "1.0 - Published in library repo"
   },
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
@@ -49,5 +52,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "ADV-0014 code review APPROVED (Round 2). 374 tests passing. All Round 1 issues fixed. Ready to merge."
+  "notes": "v0.8.0 released. ADV-0030 (BugBot fixes) in progress on separate branch. ADV-0031 (library evaluator execution) created to enable running installed evaluators via --evaluator flag."
 }
