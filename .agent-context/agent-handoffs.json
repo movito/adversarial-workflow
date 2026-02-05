@@ -1,25 +1,25 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-02-03",
+  "last_updated": "2026-02-05",
   "agents": {
     "planner": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0015 implementation complete, awaiting PR merge",
+      "brief_note": "ADV-0015 merged to main, ready for next task",
       "details_link": null
     },
     "feature-developer": {
-      "status": "awaiting_merge",
-      "current_task": "ADV-0015",
-      "brief_note": "PR #21 review fixes complete, all CI green, ready to merge",
-      "details_link": "https://github.com/movito/adversarial-workflow/pull/21"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0015 PR #21 merged successfully",
+      "details_link": null
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0013 approved and merged",
-      "details_link": ".agent-context/reviews/ADV-0013-review.md"
+      "brief_note": "ADV-0015 Round 2 APPROVED - exemplary implementation",
+      "details_link": ".agent-context/reviews/ADV-0015-review-round2.md"
     },
     "test-runner": {
       "status": "idle",
@@ -29,12 +29,12 @@
     }
   },
   "recent_completions": [
+    "ADV-0015: Model Routing Phase 1 - PR #21 MERGED (2026-02-05)",
     "ADV-0013: Library CLI Core (PR #20 merged, 2026-02-03)",
     "ADV-0029: Configurable Timeout per Evaluator",
     "ADV-0028: Fix scripts/project issues"
   ],
   "pending_tasks": [
-    "ADV-0015: Model Routing Phase 1 - PR #21 ready to merge",
     "ADV-0014: Library CLI Enhancements (backlog)"
   ],
   "blocked_items": [],
@@ -42,19 +42,7 @@
     "ADR-0004": "ACCEPTED - Model routing layer architecture",
     "ADR-0005": "ACCEPTED - Interface contract with library team",
     "registry_schema": "1.0 - Published in library repo (7 families, 18 evaluators)",
-    "next_milestone": "v0.8.0 with resolution engine"
-  },
-  "pr_21_status": {
-    "branch": "feat/adv-0015-model-routing-phase1",
-    "latest_commit": "d312a41",
-    "ci_status": "PASS (all 12 jobs)",
-    "review_issues_fixed": [
-      "CodeRabbit: Updated docstrings, removed redundant code, added ClassVar",
-      "Bugbot r2760146399: Wrong API key in test + weak assertion",
-      "Bugbot r2760650605: min_version: 0 not converted to string",
-      "Bugbot r2760897290: Explicit null api_key_env causes TypeError"
-    ],
-    "ready_to_merge": true
+    "next_milestone": "v0.8.0 with resolution engine - COMPLETE"
   },
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
@@ -62,5 +50,5 @@
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md",
     "archive": ".agent-context/archive/"
   },
-  "notes": "ADV-0015 implementation complete. PR #21 has all review issues fixed (CodeRabbit + 3 Bugbot issues). CI passes. Ready to merge to main."
+  "notes": "ADV-0015 Model Routing Phase 1 merged to main. 110 tests passing. Dual-field support with embedded registry now available. Ready for Phase 2 or next priority task."
 }
