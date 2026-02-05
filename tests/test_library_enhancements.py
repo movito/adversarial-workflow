@@ -532,6 +532,20 @@ class TestLibraryConfig:
             config = get_library_config(config_path=Path("/nonexistent"))
             assert config.cache_ttl == 600
 
+    def test_config_no_cache_takes_precedence_over_ttl(self):
+        """Test that ADVERSARIAL_LIBRARY_NO_CACHE takes precedence over CACHE_TTL."""
+        # When both NO_CACHE and CACHE_TTL are set, NO_CACHE should win
+        with patch.dict(
+            os.environ,
+            {
+                "ADVERSARIAL_LIBRARY_NO_CACHE": "1",
+                "ADVERSARIAL_LIBRARY_CACHE_TTL": "7200",
+            },
+        ):
+            config = get_library_config(config_path=Path("/nonexistent"))
+            # NO_CACHE should always set TTL to 0, even when CACHE_TTL is also set
+            assert config.cache_ttl == 0
+
     def test_config_precedence_env_over_file(self):
         """Test complete precedence: env > file > defaults."""
         with tempfile.TemporaryDirectory() as tmpdir:

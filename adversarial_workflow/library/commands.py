@@ -373,8 +373,8 @@ def library_install(
     """
     client = LibraryClient()
 
-    # Non-TTY detection: require --yes for non-interactive mode
-    if not yes and not sys.stdin.isatty():
+    # Non-TTY detection: require --yes for non-interactive mode (unless dry-run)
+    if not yes and not dry_run and not sys.stdin.isatty():
         print(f"{RED}Error: Use --yes for non-interactive mode{RESET}")
         return 1
 
@@ -464,6 +464,7 @@ def library_install(
             print()
 
             # Fetch and preview evaluator config
+            preview_success = False
             try:
                 yaml_content = client.fetch_evaluator(provider, name)
                 yaml_content_clean = yaml_content.lstrip()
@@ -478,6 +479,7 @@ def library_install(
                 if len(yaml_content_clean.split("\n")) > 10:
                     print("  ...")
                 print()
+                preview_success = True
             except NetworkError as e:
                 print(f"  {RED}Error: Could not fetch preview{RESET}")
                 print(f"    {e}")
@@ -485,7 +487,8 @@ def library_install(
 
             print(f"{YELLOW}No changes made (dry run).{RESET}")
             print()
-            success_count += 1
+            if preview_success:
+                success_count += 1
             continue
 
         if dest_path.exists() and not force:

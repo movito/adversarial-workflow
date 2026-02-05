@@ -61,14 +61,16 @@ def get_library_config(config_path: Optional[Path] = None) -> LibraryConfig:
     if url := os.environ.get("ADVERSARIAL_LIBRARY_URL"):
         config.url = url
 
-    if os.environ.get("ADVERSARIAL_LIBRARY_NO_CACHE"):
-        config.cache_ttl = 0
-
+    # Process TTL first, then NO_CACHE (so NO_CACHE always wins)
     if ttl := os.environ.get("ADVERSARIAL_LIBRARY_CACHE_TTL"):
         try:
             config.cache_ttl = int(ttl)
         except ValueError:
             pass  # Invalid TTL, keep current value
+
+    # NO_CACHE takes precedence over CACHE_TTL - check it last
+    if os.environ.get("ADVERSARIAL_LIBRARY_NO_CACHE"):
+        config.cache_ttl = 0
 
     if ref := os.environ.get("ADVERSARIAL_LIBRARY_REF"):
         config.ref = ref
