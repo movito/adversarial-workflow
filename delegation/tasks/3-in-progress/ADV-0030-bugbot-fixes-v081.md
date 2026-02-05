@@ -1,6 +1,6 @@
 # ADV-0030: BugBot Fixes for v0.8.1
 
-**Status**: Todo
+**Status**: In Progress
 **Priority**: High
 **Estimated Effort**: 1-2 hours
 **Source**: BugBot comments on PR #22

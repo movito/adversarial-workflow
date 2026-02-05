@@ -407,7 +407,8 @@ def library_install(
             print(f"  - {e.provider}/{e.name} (v{index.version})")
         print()
 
-        if not yes:
+        # Skip confirmation for --yes or --dry-run (dry-run makes no changes)
+        if not yes and not dry_run:
             response = input("Proceed? [y/N]: ").strip().lower()
             if response not in ("y", "yes"):
                 print("Cancelled.")
@@ -543,7 +544,13 @@ def library_install(
     # Summary
     print()
     if dry_run:
-        print(f"{CYAN}Dry run complete. Use without --dry-run to install.{RESET}")
+        if success_count == 0 and len(evaluator_specs) > 0:
+            print(f"{RED}Dry run failed: No evaluators could be previewed.{RESET}")
+            return 1
+        print(
+            f"{CYAN}Dry run complete. {success_count} evaluator(s) previewed successfully.{RESET}"
+        )
+        return 0
     elif success_count == len(evaluator_specs):
         print(f"{GREEN}All {success_count} evaluator(s) installed successfully.{RESET}")
     elif success_count > 0:

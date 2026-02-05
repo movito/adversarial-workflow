@@ -277,6 +277,46 @@ class TestDryRunInstall:
                 # Verify no file was created
                 assert not (eval_dir / "google-gemini-flash.yml").exists()
 
+    def test_dry_run_returns_error_when_all_fail(self, capsys):
+        """Test that dry-run returns exit code 1 when all previews fail.
+
+        BugBot issue r2770414341: Dry-run should return error exit code
+        when no evaluators could be previewed (e.g., network errors).
+        """
+        from adversarial_workflow.library.client import NetworkError
+
+        def _mock_fetch_evaluator_fail(self_client, provider: str, name: str):
+            raise NetworkError("Network unavailable")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            eval_dir = Path(tmpdir) / ".adversarial" / "evaluators"
+
+            with (
+                patch.object(
+                    __import__(
+                        "adversarial_workflow.library.client", fromlist=["LibraryClient"]
+                    ).LibraryClient,
+                    "fetch_index",
+                    self._mock_fetch_index,
+                ),
+                patch.object(
+                    __import__(
+                        "adversarial_workflow.library.client", fromlist=["LibraryClient"]
+                    ).LibraryClient,
+                    "fetch_evaluator",
+                    _mock_fetch_evaluator_fail,
+                ),
+                patch(
+                    "adversarial_workflow.library.commands.get_evaluators_dir",
+                    return_value=eval_dir,
+                ),
+            ):
+                # Dry-run with network failure should return exit code 1
+                result = library_install(["google/gemini-flash"], dry_run=True)
+                assert result == 1
+                captured = capsys.readouterr()
+                assert "failed" in captured.out.lower() or "error" in captured.out.lower()
+
 
 class TestDryRunUpdate:
     """Tests for --dry-run flag on update."""
@@ -405,6 +445,45 @@ class TestCategoryInstall:
             assert result == 1
             captured = capsys.readouterr()
             assert "No evaluators found in category" in captured.out
+
+    def test_category_dry_run_skips_confirmation(self, capsys):
+        """Test that --category --dry-run works without confirmation prompt.
+
+        BugBot issue r2770414329: Category confirmation should be skipped
+        for dry-run since no changes are made.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            eval_dir = Path(tmpdir) / ".adversarial" / "evaluators"
+
+            with (
+                patch.object(
+                    __import__(
+                        "adversarial_workflow.library.client", fromlist=["LibraryClient"]
+                    ).LibraryClient,
+                    "fetch_index",
+                    self._mock_fetch_index,
+                ),
+                patch.object(
+                    __import__(
+                        "adversarial_workflow.library.client", fromlist=["LibraryClient"]
+                    ).LibraryClient,
+                    "fetch_evaluator",
+                    self._mock_fetch_evaluator,
+                ),
+                patch(
+                    "adversarial_workflow.library.commands.get_evaluators_dir",
+                    return_value=eval_dir,
+                ),
+                # Simulate non-TTY (CI/CD environment)
+                patch.object(sys.stdin, "isatty", return_value=False),
+            ):
+                # With --dry-run (but NOT --yes), should work in non-TTY
+                # because dry-run doesn't need confirmation
+                result = library_install([], category="quick-check", dry_run=True, yes=False)
+                assert result == 0
+                captured = capsys.readouterr()
+                # Should show dry-run output
+                assert "Dry run:" in captured.out or "dry run" in captured.out.lower()
 
 
 class TestNonInteractiveMode:
@@ -576,3 +655,65 @@ class TestLibraryConfig:
                 assert config.ref == "from-file"
                 # TTL from file
                 assert config.cache_ttl == 1800
+
+    def test_config_handles_non_dict_yaml(self):
+        """Test that config handles YAML files with non-dict content.
+
+        BugBot issue r2770414385: If config.yml contains valid YAML but
+        not a dictionary (e.g., a list or scalar), should use defaults
+        instead of crashing with AttributeError.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Test with list YAML
+            config_path = Path(tmpdir) / "list-config.yml"
+            config_path.write_text('["this", "is", "a", "list"]')
+
+            config = get_library_config(config_path=config_path)
+            # Should not crash, should return defaults
+            assert (
+                config.url
+                == "https://raw.githubusercontent.com/movito/adversarial-evaluator-library/main"
+            )
+            assert config.ref == "main"
+
+            # Test with scalar YAML
+            scalar_path = Path(tmpdir) / "scalar-config.yml"
+            scalar_path.write_text("just a string")
+
+            config = get_library_config(config_path=scalar_path)
+            # Should not crash, should return defaults
+            assert config.ref == "main"
+
+            # Test with null YAML
+            null_path = Path(tmpdir) / "null-config.yml"
+            null_path.write_text("null")
+
+            config = get_library_config(config_path=null_path)
+            # Should not crash, should return defaults
+            assert config.ref == "main"
+
+    def test_config_ref_wired_up_in_client(self):
+        """Test that ADVERSARIAL_LIBRARY_REF env var is actually used by client.
+
+        BugBot issue r2770414349: The ref field was loaded from config but
+        never used by LibraryClient. Now it should affect the base URL.
+        """
+        from adversarial_workflow.library.client import LibraryClient
+
+        # Test that ref from config is used in URL
+        with patch.dict(os.environ, {"ADVERSARIAL_LIBRARY_REF": "v2.0.0"}):
+            client = LibraryClient()
+            # The base URL should include the ref
+            assert "v2.0.0" in client.base_url
+            assert client.ref == "v2.0.0"
+
+        # Test default ref
+        with patch.dict(os.environ, {}, clear=True):
+            # Remove any existing env vars that might interfere
+            for key in list(os.environ.keys()):
+                if key.startswith("ADVERSARIAL_LIBRARY"):
+                    del os.environ[key]
+
+            client = LibraryClient()
+            assert "main" in client.base_url
+            assert client.ref == "main"

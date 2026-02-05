@@ -11,7 +11,11 @@ from .config import LibraryConfig, get_library_config
 from .models import IndexData
 
 # Library repository URLs (used as fallback defaults)
-DEFAULT_LIBRARY_URL = "https://raw.githubusercontent.com/movito/adversarial-evaluator-library/main"
+# Note: DEFAULT_LIBRARY_URL uses 'main' branch; use ADVERSARIAL_LIBRARY_REF env var to override
+DEFAULT_LIBRARY_URL_TEMPLATE = (
+    "https://raw.githubusercontent.com/movito/adversarial-evaluator-library/{ref}"
+)
+DEFAULT_LIBRARY_URL = DEFAULT_LIBRARY_URL_TEMPLATE.format(ref="main")
 INDEX_PATH = "evaluators/index.json"
 EVALUATOR_PATH_TEMPLATE = "evaluators/{provider}/{name}/evaluator.yml"
 README_PATH_TEMPLATE = "evaluators/{provider}/{name}/README.md"
@@ -61,8 +65,16 @@ class LibraryClient:
         if config is None:
             config = get_library_config()
 
-        # Use explicit arguments if provided, otherwise use config
-        self.base_url = (base_url or config.url).rstrip("/")
+        # Store ref for potential use (e.g., logging, debugging)
+        self.ref = config.ref
+
+        # Use explicit arguments if provided, otherwise use config with ref
+        if base_url:
+            # Explicit base_url takes precedence
+            self.base_url = base_url.rstrip("/")
+        else:
+            # Build URL from template using config ref
+            self.base_url = DEFAULT_LIBRARY_URL_TEMPLATE.format(ref=config.ref)
         self.timeout = timeout
         self.cache = CacheManager(
             cache_dir=cache_dir or config.cache_dir,
