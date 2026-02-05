@@ -4,15 +4,17 @@ import json
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 
-from .cache import DEFAULT_CACHE_DIR, CacheManager
+from .cache import CacheManager
+from .config import LibraryConfig, get_library_config
 from .models import IndexData
 
-# Library repository URLs
+# Library repository URLs (used as fallback defaults)
 DEFAULT_LIBRARY_URL = "https://raw.githubusercontent.com/movito/adversarial-evaluator-library/main"
 INDEX_PATH = "evaluators/index.json"
 EVALUATOR_PATH_TEMPLATE = "evaluators/{provider}/{name}/evaluator.yml"
+README_PATH_TEMPLATE = "evaluators/{provider}/{name}/README.md"
 
 # HTTP settings
 DEFAULT_TIMEOUT = 10  # seconds
@@ -41,21 +43,31 @@ class LibraryClient:
 
     def __init__(
         self,
-        base_url: str = DEFAULT_LIBRARY_URL,
+        base_url: Optional[str] = None,
         cache_dir: Optional[Path] = None,
         timeout: int = DEFAULT_TIMEOUT,
+        config: Optional[LibraryConfig] = None,
     ):
         """
         Initialize the library client.
 
         Args:
-            base_url: Base URL for the library repository.
-            cache_dir: Directory for caching. Defaults to ~/.cache/adversarial-workflow
+            base_url: Base URL for the library repository. If not provided, uses config.
+            cache_dir: Directory for caching. If not provided, uses config.
             timeout: HTTP timeout in seconds.
+            config: Optional LibraryConfig. If not provided, loads from get_library_config().
         """
-        self.base_url = base_url.rstrip("/")
+        # Load config if not provided
+        if config is None:
+            config = get_library_config()
+
+        # Use explicit arguments if provided, otherwise use config
+        self.base_url = (base_url or config.url).rstrip("/")
         self.timeout = timeout
-        self.cache = CacheManager(cache_dir=cache_dir or DEFAULT_CACHE_DIR)
+        self.cache = CacheManager(
+            cache_dir=cache_dir or config.cache_dir,
+            ttl=config.cache_ttl,
+        )
 
     def _fetch_url(self, url: str) -> str:
         """
@@ -159,6 +171,24 @@ class LibraryClient:
         path = EVALUATOR_PATH_TEMPLATE.format(provider=provider, name=name)
         url = f"{self.base_url}/{path}"
         return self._fetch_url(url)
+
+    def fetch_readme(self, provider: str, name: str) -> Optional[str]:
+        """
+        Fetch an evaluator's README.md for extended info.
+
+        Args:
+            provider: The provider name (e.g., 'google', 'openai').
+            name: The evaluator name (e.g., 'gemini-flash').
+
+        Returns:
+            The README content as a string, or None if not found.
+        """
+        path = README_PATH_TEMPLATE.format(provider=provider, name=name)
+        url = f"{self.base_url}/{path}"
+        try:
+            return self._fetch_url(url)
+        except NetworkError:
+            return None
 
     def get_cache_age(self) -> Optional[float]:
         """

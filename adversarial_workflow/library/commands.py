@@ -212,10 +212,150 @@ def library_list(
     return 0
 
 
+def library_info(evaluator_spec: str) -> int:
+    """
+    Show detailed information about a library evaluator.
+
+    Args:
+        evaluator_spec: Evaluator in 'provider/name' format.
+
+    Returns:
+        Exit code (0 for success, 1 for error).
+    """
+    client = LibraryClient()
+
+    # Parse spec
+    parts = evaluator_spec.split("/")
+    if len(parts) != 2:
+        print(f"{RED}Error: Invalid format. Use provider/name (e.g., google/gemini-flash){RESET}")
+        return 1
+
+    provider, name = parts
+
+    # Fetch index
+    try:
+        index, _ = client.fetch_index()
+    except NetworkError as e:
+        print(f"{RED}Error: Network unavailable{RESET}")
+        print(f"  {e}")
+        return 1
+    except ParseError as e:
+        print(f"{RED}Error: Could not parse library index{RESET}")
+        print(f"  {e}")
+        return 1
+
+    # Get evaluator entry
+    entry = index.get_evaluator(provider, name)
+    if not entry:
+        print(f"{RED}Error: Evaluator not found: {evaluator_spec}{RESET}")
+        print()
+        print("Use 'adversarial library list' to see available evaluators.")
+        return 1
+
+    # Display basic info from index
+    print()
+    print(f"{BOLD}{provider}/{name}{RESET}")
+    print()
+    print(f"Version:     {index.version}")
+    print(f"Provider:    {provider}")
+    print(f"Model:       {entry.model}")
+    print(f"Category:    {entry.category}")
+    print()
+    print("Description:")
+    print(f"  {entry.description}")
+    print()
+
+    # Try to fetch extended info from README
+    readme = client.fetch_readme(provider, name)
+    if readme:
+        _display_extended_info(readme)
+    else:
+        print(f"{GRAY}Extended info unavailable (README.md not found).{RESET}")
+        print()
+
+    # Installation hint
+    print(f"Install: {CYAN}adversarial library install {evaluator_spec}{RESET}")
+    print()
+
+    return 0
+
+
+def _display_extended_info(readme: str) -> None:
+    """
+    Parse and display extended info from README.md.
+
+    Extracts changelog, cost estimates, and API key info from README.
+    """
+    lines = readme.split("\n")
+
+    # Look for API Key section
+    api_key = None
+    for line in lines:
+        if "api_key" in line.lower() or "API key" in line:
+            # Try to extract env var name
+            import re
+
+            match = re.search(r"([A-Z_]+_API_KEY)", line)
+            if match:
+                api_key = match.group(1)
+                break
+
+    if api_key:
+        print(f"API Key:     {api_key}")
+        print()
+
+    # Look for Changelog section
+    in_changelog = False
+    changelog_lines = []
+    for line in lines:
+        if line.strip().lower().startswith("## changelog") or line.strip().lower().startswith(
+            "# changelog"
+        ):
+            in_changelog = True
+            continue
+        if in_changelog:
+            if line.strip().startswith("##") or line.strip().startswith("# "):
+                break
+            if line.strip():
+                changelog_lines.append(line.strip())
+            if len(changelog_lines) >= 5:  # Limit changelog entries
+                break
+
+    if changelog_lines:
+        print("Changelog:")
+        for cl in changelog_lines[:5]:
+            print(f"  {cl}")
+        print()
+
+    # Look for Cost section
+    in_cost = False
+    cost_lines = []
+    for line in lines:
+        if "cost" in line.lower() and line.strip().startswith("#"):
+            in_cost = True
+            continue
+        if in_cost:
+            if line.strip().startswith("#"):
+                break
+            if line.strip():
+                cost_lines.append(line.strip())
+            if len(cost_lines) >= 3:
+                break
+
+    if cost_lines:
+        print("Estimated Cost:")
+        for cl in cost_lines[:3]:
+            print(f"  {cl}")
+        print()
+
+
 def library_install(
     evaluator_specs: List[str],
     force: bool = False,
     skip_validation: bool = False,
+    dry_run: bool = False,
+    category: Optional[str] = None,
+    yes: bool = False,
 ) -> int:
     """
     Install evaluators from the library.
@@ -224,11 +364,19 @@ def library_install(
         evaluator_specs: List of evaluator specs in 'provider/name' format.
         force: Overwrite existing files.
         skip_validation: Skip schema validation.
+        dry_run: Preview without making changes.
+        category: Install all evaluators in this category.
+        yes: Skip confirmation prompts (required for non-TTY).
 
     Returns:
         Exit code (0 for success, 1 for error).
     """
     client = LibraryClient()
+
+    # Non-TTY detection: require --yes for non-interactive mode
+    if not yes and not sys.stdin.isatty():
+        print(f"{RED}Error: Use --yes for non-interactive mode{RESET}")
+        return 1
 
     # Fetch index first
     try:
@@ -242,8 +390,43 @@ def library_install(
         print(f"  {e}")
         return 1
 
+    # Handle --category flag: get all evaluators in that category
+    if category:
+        matching = index.filter_by_category(category)
+        if not matching:
+            print(f"{RED}Error: No evaluators found in category '{category}'{RESET}")
+            print()
+            print("Available categories:")
+            for cat_name, cat_desc in sorted(index.categories.items()):
+                print(f"  - {cat_name}: {cat_desc}")
+            return 1
+
+        print(f"Installing all evaluators in category '{category}':")
+        print()
+        for e in matching:
+            print(f"  - {e.provider}/{e.name} (v{index.version})")
+        print()
+
+        if not yes:
+            response = input("Proceed? [y/N]: ").strip().lower()
+            if response not in ("y", "yes"):
+                print("Cancelled.")
+                return 0
+
+        evaluator_specs = [f"{e.provider}/{e.name}" for e in matching]
+
+    # Require at least one evaluator spec
+    if not evaluator_specs:
+        print(f"{RED}Error: No evaluators specified{RESET}")
+        print()
+        print("Usage:")
+        print("  adversarial library install <provider>/<name> [<provider>/<name> ...]")
+        print("  adversarial library install --category <category-name>")
+        return 1
+
     evaluators_dir = get_evaluators_dir()
-    evaluators_dir.mkdir(parents=True, exist_ok=True)
+    if not dry_run:
+        evaluators_dir.mkdir(parents=True, exist_ok=True)
 
     success_count = 0
     for spec in evaluator_specs:
@@ -268,6 +451,43 @@ def library_install(
 
         # Check if file already exists (use provider-name format to avoid collisions)
         dest_path = evaluators_dir / f"{provider}-{name}.yml"
+
+        if dry_run:
+            # Dry-run mode: show preview without making changes
+            print(f"Dry run: Would install {CYAN}{spec}{RESET} (v{index.version})")
+            print()
+            print(f"  Target: {dest_path}")
+            if dest_path.exists():
+                print(f"  Status: {YELLOW}File exists (would overwrite with --force){RESET}")
+            else:
+                print(f"  Status: {GREEN}New file (clean install){RESET}")
+            print()
+
+            # Fetch and preview evaluator config
+            try:
+                yaml_content = client.fetch_evaluator(provider, name)
+                yaml_content_clean = yaml_content.lstrip()
+                if yaml_content_clean.startswith("---"):
+                    yaml_content_clean = yaml_content_clean[3:].lstrip("\n")
+
+                print("  Evaluator config preview:")
+                print("  " + "─" * 25)
+                preview_lines = yaml_content_clean.split("\n")[:10]
+                for line in preview_lines:
+                    print(f"  {line}")
+                if len(yaml_content_clean.split("\n")) > 10:
+                    print("  ...")
+                print()
+            except NetworkError as e:
+                print(f"  {RED}Error: Could not fetch preview{RESET}")
+                print(f"    {e}")
+                print()
+
+            print(f"{YELLOW}No changes made (dry run).{RESET}")
+            print()
+            success_count += 1
+            continue
+
         if dest_path.exists() and not force:
             print(f"{YELLOW}Skipping: {provider}-{name}.yml already exists{RESET}")
             print(f"  Use {CYAN}--force{RESET} to overwrite.")
@@ -319,7 +539,9 @@ def library_install(
 
     # Summary
     print()
-    if success_count == len(evaluator_specs):
+    if dry_run:
+        print(f"{CYAN}Dry run complete. Use without --dry-run to install.{RESET}")
+    elif success_count == len(evaluator_specs):
         print(f"{GREEN}All {success_count} evaluator(s) installed successfully.{RESET}")
     elif success_count > 0:
         print(f"{YELLOW}{success_count} of {len(evaluator_specs)} evaluator(s) installed.{RESET}")
@@ -327,10 +549,11 @@ def library_install(
         print(f"{RED}No evaluators installed.{RESET}")
         return 1
 
-    print()
-    print("Next steps:")
-    print(f"  1. Configure API keys if needed (check {CYAN}.env{RESET})")
-    print(f"  2. Run: {CYAN}adversarial <evaluator-name> <task-file>{RESET}")
+    if not dry_run:
+        print()
+        print("Next steps:")
+        print(f"  1. Configure API keys if needed (check {CYAN}.env{RESET})")
+        print(f"  2. Run: {CYAN}adversarial <evaluator-name> <task-file>{RESET}")
 
     return 0
 
@@ -439,6 +662,7 @@ def library_update(
     yes: bool = False,
     diff_only: bool = False,
     no_cache: bool = False,
+    dry_run: bool = False,
 ) -> int:
     """
     Update installed evaluators to newer versions.
@@ -447,13 +671,22 @@ def library_update(
         name: Specific evaluator name to update.
         all_evaluators: Update all outdated evaluators.
         yes: Skip confirmation prompts.
-        diff_only: Show diff without applying changes.
+        diff_only: Show diff without applying changes (same as dry_run).
         no_cache: Bypass cache.
+        dry_run: Preview without making changes (same as diff_only).
 
     Returns:
         Exit code (0 for success, 1 for error).
     """
+    # Combine dry_run and diff_only (they do the same thing)
+    preview_only = dry_run or diff_only
+
     client = LibraryClient()
+
+    # Non-TTY detection: require --yes for non-interactive mode (unless preview mode)
+    if not yes and not preview_only and not sys.stdin.isatty():
+        print(f"{RED}Error: Use --yes for non-interactive mode{RESET}")
+        return 1
 
     if not name and not all_evaluators:
         print(f"{RED}Error: Specify an evaluator name or use --all{RESET}")
@@ -571,9 +804,9 @@ def library_update(
         if len(diff) > 50:
             print(f"  {GRAY}... ({len(diff) - 50} more lines){RESET}")
 
-        if diff_only:
+        if preview_only:
             print()
-            print(f"  {GRAY}(diff-only mode, no changes applied){RESET}")
+            print(f"  {GRAY}(dry run mode, no changes applied){RESET}")
             continue
 
         # Confirm update
@@ -596,8 +829,8 @@ def library_update(
 
     # Summary
     print()
-    if diff_only:
-        print(f"Diff preview complete. Use without {CYAN}--diff-only{RESET} to apply changes.")
+    if preview_only:
+        print(f"Dry run complete. Use without {CYAN}--dry-run{RESET} to apply changes.")
     elif updated_count > 0:
         print(f"{GREEN}{updated_count} evaluator(s) updated.{RESET}")
     else:

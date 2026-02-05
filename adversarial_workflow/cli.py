@@ -3056,18 +3056,33 @@ For more information: https://github.com/movito/adversarial-workflow
         "--no-cache", action="store_true", help="Bypass cache and fetch fresh data"
     )
 
+    # library info subcommand
+    library_info_parser = library_subparsers.add_parser(
+        "info", help="Show detailed information about an evaluator"
+    )
+    library_info_parser.add_argument(
+        "evaluator_spec", help="Evaluator to show info for (format: provider/name)"
+    )
+
     # library install subcommand
     library_install_parser = library_subparsers.add_parser(
         "install", help="Install evaluator(s) from the library"
     )
     library_install_parser.add_argument(
-        "evaluators", nargs="+", help="Evaluator(s) to install (format: provider/name)"
+        "evaluators", nargs="*", help="Evaluator(s) to install (format: provider/name)"
     )
     library_install_parser.add_argument(
         "--force", "-f", action="store_true", help="Overwrite existing files"
     )
     library_install_parser.add_argument(
         "--skip-validation", action="store_true", help="Skip YAML validation (advanced)"
+    )
+    library_install_parser.add_argument(
+        "--dry-run", action="store_true", help="Preview without making changes"
+    )
+    library_install_parser.add_argument("--category", help="Install all evaluators in a category")
+    library_install_parser.add_argument(
+        "--yes", "-y", action="store_true", help="Skip confirmation prompts (required for CI/CD)"
     )
 
     # library check-updates subcommand
@@ -3098,6 +3113,11 @@ For more information: https://github.com/movito/adversarial-workflow
     )
     library_update_parser.add_argument(
         "--diff-only", action="store_true", help="Show diff without applying changes"
+    )
+    library_update_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview without making changes (same as --diff-only)",
     )
     library_update_parser.add_argument(
         "--no-cache", action="store_true", help="Bypass cache and fetch fresh data"
@@ -3298,6 +3318,7 @@ For more information: https://github.com/movito/adversarial-workflow
     elif args.command == "library":
         from adversarial_workflow.library import (
             library_check_updates,
+            library_info,
             library_install,
             library_list,
             library_update,
@@ -3310,11 +3331,18 @@ For more information: https://github.com/movito/adversarial-workflow
                 verbose=args.verbose,
                 no_cache=args.no_cache,
             )
+        elif args.library_subcommand == "info":
+            return library_info(
+                evaluator_spec=args.evaluator_spec,
+            )
         elif args.library_subcommand == "install":
             return library_install(
                 evaluator_specs=args.evaluators,
                 force=args.force,
                 skip_validation=args.skip_validation,
+                dry_run=args.dry_run,
+                category=args.category,
+                yes=args.yes,
             )
         elif args.library_subcommand == "check-updates":
             return library_check_updates(
@@ -3328,12 +3356,14 @@ For more information: https://github.com/movito/adversarial-workflow
                 yes=args.yes,
                 diff_only=args.diff_only,
                 no_cache=args.no_cache,
+                dry_run=args.dry_run,
             )
         else:
             # No subcommand provided
             print(f"{RED}Error: library command requires a subcommand{RESET}")
             print("Usage:")
             print("  adversarial library list")
+            print("  adversarial library info <provider>/<name>")
             print("  adversarial library install <provider>/<name>")
             print("  adversarial library check-updates")
             print("  adversarial library update <name>")
