@@ -17,9 +17,11 @@ Implemented Phase 1 of the model routing layer with dual-field support. Evaluato
 ## Files Changed
 
 ### New Files
+
 - `adversarial_workflow/evaluators/resolver.py` - ModelResolver class with embedded registry and resolution logic
 
 ### Modified Files
+
 - `adversarial_workflow/evaluators/config.py` - Added ModelRequirement dataclass and extended EvaluatorConfig
 - `adversarial_workflow/evaluators/discovery.py` - Parse model_requirement from YAML with validation
 - `adversarial_workflow/evaluators/runner.py` - Use resolver before execution, handle ResolutionError

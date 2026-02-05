@@ -186,6 +186,7 @@ class ModelResolver:
         models = tier_data.get("models", [])
         if not models:
             raise ResolutionError(f"No models defined for {req.family}/{req.tier}")
+        # Registry type is list[str] | str for flexibility; actual values are always lists
         model_id = models[0]  # type: ignore[index]
 
         # Apply provider prefix for LiteLLM compatibility
