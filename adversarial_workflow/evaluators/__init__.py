@@ -1,12 +1,18 @@
-"""Evaluators module for adversarial-workflow plugin architecture."""
+"""Evaluators module for adversarial-workflow plugin architecture.
+
+Supports dual-field model specification (ADV-0015):
+- Legacy: model + api_key_env fields (backwards compatible)
+- New: model_requirement field (resolved via ModelResolver)
+"""
 
 from .builtins import BUILTIN_EVALUATORS
-from .config import EvaluatorConfig
+from .config import EvaluatorConfig, ModelRequirement
 from .discovery import (
     EvaluatorParseError,
     discover_local_evaluators,
     parse_evaluator_yaml,
 )
+from .resolver import ModelResolver, ResolutionError
 from .runner import run_evaluator
 
 
@@ -38,6 +44,9 @@ def get_all_evaluators() -> dict[str, EvaluatorConfig]:
 __all__ = [
     "EvaluatorConfig",
     "EvaluatorParseError",
+    "ModelRequirement",
+    "ModelResolver",
+    "ResolutionError",
     "run_evaluator",
     "get_all_evaluators",
     "discover_local_evaluators",

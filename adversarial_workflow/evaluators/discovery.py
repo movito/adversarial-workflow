@@ -4,6 +4,10 @@ YAML parsing and discovery for custom evaluators.
 This module handles discovering evaluator definitions from
 .adversarial/evaluators/*.yml files and parsing them into
 EvaluatorConfig objects.
+
+Supports dual-field model specification (ADV-0015):
+- Legacy: model + api_key_env fields (backwards compatible)
+- New: model_requirement field (resolved via ModelResolver)
 """
 
 from __future__ import annotations
@@ -14,7 +18,7 @@ from pathlib import Path
 
 import yaml
 
-from .config import EvaluatorConfig
+from .config import EvaluatorConfig, ModelRequirement
 
 logger = logging.getLogger(__name__)
 
@@ -54,25 +58,38 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         raise EvaluatorParseError(f"YAML must be a mapping, got {type(data).__name__}: {yml_file}")
 
     # Validate required fields exist
-    required = [
+    # model and api_key_env are only required if model_requirement is not present
+    always_required = [
         "name",
         "description",
-        "model",
-        "api_key_env",
         "prompt",
         "output_suffix",
     ]
-    missing = [f for f in required if f not in data]
+    has_model_requirement = "model_requirement" in data
+    if not has_model_requirement:
+        # Legacy format: model and api_key_env are required
+        always_required.extend(["model", "api_key_env"])
+
+    missing = [f for f in always_required if f not in data]
     if missing:
         raise EvaluatorParseError(f"Missing required fields: {', '.join(missing)}")
 
     # Validate required fields are strings (YAML can parse 'yes' as bool, '123' as int)
-    for field in required:
+    for field in always_required:
         value = data[field]
         if not isinstance(value, str):
             raise EvaluatorParseError(
                 f"Field '{field}' must be a string, got {type(value).__name__}: {value!r}"
             )
+
+    # Validate model and api_key_env are strings if present (even when optional)
+    for field in ["model", "api_key_env"]:
+        if field in data and data[field] is not None:
+            value = data[field]
+            if not isinstance(value, str):
+                raise EvaluatorParseError(
+                    f"Field '{field}' must be a string, got {type(value).__name__}: {value!r}"
+                )
 
     # Validate name format (valid CLI command name)
     name = data["name"]
@@ -143,6 +160,67 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
             )
             data["timeout"] = 600
 
+    # Parse model_requirement if present (ADV-0015)
+    model_requirement = None
+    if "model_requirement" in data:
+        req_data = data["model_requirement"]
+
+        # Validate model_requirement is a mapping
+        if not isinstance(req_data, dict):
+            raise EvaluatorParseError(
+                f"model_requirement must be a mapping, got {type(req_data).__name__}"
+            )
+
+        # Validate required fields in model_requirement
+        if "family" not in req_data:
+            raise EvaluatorParseError("model_requirement.family is required")
+        if "tier" not in req_data:
+            raise EvaluatorParseError("model_requirement.tier is required")
+
+        # Validate family and tier are strings
+        family = req_data["family"]
+        tier = req_data["tier"]
+        if not isinstance(family, str):
+            raise EvaluatorParseError(
+                f"model_requirement.family must be a string, got {type(family).__name__}"
+            )
+        if not isinstance(tier, str):
+            raise EvaluatorParseError(
+                f"model_requirement.tier must be a string, got {type(tier).__name__}"
+            )
+
+        # Validate optional min_version is string if present
+        min_version = req_data.get("min_version", "")
+        # Reject booleans explicitly (YAML parses 'yes'/'no'/'true'/'false' as bool)
+        if isinstance(min_version, bool):
+            raise EvaluatorParseError(
+                f"model_requirement.min_version must be a string, got bool: {min_version!r}"
+            )
+        # Convert integers to strings (YAML parses '0' as int 0)
+        if isinstance(min_version, int):
+            min_version = str(min_version)
+        elif min_version and not isinstance(min_version, str):
+            raise EvaluatorParseError(
+                f"model_requirement.min_version must be a string, got {type(min_version).__name__}"
+            )
+
+        # Validate optional min_context is integer if present
+        min_context = req_data.get("min_context", 0)
+        # Reject booleans explicitly (YAML parses 'yes'/'no'/'true'/'false' as bool)
+        if isinstance(min_context, bool):
+            raise EvaluatorParseError("model_requirement.min_context must be an integer, got bool")
+        if min_context and not isinstance(min_context, int):
+            raise EvaluatorParseError(
+                f"model_requirement.min_context must be an integer, got {type(min_context).__name__}"
+            )
+
+        model_requirement = ModelRequirement(
+            family=family,
+            tier=tier,
+            min_version=min_version,
+            min_context=min_context,
+        )
+
     # Filter to known fields only (log unknown fields)
     known_fields = {
         "name",
@@ -156,17 +234,27 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         "aliases",
         "version",
         "timeout",
+        "model_requirement",  # ADV-0015
     }
     unknown = set(data.keys()) - known_fields
     if unknown:
         logger.warning("Unknown fields in %s: %s", yml_file.name, ", ".join(sorted(unknown)))
 
-    # Build filtered data dict
-    filtered_data = {k: v for k, v in data.items() if k in known_fields}
+    # Build filtered data dict (exclude model_requirement as it's handled separately)
+    scalar_fields = known_fields - {"model_requirement"}
+    filtered_data = {k: v for k, v in data.items() if k in scalar_fields}
 
-    # Create config with metadata
+    # Set defaults for optional model/api_key_env when model_requirement is present
+    # Also handle explicit null values (YAML parses empty or null as None)
+    if "model" not in filtered_data or filtered_data["model"] is None:
+        filtered_data["model"] = ""
+    if "api_key_env" not in filtered_data or filtered_data["api_key_env"] is None:
+        filtered_data["api_key_env"] = ""
+
+    # Create config with metadata and model_requirement
     config = EvaluatorConfig(
         **filtered_data,
+        model_requirement=model_requirement,
         source="local",
         config_file=str(yml_file),
     )
