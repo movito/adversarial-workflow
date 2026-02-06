@@ -29,18 +29,16 @@
     }
   },
   "recent_completions": [
-    "ADV-0031: Library Evaluator Execution - Code Review APPROVED (2026-02-06)",
+    "v0.9.0 Released (2026-02-06) - Library Evaluator Execution",
+    "ADV-0031: Library Evaluator Execution - PR #24 MERGED",
     "v0.8.1 Released (2026-02-05) - BugBot fixes",
-    "ADV-0030: BugBot fixes - PR #23 MERGED",
-    "v0.8.0 Released (2026-02-05)"
+    "ADV-0030: BugBot fixes - PR #23 MERGED"
   ],
-  "pending_tasks": [
-    "ADV-0031: PR ready to merge, then tag v0.9.0"
-  ],
+  "pending_tasks": [],
   "blocked_items": [],
   "architecture_status": {
-    "current_version": "0.8.1",
-    "next_minor": "0.9.0 (ADV-0031 PR ready)",
+    "current_version": "0.9.0",
+    "next_minor": null,
     "registry_schema": "1.0 - Published in library repo"
   },
   "conventions": {
@@ -48,5 +46,5 @@
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "ADV-0031 code review APPROVED. Ready to merge PR and tag v0.9.0. Library evaluators can now be executed with --evaluator flag."
+  "notes": "v0.9.0 released. Library evaluators can now be executed with --evaluator flag. All pending tasks complete."
 }

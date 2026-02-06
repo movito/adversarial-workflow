@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "adversarial-workflow"
 
-version = "0.8.1"
+version = "0.9.0"
 
 description = "Multi-stage AI evaluation system for task plans, code review, and test validation"
 readme = "README.md"

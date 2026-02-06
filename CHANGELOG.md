@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-02-06
+
+### Added
+- **ADV-0031: Library Evaluator Execution** - Run installed evaluators with `--evaluator` flag
+  - `adversarial evaluate --evaluator <name> task.md` - Run any installed evaluator
+  - `-e` short form for convenience
+  - Automatic model resolution via `model_requirement` field
+  - Graceful fallback to legacy `model` field if resolution fails
+  - Support for evaluator aliases
+  - Helpful error messages listing available evaluators
+  - Full backward compatibility - no flag uses existing shell script behavior
+
+### Technical
+- 388 tests passing (+9 new tests for evaluator execution)
+- Reuses existing `run_evaluator()` and `ModelResolver` infrastructure
+- Clean separation between CLI parsing and evaluator execution
+
+### Documentation
+- Updated README with v0.9.0 features and --evaluator usage
+- Added "Running Installed Evaluators" section to Evaluator Library docs
+
 ## [0.8.1] - 2026-02-05
 
 ### Fixed
@@ -476,6 +497,7 @@ This release specifically improves the agent integration experience by:
 
 ---
 
+[0.9.0]: https://github.com/movito/adversarial-workflow/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/movito/adversarial-workflow/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/movito/adversarial-workflow/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/movito/adversarial-workflow/compare/v0.6.6...v0.7.0

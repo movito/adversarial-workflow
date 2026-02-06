@@ -20,13 +20,44 @@ Evaluate proposals, sort out ideas, and prevent "phantom work" (AI claiming to i
 - 🎯 **Tool-agnostic**: Use with Claude Code, Cursor, Aider, manual coding, or any workflow
 - ✨ **Interactive onboarding**: Guided setup wizard gets you started in <5 minutes
 
-## What's New in v0.7.0
+## What's New in v0.9.0
 
 ### Upgrade
 
 ```bash
 pip install --upgrade adversarial-workflow
 ```
+
+### v0.9.0 - Run Library Evaluators
+
+**Finally run your installed evaluators!** Use the new `--evaluator` flag:
+
+```bash
+# Install an evaluator from the library
+adversarial library install google/gemini-flash
+
+# Run it with --evaluator flag
+adversarial evaluate --evaluator gemini-flash task.md
+adversarial evaluate -e gemini-flash task.md  # short form
+
+# Works with model_requirement for portable evaluators
+# Automatically resolves to best available model
+```
+
+**Key Features:**
+- Run any installed evaluator by name
+- Supports evaluator aliases
+- Automatic model resolution via `model_requirement`
+- Falls back to legacy `model` field if resolution fails
+- Full backward compatibility - no flag uses existing behavior
+
+See [Evaluator Library](#evaluator-library) for full documentation.
+
+### v0.8.1 - BugBot Fixes
+
+- **CI/CD compatibility**: `--category --dry-run` no longer hangs in non-TTY environments
+- **Proper exit codes**: Dry-run returns 1 when all previews fail
+- **Config robustness**: Non-dict YAML configs no longer crash
 
 ### v0.7.0 - Evaluator Library
 
@@ -422,7 +453,8 @@ adversarial health                      # Comprehensive system health check
 adversarial agent onboard               # Set up agent coordination system
 
 # Workflow
-adversarial evaluate task.md            # Phase 1: Evaluate plan
+adversarial evaluate task.md            # Phase 1: Evaluate plan (uses config.yml)
+adversarial evaluate -e <name> task.md  # Phase 1: Evaluate with installed evaluator
 adversarial split task.md               # Split large files into smaller parts
 adversarial split task.md --dry-run     # Preview split without creating files
 adversarial review                      # Phase 3: Review implementation
@@ -447,8 +479,9 @@ adversarial library list --category quick-check
 # Install an evaluator
 adversarial library install google/gemini-flash
 
-# Use it immediately
-adversarial gemini-flash task.md
+# Run it with --evaluator flag
+adversarial evaluate --evaluator gemini-flash task.md
+adversarial evaluate -e gemini-flash task.md  # short form
 ```
 
 ### Available Commands
@@ -459,6 +492,30 @@ adversarial gemini-flash task.md
 | `adversarial library install <provider>/<name>` | Install evaluator to project |
 | `adversarial library check-updates` | Check for updates to installed evaluators |
 | `adversarial library update <name>` | Update an evaluator (with diff preview) |
+
+### Running Installed Evaluators
+
+Use the `--evaluator` flag to run any installed evaluator:
+
+```bash
+# Run by name
+adversarial evaluate --evaluator plan-evaluator task.md
+
+# Short form
+adversarial evaluate -e security-reviewer task.md
+
+# Evaluators with model_requirement auto-resolve to best available model
+adversarial evaluate -e gemini-flash task.md
+```
+
+**How it works:**
+- Looks up evaluator in `.adversarial/evaluators/*.yml`
+- Uses the evaluator's model, prompt, and output settings
+- Supports evaluator aliases
+- If evaluator has `model_requirement`, resolves to best available model
+- Falls back to legacy `model` field if resolution fails
+
+**Without --evaluator flag**: Uses existing shell script behavior (backward compatible)
 
 ### Philosophy: Copy, Don't Link
 
