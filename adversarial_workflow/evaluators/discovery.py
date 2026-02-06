@@ -237,6 +237,8 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
         "model_requirement",  # ADV-0015
     }
     unknown = set(data.keys()) - known_fields
+    # Ignore underscore-prefixed metadata fields (e.g., _meta from library install)
+    unknown = {f for f in unknown if not f.startswith("_")}
     if unknown:
         logger.warning("Unknown fields in %s: %s", yml_file.name, ", ".join(sorted(unknown)))
 
