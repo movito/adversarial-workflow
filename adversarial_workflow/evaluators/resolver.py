@@ -3,14 +3,12 @@ Model resolver for evaluator configurations (ADV-0015: Model Routing Layer - Pha
 
 This module provides the ModelResolver class that resolves model requirements
 to actual model IDs using an embedded registry. It supports:
-- model_requirement field (new structured format)
-- model field (legacy string format)
-- Fallback from model_requirement to model on resolution failure
+- model field (explicit model ID takes priority)
+- model_requirement field (used when model is absent)
 """
 
 from __future__ import annotations
 
-import warnings
 from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
@@ -28,11 +26,9 @@ class ModelResolver:
     to map family/tier pairs to concrete model identifiers.
 
     Resolution order:
-    1. If model_requirement present: resolve via registry
-    2. If resolution fails AND model present: warn + fallback to legacy
-    3. If resolution fails AND no model: raise ResolutionError
-    4. If no model_requirement AND model present: use legacy directly
-    5. If neither: raise ResolutionError
+    1. If model present: use directly (evaluator specifies exact model)
+    2. If model_requirement present AND model absent: resolve via registry
+    3. If neither: raise ResolutionError
     """
 
     # Default registry - matches adversarial-evaluator-library/providers/registry.yml
@@ -128,6 +124,11 @@ class ModelResolver:
     def resolve(self, config: EvaluatorConfig) -> tuple[str, str]:
         """Resolve evaluator config to (model_id, api_key_env).
 
+        Resolution priority:
+        1. Explicit model field - evaluator specifies exact model ID
+        2. model_requirement - resolve via registry when model absent
+        3. Neither - raise ResolutionError
+
         Args:
             config: EvaluatorConfig with model and/or model_requirement
 
@@ -135,26 +136,17 @@ class ModelResolver:
             (model_id, api_key_env) tuple
 
         Raises:
-            ResolutionError: If resolution fails and no fallback available
+            ResolutionError: If no model or model_requirement specified
         """
-        if config.model_requirement:
-            try:
-                return self._resolve_requirement(config.model_requirement)
-            except ResolutionError as e:
-                if config.model:
-                    # Fall back to legacy with warning
-                    warnings.warn(
-                        f"model_requirement resolution failed for {config.name}: {e}. "
-                        f"Falling back to legacy model field: {config.model}",
-                        UserWarning,
-                        stacklevel=2,
-                    )
-                    return (config.model, config.api_key_env)
-                raise
-
-        # Legacy only
+        # Priority 1: Explicit model field takes precedence
+        # This allows evaluators to specify exact model IDs that stay current
         if config.model:
             return (config.model, config.api_key_env)
+
+        # Priority 2: Resolve model_requirement via registry
+        # Used for truly portable evaluators without specific model preference
+        if config.model_requirement:
+            return self._resolve_requirement(config.model_requirement)
 
         raise ResolutionError("No model or model_requirement specified")
 

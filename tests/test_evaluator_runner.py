@@ -2,7 +2,6 @@
 
 import os
 import shutil
-import warnings
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -349,8 +348,8 @@ class TestModelResolutionInRunner:
             assert "claude" in resolved_model.lower()
             assert "opus" in resolved_model.lower()
 
-    def test_model_requirement_precedence_over_legacy(self, tmp_path, monkeypatch):
-        """model_requirement takes precedence when both fields present."""
+    def test_model_field_takes_priority_over_requirement(self, tmp_path, monkeypatch):
+        """Explicit model field takes priority over model_requirement (ADV-0032)."""
         # Create test file and config
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test")
@@ -360,7 +359,7 @@ class TestModelResolutionInRunner:
         (config_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
 
         monkeypatch.chdir(tmp_path)
-        monkeypatch.setenv("GEMINI_API_KEY", "test-key")  # For resolved gemini model
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")  # For explicit model
 
         # Mock aider to capture the model argument
         mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
@@ -368,33 +367,33 @@ class TestModelResolutionInRunner:
             patch("subprocess.run", mock_run),
             patch("shutil.which", return_value="/usr/bin/aider"),
         ):
-            # Config with both fields (dual-field format)
+            # Config with both fields - explicit model should win
             config = EvaluatorConfig(
-                name="dual-eval",
-                description="Dual-field evaluator",
-                model="gpt-4o",  # Legacy field
+                name="priority-eval",
+                description="Priority test evaluator",
+                model="gpt-4o",  # Explicit - should win
                 api_key_env="OPENAI_API_KEY",
                 prompt="Test prompt",
                 output_suffix="TEST",
                 model_requirement=ModelRequirement(
                     family="gemini", tier="flash"
-                ),  # Takes precedence
+                ),  # Should be ignored
                 source="local",
             )
 
             run_evaluator(config, str(test_file))
 
-            # Verify aider was called with resolved gemini model, not legacy gpt-4o
+            # Verify aider was called with explicit model, not resolved gemini
             assert mock_run.called, "aider should have been called"
             call_args = mock_run.call_args
             cmd = call_args[0][0]
             model_idx = cmd.index("--model") + 1
             resolved_model = cmd[model_idx]
-            assert "gemini" in resolved_model.lower()
-            assert "gpt" not in resolved_model.lower()
+            assert resolved_model == "gpt-4o"
+            assert "gemini" not in resolved_model.lower()
 
-    def test_resolution_failure_falls_back_to_legacy(self, tmp_path, monkeypatch, capsys):
-        """Resolution failure falls back to legacy model with warning."""
+    def test_model_used_directly_with_invalid_requirement(self, tmp_path, monkeypatch, capsys):
+        """Model field used directly even when requirement is invalid (ADV-0032)."""
         # Create test file and config
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test")
@@ -412,11 +411,11 @@ class TestModelResolutionInRunner:
             patch("subprocess.run", mock_run),
             patch("shutil.which", return_value="/usr/bin/aider"),
         ):
-            # Config with invalid model_requirement but valid legacy fallback
+            # Config with invalid model_requirement but valid model field
             config = EvaluatorConfig(
-                name="fallback-eval",
-                description="Fallback evaluator",
-                model="gpt-4o",  # Fallback
+                name="direct-model-eval",
+                description="Direct model evaluator",
+                model="gpt-4o",  # Explicit - takes priority
                 api_key_env="OPENAI_API_KEY",
                 prompt="Test prompt",
                 output_suffix="TEST",
@@ -424,17 +423,11 @@ class TestModelResolutionInRunner:
                 source="local",
             )
 
-            # Should emit warning and fall back
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
-                run_evaluator(config, str(test_file))
+            # No warning - model field takes priority, requirement ignored
+            run_evaluator(config, str(test_file))
 
-                # Check for fallback warning
-                fallback_warnings = [x for x in w if "resolution failed" in str(x.message).lower()]
-                assert len(fallback_warnings) > 0
-
-            # Verify aider was called with legacy model
-            assert mock_run.called, "aider should have been called with fallback model"
+            # Verify aider was called with explicit model
+            assert mock_run.called, "aider should have been called"
             call_args = mock_run.call_args
             cmd = call_args[0][0]
             model_idx = cmd.index("--model") + 1
