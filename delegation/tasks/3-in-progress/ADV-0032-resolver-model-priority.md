@@ -42,6 +42,7 @@ The ModelResolver uses a hardcoded registry to resolve `model_requirement` → m
 ### File: `adversarial_workflow/evaluators/resolver.py`
 
 **Current code** (line 128-159):
+
 ```python
 def resolve(self, config: EvaluatorConfig) -> tuple[str, str]:
     if config.model_requirement:
@@ -62,6 +63,7 @@ def resolve(self, config: EvaluatorConfig) -> tuple[str, str]:
 ```
 
 **New code**:
+
 ```python
 def resolve(self, config: EvaluatorConfig) -> tuple[str, str]:
     # Priority 1: Explicit model field (evaluator specifies exact model)

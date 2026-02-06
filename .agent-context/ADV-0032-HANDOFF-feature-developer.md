@@ -116,7 +116,7 @@ def test_model_field_takes_priority_over_requirement(self):
 
 ## Commit Message Template
 
-```
+```text
 fix(resolver): Prioritize explicit model field over requirement resolution
 
 When evaluator has explicit `model` field, use it directly instead of

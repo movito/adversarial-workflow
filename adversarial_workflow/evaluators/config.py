@@ -44,8 +44,8 @@ class EvaluatorConfig:
     - Legacy: model + api_key_env fields (always backwards compatible)
     - New: model_requirement field (resolved via ModelResolver)
 
-    When both are present, model_requirement takes precedence. If resolution
-    fails, falls back to legacy model field with a warning.
+    When model is present, it takes precedence. When model is absent,
+    model_requirement is used and resolved via ModelResolver.
 
     Attributes:
         name: Command name (e.g., "evaluate", "athena")

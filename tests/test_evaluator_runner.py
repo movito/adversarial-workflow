@@ -392,7 +392,7 @@ class TestModelResolutionInRunner:
             assert resolved_model == "gpt-4o"
             assert "gemini" not in resolved_model.lower()
 
-    def test_model_used_directly_with_invalid_requirement(self, tmp_path, monkeypatch, capsys):
+    def test_model_used_directly_with_invalid_requirement(self, tmp_path, monkeypatch):
         """Model field used directly even when requirement is invalid (ADV-0032)."""
         # Create test file and config
         test_file = tmp_path / "test.md"
