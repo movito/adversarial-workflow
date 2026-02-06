@@ -36,6 +36,7 @@ def validate_evaluation_output(
         )
 
     # Check for evaluation markers (case-insensitive)
+    # Note: Library evaluators may use varied formats, so this is informational only
     content_lower = content.lower()
     evaluation_markers = [
         "verdict:",
@@ -48,12 +49,6 @@ def validate_evaluation_output(
     ]
 
     has_evaluation_content = any(marker in content_lower for marker in evaluation_markers)
-    if not has_evaluation_content:
-        return (
-            False,
-            None,
-            "Log file missing evaluation content - no verdict or analysis found",
-        )
 
     # Extract verdict
     verdict = None

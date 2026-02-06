@@ -25,14 +25,16 @@ class TestValidateEvaluationOutput:
         assert verdict is None
         assert "too small" in message.lower()
 
-    def test_missing_evaluation_content(self, tmp_path):
-        """Returns invalid when no evaluation markers found."""
-        log_file = tmp_path / "no_eval.md"
-        log_file.write_text("x" * 600)  # Big enough but no markers
+    def test_no_markers_still_valid(self, tmp_path):
+        """Content without markers is still valid (library evaluators use varied formats)."""
+        log_file = tmp_path / "no_markers.md"
+        log_file.write_text("x" * 600)  # Big enough but no standard markers
 
-        is_valid, verdict, _message = validate_evaluation_output(str(log_file))
-        assert is_valid is False
+        is_valid, verdict, message = validate_evaluation_output(str(log_file))
+        # Should be valid - library evaluators may not use standard markers
+        assert is_valid is True
         assert verdict is None
+        assert "verdict not detected" in message.lower()
 
     def test_approved_verdict(self, tmp_path):
         """Extracts APPROVED verdict correctly."""
