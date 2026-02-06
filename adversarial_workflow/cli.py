@@ -2944,6 +2944,7 @@ def main():
 
     from adversarial_workflow.evaluators import (
         BUILTIN_EVALUATORS,
+        discover_local_evaluators,
         get_all_evaluators,
         run_evaluator,
     )
@@ -3244,6 +3245,15 @@ For more information: https://github.com/movito/adversarial-workflow
             action="store_true",
             help="Verify URLs in document before evaluation",
         )
+        # Add --evaluator flag for the "evaluate" command only
+        # This allows selecting a library-installed evaluator
+        if config.name == "evaluate":
+            eval_parser.add_argument(
+                "--evaluator",
+                "-e",
+                metavar="NAME",
+                help="Use a specific evaluator from .adversarial/evaluators/",
+            )
         # Store config for later execution
         eval_parser.set_defaults(evaluator_config=config)
 
@@ -3255,15 +3265,45 @@ For more information: https://github.com/movito/adversarial-workflow
 
     # Check for evaluator command first (has evaluator_config attribute)
     if hasattr(args, "evaluator_config"):
+        # Default to the command's evaluator config
+        config_to_use = args.evaluator_config
+
+        # Check if --evaluator flag was specified (only on evaluate command)
+        evaluator_override = getattr(args, "evaluator", None)
+        if evaluator_override:
+            local_evaluators = discover_local_evaluators()
+
+            if not local_evaluators:
+                print(f"{RED}Error: No evaluators installed.{RESET}")
+                print("Install evaluators with: adversarial library install <name>")
+                return 1
+
+            if evaluator_override not in local_evaluators:
+                print(f"{RED}Error: Evaluator '{evaluator_override}' not found.{RESET}")
+                print()
+                print("Available evaluators:")
+                # Show unique evaluators (avoid duplicates from aliases)
+                seen = set()
+                for _, cfg in sorted(local_evaluators.items()):
+                    if id(cfg) not in seen:
+                        print(f"  {cfg.name}")
+                        if cfg.aliases:
+                            print(f"    aliases: {', '.join(cfg.aliases)}")
+                        seen.add(id(cfg))
+                return 1
+
+            config_to_use = local_evaluators[evaluator_override]
+            print(f"Using evaluator: {config_to_use.name}")
+
         # Determine timeout: CLI flag > YAML config > default (180s)
         if args.timeout is not None:
             timeout = args.timeout
             source = "CLI override"
-        elif args.evaluator_config.timeout != 180:
-            timeout = args.evaluator_config.timeout
+        elif config_to_use.timeout != 180:
+            timeout = config_to_use.timeout
             source = "evaluator config"
         else:
-            timeout = args.evaluator_config.timeout  # 180 (default)
+            timeout = config_to_use.timeout  # 180 (default)
             source = "default"
 
         # Validate CLI timeout (consistent with YAML validation)
@@ -3290,7 +3330,7 @@ For more information: https://github.com/movito/adversarial-workflow
             print()
 
         return run_evaluator(
-            args.evaluator_config,
+            config_to_use,
             args.file,
             timeout=timeout,
         )
