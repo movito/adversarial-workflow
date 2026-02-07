@@ -121,7 +121,7 @@ During Phase 1-2 transition, evaluators include BOTH:
 > This allows library evaluators to specify current model IDs without waiting for
 > workflow registry updates.
 
-```
+```text
 RESOLVE(evaluator, user_config, registry):
 
   # Step 1: Explicit model field takes priority (ADV-0032)
