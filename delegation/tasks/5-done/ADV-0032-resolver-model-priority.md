@@ -1,6 +1,6 @@
 # ADV-0032: Resolver Model Field Priority
 
-**Status**: In Review
+**Status**: Done
 **Priority**: HIGH
 **Created**: 2026-02-06
 **Type**: Bug Fix / Architecture
