@@ -47,8 +47,8 @@ adversarial evaluate -e gemini-flash task.md  # short form
 **Key Features:**
 - Run any installed evaluator by name
 - Supports evaluator aliases
-- Automatic model resolution via `model_requirement`
-- Falls back to legacy `model` field if resolution fails
+- Explicit `model` field takes priority when specified
+- Falls back to `model_requirement` registry resolution when model absent
 - Full backward compatibility - no flag uses existing behavior
 
 See [Evaluator Library](#evaluator-library) for full documentation.
@@ -512,8 +512,8 @@ adversarial evaluate -e gemini-flash task.md
 - Looks up evaluator in `.adversarial/evaluators/*.yml`
 - Uses the evaluator's model, prompt, and output settings
 - Supports evaluator aliases
-- If evaluator has `model_requirement`, resolves to best available model
-- Falls back to legacy `model` field if resolution fails
+- Explicit `model` field takes priority when specified
+- If no `model`, resolves `model_requirement` via registry
 
 **Without --evaluator flag**: Uses existing shell script behavior (backward compatible)
 
