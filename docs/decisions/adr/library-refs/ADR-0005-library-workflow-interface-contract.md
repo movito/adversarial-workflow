@@ -117,10 +117,23 @@ During Phase 1-2 transition, evaluators include BOTH:
 
 **Implemented by**: adversarial-workflow
 
+> **Updated (ADV-0032)**: Explicit model field now takes priority over model_requirement.
+> This allows library evaluators to specify current model IDs without waiting for
+> workflow registry updates.
+
 ```
 RESOLVE(evaluator, user_config, registry):
 
-  # Step 1: Try model_requirement (Phase 2)
+  # Step 1: Explicit model field takes priority (ADV-0032)
+  # Allows evaluators to specify exact model IDs that stay current
+  IF evaluator.model EXISTS:
+    RETURN {
+      model: evaluator.model,
+      auth: evaluator.api_key_env
+    }
+
+  # Step 2: Resolve model_requirement via registry
+  # Used for portable evaluators without specific model preference
   IF evaluator.model_requirement EXISTS:
     family = evaluator.model_requirement.family
     tier = evaluator.model_requirement.tier
@@ -129,10 +142,7 @@ RESOLVE(evaluator, user_config, registry):
     # Find matching model in registry
     model = registry.find(family, tier, min_version, status=active)
     IF model NOT FOUND:
-      IF user_config.resolution.strict:
-        ERROR "No matching model for {family}/{tier} >= {min_version}"
-      ELSE:
-        GOTO Step 2  # Fallback to legacy
+      ERROR "No matching model for {family}/{tier} >= {min_version}"
 
     # Apply user routing
     routing = user_config.routing[family] OR user_config.routing.default
@@ -141,15 +151,8 @@ RESOLVE(evaluator, user_config, registry):
 
     RETURN resolve_endpoint(model, routing)
 
-  # Step 2: Fallback to legacy model field
-  IF evaluator.model EXISTS:
-    RETURN {
-      model: evaluator.model,
-      auth: evaluator.api_key_env
-    }
-
   # Step 3: Error
-  ERROR "Evaluator has neither model_requirement nor model field"
+  ERROR "Evaluator has neither model nor model_requirement field"
 ```
 
 ### 4. User Routing Configuration
@@ -303,6 +306,7 @@ providers:
 
 ## Revision History
 
+- 2026-02-07: ADV-0032 - Updated resolution algorithm: explicit model field now takes priority over model_requirement
 - 2026-02-03: Initial contract (Accepted by both teams)
 
 ---
