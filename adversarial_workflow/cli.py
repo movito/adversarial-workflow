@@ -985,6 +985,48 @@ def check() -> int:
         if all_scripts_ok:
             good_checks.append("All scripts executable")
 
+        # Check 6: Script versions (compare to package version)
+        from importlib.metadata import version as pkg_version
+
+        try:
+            package_ver = pkg_version("adversarial-workflow")
+        except Exception:
+            package_ver = None
+
+        if package_ver:
+            outdated_scripts = []
+            for script in scripts:
+                path = f".adversarial/scripts/{script}"
+                if os.path.exists(path):
+                    try:
+                        with open(path, "r") as f:
+                            # Read first 5 lines to find SCRIPT_VERSION
+                            for _ in range(5):
+                                line = f.readline()
+                                if line.startswith("# SCRIPT_VERSION:"):
+                                    script_ver = line.split(":")[1].strip()
+                                    if script_ver != package_ver:
+                                        outdated_scripts.append(
+                                            f"{script} (v{script_ver})"
+                                        )
+                                    break
+                            else:
+                                # No version found - script is pre-versioning
+                                outdated_scripts.append(f"{script} (no version)")
+                    except Exception:
+                        pass
+
+            if outdated_scripts:
+                issues.append(
+                    {
+                        "severity": "WARNING",
+                        "message": f"Scripts outdated (package v{package_ver}): {', '.join(outdated_scripts)}",
+                        "fix": "Run: adversarial init --force",
+                    }
+                )
+            else:
+                good_checks.append(f"Scripts up-to-date (v{package_ver})")
+
     # Print results
     print("━" * 70)
 

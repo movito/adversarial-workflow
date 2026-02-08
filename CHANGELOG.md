@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.4] - 2026-02-08
+
+### Fixed
+- **Suppress browser opening** - Added `--no-browser` flag to all aider invocations to prevent browser from opening to `platform.openai.com/api-keys` during evaluations (ADV-0037)
+
+### Added
+- **Script version checking** - `adversarial check` now warns if local `.adversarial/scripts/` are outdated compared to installed package version
+
+### Documentation
+- Added upgrade instructions: run `adversarial init --force` after `pip install --upgrade` to update local scripts
+
+## [0.9.3] - 2026-02-07
+
+### Fixed
+- **Model field priority** - Explicit `model` field now takes priority over `model_requirement` in evaluator configs (ADV-0032)
+- Enables library team to update model IDs without requiring workflow package releases
+
+### Technical
+- Updated ModelResolver to check `config.model` before resolving `model_requirement`
+- Updated ADR-0005 resolution algorithm documentation
+
 ## [0.9.2] - 2026-02-06
 
 ### Fixed

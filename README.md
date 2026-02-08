@@ -168,6 +168,23 @@ pip install -e adversarial-workflow/
 
 See [docs/INTEGRATION-GUIDE.md](docs/INTEGRATION-GUIDE.md) for detailed integration strategies.
 
+### Upgrading
+
+After upgrading the package, also update your local scripts:
+
+```bash
+# 1. Upgrade the package
+pip install --upgrade adversarial-workflow
+
+# 2. Update local scripts (required after major updates)
+adversarial init --force
+
+# 3. Verify everything is up-to-date
+adversarial check
+```
+
+The `adversarial check` command will warn you if your local scripts are outdated compared to the installed package version.
+
 ## Quick Start
 
 > **⚠️ New Users**: Run the [Prerequisites](#prerequisites) checklist above first!

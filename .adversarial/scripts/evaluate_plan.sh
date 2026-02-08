@@ -1,4 +1,5 @@
 #!/bin/bash
+# SCRIPT_VERSION: 0.9.4
 # Phase 1: Plan Evaluation - Critical design review
 
 # Load environment variables from .env file

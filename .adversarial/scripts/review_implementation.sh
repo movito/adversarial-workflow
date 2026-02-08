@@ -1,4 +1,5 @@
 #!/bin/bash
+# SCRIPT_VERSION: 0.9.4
 # Phase 3: Implementation Review - Reviewer analyzes actual code changes
 
 # Load environment variables from .env file
