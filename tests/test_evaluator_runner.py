@@ -470,3 +470,44 @@ class TestModelResolutionInRunner:
             assert result == 1
             captured = capsys.readouterr()
             assert "Unknown model family" in captured.out or "resolution" in captured.out.lower()
+
+
+class TestAiderCommandFlags:
+    """Test aider command construction flags (ADV-0037)."""
+
+    def test_no_browser_flag_included(self, tmp_path, monkeypatch):
+        """Verify --no-browser flag is included to suppress browser opening."""
+        # Create test file and config
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test")
+
+        config_dir = tmp_path / ".adversarial"
+        config_dir.mkdir()
+        (config_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
+
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+
+        # Mock aider to capture the command
+        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
+        with (
+            patch("subprocess.run", mock_run),
+            patch("shutil.which", return_value="/usr/bin/aider"),
+        ):
+            config = EvaluatorConfig(
+                name="test-eval",
+                description="Test evaluator",
+                model="gpt-4o",
+                api_key_env="OPENAI_API_KEY",
+                prompt="Test prompt",
+                output_suffix="TEST",
+                source="custom",
+            )
+
+            run_evaluator(config, str(test_file))
+
+            # Verify --no-browser is in the command
+            assert mock_run.called, "aider should have been called"
+            call_args = mock_run.call_args
+            cmd = call_args[0][0]
+            assert "--no-browser" in cmd, "aider command should include --no-browser flag"

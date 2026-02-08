@@ -97,6 +97,7 @@ if [ "$PLAN_AVAILABLE" = "yes" ]; then
 fi
 
 aider \
+  --no-browser \
   --model "$EVALUATOR_MODEL" \
   --yes \
   --no-detect-urls \

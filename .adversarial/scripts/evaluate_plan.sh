@@ -54,6 +54,7 @@ echo ""
 mkdir -p "$LOG_DIR"
 
 aider \
+  --no-browser \
   --model "$EVALUATOR_MODEL" \
   --yes \
   --no-detect-urls \
