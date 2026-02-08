@@ -84,6 +84,7 @@ echo "=== REVIEWER ($EVALUATOR_MODEL) ANALYZING TEST RESULTS ==="
 echo ""
 
 aider \
+  --no-browser \
   --model "$EVALUATOR_MODEL" \
   --yes \
   --no-detect-urls \

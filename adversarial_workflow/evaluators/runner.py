@@ -159,6 +159,7 @@ def _run_custom_evaluator(
         # Build aider command
         cmd = [
             "aider",
+            "--no-browser",
             "--model",
             resolved_model,
             "--yes",
