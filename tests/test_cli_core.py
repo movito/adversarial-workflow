@@ -409,8 +409,8 @@ class TestCheckCommand:
         os.chdir(tmp_path)
         (tmp_path / ".git").mkdir()
         (tmp_path / ".adversarial").mkdir()
-        # Write invalid YAML
-        (tmp_path / ".adversarial" / "config.yml").write_text("invalid: yaml: content:\n  broken")
+        # Write truly malformed YAML (unclosed bracket)
+        (tmp_path / ".adversarial" / "config.yml").write_text("key: [unclosed bracket")
 
         with (
             patch("shutil.which", return_value="/usr/bin/aider"),
@@ -711,7 +711,7 @@ class TestRenderTemplate:
         import stat
 
         mode = output_path.stat().st_mode
-        assert not (mode & stat.S_IXUSR & stat.S_IXGRP & stat.S_IXOTH)
+        assert not (mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH))
 
     def test_render_template_multiple_same_var(self, tmp_path):
         """render_template should replace all occurrences of a variable."""
@@ -985,30 +985,20 @@ class TestCreateExampleTask:
         # Fallback should have specific content
         assert "Off-By-One" in content or "#" in content  # Either template or fallback
 
-    def test_create_example_task_with_template(self, tmp_path, capsys):
-        """create_example_task should copy template when it exists."""
+    def test_create_example_task_fallback_content(self, tmp_path, capsys):
+        """create_example_task should create fallback content when template missing."""
         os.chdir(tmp_path)
-        task_path = tmp_path / "from-template.md"
+        task_path = tmp_path / "fallback-task.md"
 
-        # Mock the template path to exist and copy behavior
-        with (
-            patch("adversarial_workflow.cli.Path") as mock_path,
-            patch("shutil.copy") as mock_copy,
-        ):
-            # Set up the mock to make template path appear to exist
-            mock_template_path = MagicMock()
-            mock_template_path.exists.return_value = True
-            mock_path.return_value.__truediv__.return_value.__truediv__.return_value = (
-                mock_template_path
-            )
-            mock_path.return_value.parent = Path(__file__).parent.parent
+        # The function uses fallback when template doesn't exist
+        create_example_task(str(task_path))
 
-            # Call the function - it will use the mocked template
-            create_example_task(str(task_path))
-
-            # Verify shutil.copy was called (template path)
-            # Note: The actual copy might not happen due to mock complexity
-            # but we verify the function handles the template path
+        assert task_path.exists()
+        content = task_path.read_text()
+        # Verify fallback content structure
+        assert "Off-By-One" in content  # From fallback template
+        assert "Bug Fix" in content
+        assert "Acceptance Criteria" in content
 
 
 class TestHealthCommand:
