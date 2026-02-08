@@ -1,6 +1,6 @@
 # ADV-0037: Suppress Browser Opening During Evaluation
 
-**Status**: In Progress
+**Status**: Done
 **Priority**: Medium
 **Created**: 2026-02-07
 **Type**: Bug Fix / UX
