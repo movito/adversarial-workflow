@@ -1,6 +1,6 @@
 # ADV-0033: CLI Core Commands Test Coverage
 
-**Status**: In Progress
+**Status**: In Review
 **Priority**: Medium
 **Created**: 2026-02-07
 **Type**: Testing
