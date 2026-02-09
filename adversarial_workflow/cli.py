@@ -30,7 +30,11 @@ from typing import Dict, List, Optional, Tuple
 import yaml
 from dotenv import dotenv_values, load_dotenv
 
-__version__ = "0.9.3"
+try:
+    from importlib.metadata import version as _get_version
+    __version__ = _get_version("adversarial-workflow")
+except Exception:
+    __version__ = "0.9.5"  # Fallback for editable installs
 
 # ANSI color codes for better output
 RESET = "\033[0m"

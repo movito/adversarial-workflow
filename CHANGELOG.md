@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.5] - 2026-02-09
+
+### Fixed
+- **Version mismatch** - `__version__` now uses `importlib.metadata.version()` as single source of truth, matching pip metadata
+
+### Technical
+- Removed hardcoded version strings from `__init__.py` and `cli.py`
+- Version is now derived from `pyproject.toml` via pip metadata
+
 ## [0.9.4] - 2026-02-08
 
 ### Fixed

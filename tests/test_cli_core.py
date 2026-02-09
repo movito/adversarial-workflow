@@ -493,7 +493,7 @@ class TestCheckCommand:
         for script in scripts:
             script_path = tmp_path / ".adversarial" / "scripts" / script
             # Include SCRIPT_VERSION to match package version
-            script_path.write_text("#!/bin/bash\n# SCRIPT_VERSION: 0.9.4\n")
+            script_path.write_text("#!/bin/bash\n# SCRIPT_VERSION: 0.9.5\n")
             script_path.chmod(0o755)
 
         (tmp_path / ".env").write_text("OPENAI_API_KEY=sk-testkey123456789\n")
@@ -502,7 +502,7 @@ class TestCheckCommand:
             patch("shutil.which", return_value="/usr/bin/aider"),
             patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.50.0")),
             patch.dict(os.environ, {"OPENAI_API_KEY": "sk-testkey123456789"}),
-            patch("importlib.metadata.version", return_value="0.9.4"),
+            patch("importlib.metadata.version", return_value="0.9.5"),
         ):
             result = check()
 
