@@ -49,6 +49,25 @@ The adversarial-workflow package has two parts:
 
 The `--no-browser` fix is in both, so you need both steps.
 
+### Library Evaluators (v0.4.0)
+
+If you use evaluators from the [adversarial-evaluator-library](https://github.com/movito/adversarial-evaluator-library), also update them:
+
+```bash
+# Check for available updates
+adversarial library check-updates
+
+# Update all installed evaluators
+adversarial library update --all
+```
+
+**What's new in library v0.4.0:**
+- Cross-provider evaluation support (Anthropic models via litellm)
+- Updated model IDs: `anthropic/claude-opus-4-6`, `anthropic/claude-sonnet-4-5`
+- Requires workflow v0.9.3+ (model field priority fix)
+
+See the [library changelog](https://github.com/movito/adversarial-evaluator-library/blob/main/CHANGELOG.md) for details.
+
 ---
 
 ## General Upgrade Process
