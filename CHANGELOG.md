@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.6] - 2026-02-09
+
+### Added
+- **`--force` flag for init** - `adversarial init --force` now skips confirmation prompts for automated upgrades
+
+### Documentation
+- **Python 3.13 incompatibility** - Documented that aider-chat requires Python <3.13
+- Updated prerequisites to recommend Python 3.10-3.12
+- Added uv instructions for managing Python versions
+- Updated UPGRADE.md with complete upgrade path
+
 ## [0.9.5] - 2026-02-09
 
 ### Fixed

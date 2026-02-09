@@ -1,6 +1,23 @@
 # Upgrade Guide
 
-## Upgrading to v0.9.4
+## Python Version Requirement
+
+**Python 3.10-3.12 required** (Python 3.13+ not supported)
+
+The `aider-chat` dependency requires Python <3.13. If you're on Python 3.13+:
+
+```bash
+# Use uv to create a venv with Python 3.12
+uv venv .venv --python 3.12
+source .venv/bin/activate
+
+# Then proceed with upgrade
+pip install --upgrade adversarial-workflow
+```
+
+---
+
+## Upgrading to v0.9.6
 
 ### Quick Upgrade (2 commands)
 
@@ -8,7 +25,7 @@
 # 1. Upgrade the package
 pip install --upgrade adversarial-workflow
 
-# 2. Update local scripts (required - scripts now include --no-browser fix)
+# 2. Update local scripts (--force skips confirmation prompt)
 adversarial init --force
 ```
 
@@ -22,17 +39,17 @@ adversarial check
 You should see:
 
 ```
-✅ Scripts up-to-date (v0.9.4)
+✅ Scripts up-to-date (v0.9.6)
 ```
 
 If you see a warning like this, run `adversarial init --force`:
 
 ```
-⚠️ [WARNING] Scripts outdated (package v0.9.4): evaluate_plan.sh (v0.9.3)
+⚠️ [WARNING] Scripts outdated (package v0.9.6): evaluate_plan.sh (v0.9.3)
    Fix: Run: adversarial init --force
 ```
 
-### What's Fixed in v0.9.4
+### What's Fixed in v0.9.6
 
 - **Browser no longer opens** during evaluations (no more `platform.openai.com/api-keys` popups)
 - Works properly in CI/CD and headless environments

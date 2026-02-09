@@ -1,7 +1,7 @@
 # Adversarial Workflow
 
 [![PyPI version](https://badge.fury.io/py/adversarial-workflow.svg)](https://pypi.org/project/adversarial-workflow/)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10-3.12](https://img.shields.io/badge/python-3.10--3.12-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **A multi-stage AI code review system that makes your code better**
@@ -132,7 +132,9 @@ See [Custom Evaluators](#custom-evaluators) for full documentation, or check the
 Before installing, ensure you have:
 
 ### Required
-- **Python 3.10+** (Python 3.12 recommended)
+- **Python 3.10-3.12** (Python 3.12 recommended)
+  - ⚠️ **Python 3.13+ not supported** - aider-chat dependency requires Python <3.13
+  - Use [uv](https://github.com/astral-sh/uv) to manage Python versions: `uv venv --python 3.12`
 - **Git repository** (workflow analyzes git diff)
 - **API Keys** - At least one of:
   - **Anthropic Claude** (recommended): Get at https://console.anthropic.com/settings/keys

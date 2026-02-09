@@ -1,5 +1,5 @@
 #!/bin/bash
-# SCRIPT_VERSION: 0.9.5
+# SCRIPT_VERSION: 0.9.6
 # Phase 4: Test Validation - Reviewer validates implementation
 
 # Load environment variables from .env file

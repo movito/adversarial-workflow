@@ -34,7 +34,7 @@ try:
     from importlib.metadata import version as _get_version
     __version__ = _get_version("adversarial-workflow")
 except Exception:
-    __version__ = "0.9.5"  # Fallback for editable installs
+    __version__ = "0.9.6"  # Fallback for editable installs
 
 # ANSI color codes for better output
 RESET = "\033[0m"
@@ -3051,6 +3051,9 @@ For more information: https://github.com/movito/adversarial-workflow
     init_parser.add_argument(
         "--interactive", "-i", action="store_true", help="Interactive setup wizard"
     )
+    init_parser.add_argument(
+        "--force", "-f", action="store_true", help="Overwrite existing config without prompting"
+    )
 
     # quickstart command
     subparsers.add_parser(
@@ -3386,7 +3389,8 @@ For more information: https://github.com/movito/adversarial-workflow
         if args.interactive:
             return init_interactive(args.path)
         else:
-            return init(args.path)
+            # --force skips confirmation prompts
+            return init(args.path, interactive=not args.force)
     elif args.command == "quickstart":
         return quickstart()
     elif args.command in ["check", "doctor"]:

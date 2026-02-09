@@ -16,7 +16,7 @@ try:
     from importlib.metadata import version as _get_version
     __version__ = _get_version("adversarial-workflow")
 except Exception:
-    __version__ = "0.9.5"  # Fallback for editable installs
+    __version__ = "0.9.6"  # Fallback for editable installs
 __author__ = "Fredrik Matheson"
 __license__ = "MIT"
 
