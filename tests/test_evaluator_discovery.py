@@ -1184,3 +1184,131 @@ output_suffix: VALID
         assert "valid" in result
         assert "broken" not in result
         assert "YAML syntax error" in caplog.text
+
+    def test_discover_nested_evaluator(self, tmp_path):
+        """Discover evaluators in nested library structure (provider/name/evaluator.yml)."""
+        eval_dir = tmp_path / ".adversarial" / "evaluators"
+        
+        # Create nested structure like the library repo
+        nested = eval_dir / "google" / "gemini-flash"
+        nested.mkdir(parents=True)
+        (nested / "evaluator.yml").write_text(
+            """
+name: gemini-flash
+description: Gemini Flash evaluator
+model: gemini/gemini-2.5-flash
+api_key_env: GEMINI_API_KEY
+prompt: Nested evaluator prompt
+output_suffix: -GEMINI
+"""
+        )
+
+        result = discover_local_evaluators(tmp_path)
+
+        assert "gemini-flash" in result
+        assert result["gemini-flash"].name == "gemini-flash"
+        assert result["gemini-flash"].description == "Gemini Flash evaluator"
+
+    def test_discover_mixed_flat_and_nested(self, tmp_path):
+        """Discover both flat files and nested structure evaluators."""
+        eval_dir = tmp_path / ".adversarial" / "evaluators"
+        
+        # Create flat structure
+        eval_dir.mkdir(parents=True)
+        (eval_dir / "flat-eval.yml").write_text(
+            """
+name: flat-eval
+description: Flat evaluator
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: Flat prompt
+output_suffix: -FLAT
+"""
+        )
+        
+        # Create nested structure
+        nested = eval_dir / "anthropic" / "claude-review"
+        nested.mkdir(parents=True)
+        (nested / "evaluator.yml").write_text(
+            """
+name: claude-review
+description: Claude review evaluator
+model: claude-3-opus
+api_key_env: ANTHROPIC_API_KEY
+prompt: Nested Claude prompt
+output_suffix: -CLAUDE
+"""
+        )
+
+        result = discover_local_evaluators(tmp_path)
+
+        assert len(result) == 2
+        assert "flat-eval" in result
+        assert "claude-review" in result
+
+    def test_discover_flat_takes_precedence_over_nested(self, tmp_path, caplog):
+        """Flat files take precedence over nested files with same evaluator name."""
+        eval_dir = tmp_path / ".adversarial" / "evaluators"
+        
+        # Create flat file first (processed first due to sorted order)
+        eval_dir.mkdir(parents=True)
+        (eval_dir / "google-gemini-flash.yml").write_text(
+            """
+name: gemini-flash
+description: FLAT version should win
+model: gemini/gemini-2.5-flash
+api_key_env: GEMINI_API_KEY
+prompt: Flat prompt
+output_suffix: -FLAT
+"""
+        )
+        
+        # Create nested structure with same evaluator name
+        nested = eval_dir / "google" / "gemini-flash"
+        nested.mkdir(parents=True)
+        (nested / "evaluator.yml").write_text(
+            """
+name: gemini-flash
+description: NESTED version should lose
+model: gemini/gemini-2.5-flash
+api_key_env: GEMINI_API_KEY
+prompt: Nested prompt
+output_suffix: -NESTED
+"""
+        )
+
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            result = discover_local_evaluators(tmp_path)
+
+        # Flat version should win
+        assert "gemini-flash" in result
+        assert result["gemini-flash"].description == "FLAT version should win"
+        assert "conflicts with existing" in caplog.text
+
+    def test_discover_multiple_nested_evaluators(self, tmp_path):
+        """Discover multiple evaluators from nested structure."""
+        eval_dir = tmp_path / ".adversarial" / "evaluators"
+        
+        # Create multiple nested evaluators
+        for provider, name in [("google", "gemini-flash"), ("openai", "gpt-check"), ("anthropic", "claude-review")]:
+            nested = eval_dir / provider / name
+            nested.mkdir(parents=True)
+            (nested / "evaluator.yml").write_text(
+                f"""
+name: {name}
+description: {provider} {name} evaluator
+model: test-model
+api_key_env: TEST_API_KEY
+prompt: Test prompt for {name}
+output_suffix: -{name.upper()}
+"""
+            )
+
+        result = discover_local_evaluators(tmp_path)
+
+        assert len(result) == 3
+        assert "gemini-flash" in result
+        assert "gpt-check" in result
+        assert "claude-review" in result

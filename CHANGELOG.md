@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Nested evaluator discovery** - Discovery now supports nested library structure (`{provider}/{name}/evaluator.yml`) in addition to flat files. Users who manually copy from the library repo no longer need to flatten files. Flat files take precedence on name conflicts.
+
 ## [0.9.6] - 2026-02-09
 
 ### Added
