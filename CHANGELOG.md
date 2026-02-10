@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.8] - 2026-02-11
+
+### Fixed
+
+- **Legacy script EVALUATOR_MODEL fallback** - Shell script templates now include `${EVALUATOR_MODEL:-gpt-4o}` fallback. Users who removed the deprecated `evaluator_model` field from `config.yml` no longer get empty model errors when running legacy scripts directly.
+
 ## [0.9.7] - 2026-02-10
 
 ### Added
