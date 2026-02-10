@@ -93,21 +93,22 @@ class TestInitCommand:
 
         assert result == 0
         scripts_dir = tmp_path / ".adversarial" / "scripts"
+        from adversarial_workflow import __version__
 
         # Check all scripts have version headers
-        for script_name in ["evaluate_plan.sh", "review_implementation.sh", 
+        for script_name in ["evaluate_plan.sh", "review_implementation.sh",
                            "validate_tests.sh", "proofread_content.sh"]:
             script_path = scripts_dir / script_name
             content = script_path.read_text()
-            lines = content.split("\n")
-            
+            lines = content.splitlines()
+            assert len(lines) >= 2, f"{script_name} has insufficient content"
+
             # First line should be shebang, second should be version
             assert lines[0].startswith("#!/bin/bash"), f"{script_name} missing shebang"
             assert lines[1].startswith("# SCRIPT_VERSION:"), \
                 f"{script_name} missing SCRIPT_VERSION header"
-            
+
             # Version should be current package version
-            from adversarial_workflow import __version__
             assert __version__ in lines[1], \
                 f"{script_name} has wrong version: {lines[1]}"
 
