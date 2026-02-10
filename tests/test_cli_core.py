@@ -84,6 +84,34 @@ class TestInitCommand:
         assert (scripts_dir / "validate_tests.sh").exists()
         assert (scripts_dir / "proofread_content.sh").exists()
 
+    def test_init_scripts_have_version_headers(self, tmp_path):
+        """init should inject SCRIPT_VERSION headers into scripts."""
+        os.chdir(tmp_path)
+        (tmp_path / ".git").mkdir()
+
+        result = init(str(tmp_path), interactive=False)
+
+        assert result == 0
+        scripts_dir = tmp_path / ".adversarial" / "scripts"
+        from adversarial_workflow import __version__
+
+        # Check all scripts have version headers
+        for script_name in ["evaluate_plan.sh", "review_implementation.sh",
+                           "validate_tests.sh", "proofread_content.sh"]:
+            script_path = scripts_dir / script_name
+            content = script_path.read_text()
+            lines = content.splitlines()
+            assert len(lines) >= 2, f"{script_name} has insufficient content"
+
+            # First line should be shebang, second should be version
+            assert lines[0].startswith("#!/bin/bash"), f"{script_name} missing shebang"
+            assert lines[1].startswith("# SCRIPT_VERSION:"), \
+                f"{script_name} missing SCRIPT_VERSION header"
+
+            # Version should be current package version
+            assert __version__ in lines[1], \
+                f"{script_name} has wrong version: {lines[1]}"
+
     def test_init_creates_aider_config(self, tmp_path, capsys):
         """init should create .aider.conf.yml in project root."""
         os.chdir(tmp_path)

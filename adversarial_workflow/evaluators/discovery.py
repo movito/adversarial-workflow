@@ -267,7 +267,13 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
 def discover_local_evaluators(
     base_path: Path | None = None,
 ) -> dict[str, EvaluatorConfig]:
-    """Discover evaluators from .adversarial/evaluators/*.yml
+    """Discover evaluators from .adversarial/evaluators/
+
+    Supports two structures:
+    1. Flat: .adversarial/evaluators/{provider}-{name}.yml (installed via library)
+    2. Nested: .adversarial/evaluators/{provider}/{name}/evaluator.yml (manual copy)
+
+    Flat files take precedence over nested files with the same evaluator name.
 
     Args:
         base_path: Project root (default: current directory)
@@ -284,14 +290,34 @@ def discover_local_evaluators(
     if not local_dir.exists():
         return evaluators
 
-    # Get yml files with error handling for permission/access issues
+    # Collect all evaluator files (flat takes precedence over nested)
+    yml_files: list[Path] = []
+
     try:
-        yml_files = sorted(local_dir.glob("*.yml"))
+        # First: flat files (*.yml) - these take precedence
+        flat_files = sorted(local_dir.glob("*.yml"))
+        yml_files.extend(flat_files)
+
+        # Second: nested files (**/evaluator.yml) - library structure
+        # These are only added if they don't conflict with flat files
+        nested_files = sorted(local_dir.glob("**/evaluator.yml"))
+        for nested in nested_files:
+            # Skip if it's directly in local_dir (would be caught by flat glob)
+            if nested.parent == local_dir:
+                continue
+            yml_files.append(nested)
+
     except OSError as e:
         logger.warning("Could not read evaluators directory: %s", e)
         return evaluators
 
     for yml_file in yml_files:
+        # Use relative path for clearer warning messages (especially for nested files)
+        try:
+            rel_path = yml_file.relative_to(local_dir)
+        except ValueError:
+            rel_path = yml_file.name
+
         try:
             config = parse_evaluator_yaml(yml_file)
 
@@ -300,7 +326,7 @@ def discover_local_evaluators(
                 logger.warning(
                     "Evaluator '%s' in %s conflicts with existing; skipping",
                     config.name,
-                    yml_file.name,
+                    rel_path,
                 )
                 continue
 
@@ -318,10 +344,10 @@ def discover_local_evaluators(
                 evaluators[alias] = config
 
         except EvaluatorParseError as e:
-            logger.warning("Skipping %s: %s", yml_file.name, e)
+            logger.warning("Skipping %s: %s", rel_path, e)
         except yaml.YAMLError as e:
-            logger.warning("Skipping %s: YAML syntax error: %s", yml_file.name, e)
+            logger.warning("Skipping %s: YAML syntax error: %s", rel_path, e)
         except OSError as e:
-            logger.warning("Could not load %s: %s", yml_file.name, e)
+            logger.warning("Could not load %s: %s", rel_path, e)
 
     return evaluators
