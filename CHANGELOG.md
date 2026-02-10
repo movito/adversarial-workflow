@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Nested evaluator discovery** - Discovery now supports nested library structure (`{provider}/{name}/evaluator.yml`) in addition to flat files. Users who manually copy from the library repo no longer need to flatten files. Flat files take precedence on name conflicts.
 
+### Fixed
+- **Script version headers injected during init** - `adversarial init` now dynamically injects `# SCRIPT_VERSION: {version}` into all scripts. This ensures `adversarial check` can verify script versions after upgrade. Previously, templates lacked version headers causing "(no version)" warnings.
+
 ## [0.9.6] - 2026-02-09
 
 ### Added

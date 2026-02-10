@@ -584,6 +584,14 @@ def render_template(template_path: str, output_path: str, variables: Dict) -> No
         placeholder = f"{{{{{key}}}}}"
         content = content.replace(placeholder, str(value))
 
+    # Inject version header for shell scripts (after shebang line)
+    if output_path.endswith(".sh"):
+        lines = content.split("\n", 1)
+        if lines[0].startswith("#!"):
+            # Insert version after shebang
+            version_header = f"# SCRIPT_VERSION: {__version__}"
+            content = f"{lines[0]}\n{version_header}\n{lines[1] if len(lines) > 1 else ''}"
+
     # Write output
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
