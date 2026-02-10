@@ -312,6 +312,12 @@ def discover_local_evaluators(
         return evaluators
 
     for yml_file in yml_files:
+        # Use relative path for clearer warning messages (especially for nested files)
+        try:
+            rel_path = yml_file.relative_to(local_dir)
+        except ValueError:
+            rel_path = yml_file.name
+
         try:
             config = parse_evaluator_yaml(yml_file)
 
@@ -320,7 +326,7 @@ def discover_local_evaluators(
                 logger.warning(
                     "Evaluator '%s' in %s conflicts with existing; skipping",
                     config.name,
-                    yml_file.name,
+                    rel_path,
                 )
                 continue
 
@@ -338,10 +344,10 @@ def discover_local_evaluators(
                 evaluators[alias] = config
 
         except EvaluatorParseError as e:
-            logger.warning("Skipping %s: %s", yml_file.name, e)
+            logger.warning("Skipping %s: %s", rel_path, e)
         except yaml.YAMLError as e:
-            logger.warning("Skipping %s: YAML syntax error: %s", yml_file.name, e)
+            logger.warning("Skipping %s: YAML syntax error: %s", rel_path, e)
         except OSError as e:
-            logger.warning("Could not load %s: %s", yml_file.name, e)
+            logger.warning("Could not load %s: %s", rel_path, e)
 
     return evaluators

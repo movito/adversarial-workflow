@@ -84,7 +84,7 @@ class TestInitCommand:
         assert (scripts_dir / "validate_tests.sh").exists()
         assert (scripts_dir / "proofread_content.sh").exists()
 
-    def test_init_scripts_have_version_headers(self, tmp_path, capsys):
+    def test_init_scripts_have_version_headers(self, tmp_path):
         """init should inject SCRIPT_VERSION headers into scripts."""
         os.chdir(tmp_path)
         (tmp_path / ".git").mkdir()
