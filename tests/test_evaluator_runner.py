@@ -11,6 +11,8 @@ from adversarial_workflow.evaluators.config import EvaluatorConfig, ModelRequire
 from adversarial_workflow.evaluators.resolver import ModelResolver, ResolutionError
 from adversarial_workflow.evaluators.runner import (
     _check_file_size,
+    _execute_script,
+    _normalize_output_suffix,
     _report_verdict,
     run_evaluator,
 )
@@ -470,6 +472,133 @@ class TestModelResolutionInRunner:
             assert result == 1
             captured = capsys.readouterr()
             assert "Unknown model family" in captured.out or "resolution" in captured.out.lower()
+
+
+class TestOutputFilenameExtension:
+    """Test that output filenames don't get double .md extension (issue #30)."""
+
+    def test_suffix_without_md_extension(self, tmp_path, monkeypatch):
+        """Suffix without .md produces single .md extension."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test")
+
+        config_dir = tmp_path / ".adversarial"
+        config_dir.mkdir()
+        logs_dir = config_dir / "logs"
+        (config_dir / "config.yml").write_text(f"log_directory: {logs_dir}")
+
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+
+        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="APPROVED", stderr=""))
+        with (
+            patch("subprocess.run", mock_run),
+            patch("shutil.which", return_value="/usr/bin/aider"),
+        ):
+            config = EvaluatorConfig(
+                name="test-eval",
+                description="Test",
+                model="gpt-4o",
+                api_key_env="OPENAI_API_KEY",
+                prompt="Test prompt",
+                output_suffix="TEST-EVAL",
+                source="custom",
+            )
+
+            run_evaluator(config, str(test_file))
+
+            # Check the output file was written with single .md
+            written_files = list(logs_dir.glob("*"))
+            assert len(written_files) == 1
+            assert written_files[0].name == "test-TEST-EVAL.md"
+
+    def test_suffix_with_md_extension_no_double(self, tmp_path, monkeypatch):
+        """Suffix ending in .md does NOT produce double .md.md extension."""
+        test_file = tmp_path / "task-spec.md"
+        test_file.write_text("# Test")
+
+        config_dir = tmp_path / ".adversarial"
+        config_dir.mkdir()
+        logs_dir = config_dir / "logs"
+        (config_dir / "config.yml").write_text(f"log_directory: {logs_dir}")
+
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+
+        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="APPROVED", stderr=""))
+        with (
+            patch("subprocess.run", mock_run),
+            patch("shutil.which", return_value="/usr/bin/aider"),
+        ):
+            config = EvaluatorConfig(
+                name="arch-review",
+                description="Test",
+                model="gpt-4o",
+                api_key_env="OPENAI_API_KEY",
+                prompt="Test prompt",
+                output_suffix="-arch-review.md",
+                source="custom",
+            )
+
+            run_evaluator(config, str(test_file))
+
+            # Check output file has single .md, not .md.md
+            written_files = list(logs_dir.glob("*"))
+            assert len(written_files) == 1
+            assert written_files[0].name == "task-spec--arch-review.md"
+            assert not written_files[0].name.endswith(".md.md")
+
+    def test_builtin_suffix_with_md_extension_no_double(self, tmp_path):
+        """Built-in _execute_script path also normalizes suffix."""
+        test_file = tmp_path / "task-spec.md"
+        test_file.write_text("# Test")
+
+        logs_dir = tmp_path / ".adversarial" / "logs"
+        logs_dir.mkdir(parents=True)
+
+        # Pre-create the expected log file (script would normally write it)
+        # Validator requires 500+ bytes
+        expected_log = logs_dir / "task-spec-PLAN-EVAL.md"
+        expected_log.write_text("## Verdict: APPROVED\n\n" + "Evaluation details. " * 30)
+
+        config = EvaluatorConfig(
+            name="evaluate",
+            description="Plan evaluation",
+            model="gpt-4o",
+            api_key_env="OPENAI_API_KEY",
+            prompt="",
+            output_suffix="PLAN-EVAL.md",
+            source="builtin",
+        )
+
+        with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="", stderr="")):
+            result = _execute_script(
+                "/fake/script.sh",
+                str(test_file),
+                config,
+                {"log_directory": str(logs_dir)},
+                30,
+            )
+
+        assert result == 0
+        assert expected_log.exists()
+        assert not (logs_dir / "task-spec-PLAN-EVAL.md.md").exists()
+
+    def test_normalize_output_suffix_lowercase(self):
+        """Helper strips lowercase .md."""
+        assert _normalize_output_suffix("-arch-review.md") == "-arch-review"
+
+    def test_normalize_output_suffix_uppercase(self):
+        """Helper strips uppercase .MD."""
+        assert _normalize_output_suffix("-arch-review.MD") == "-arch-review"
+
+    def test_normalize_output_suffix_mixed_case(self):
+        """Helper strips mixed-case .Md."""
+        assert _normalize_output_suffix("-arch-review.Md") == "-arch-review"
+
+    def test_normalize_output_suffix_no_extension(self):
+        """Helper leaves suffix without .md unchanged."""
+        assert _normalize_output_suffix("TEST-EVAL") == "TEST-EVAL"
 
 
 class TestAiderCommandFlags:
