@@ -129,7 +129,8 @@ def _run_custom_evaluator(
     logs_dir.mkdir(parents=True, exist_ok=True)
 
     file_basename = Path(file_path).stem
-    output_file = logs_dir / f"{file_basename}-{config.output_suffix}.md"
+    suffix = config.output_suffix.removesuffix(".md")
+    output_file = logs_dir / f"{file_basename}-{suffix}.md"
 
     # Read input file
     file_content = Path(file_path).read_text()
@@ -188,7 +189,7 @@ def _run_custom_evaluator(
 
         # Write output
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-        header = f"""# {config.output_suffix.replace('-', ' ').replace('_', ' ').title()}
+        header = f"""# {suffix.replace('-', ' ').replace('_', ' ').title()}
 
 **Source**: {file_path}
 **Evaluator**: {config.name}
@@ -252,7 +253,8 @@ def _execute_script(
 
     # Validate output
     file_basename = Path(file_path).stem
-    log_file = Path(project_config["log_directory"]) / f"{file_basename}-{config.output_suffix}.md"
+    suffix = config.output_suffix.removesuffix(".md")
+    log_file = Path(project_config["log_directory"]) / f"{file_basename}-{suffix}.md"
 
     is_valid, verdict, message = validate_evaluation_output(str(log_file))
 
