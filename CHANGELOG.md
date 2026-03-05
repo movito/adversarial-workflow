@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.9] - 2026-03-05
+
 ### Fixed
 
 - **Double `.md.md` extension in evaluator output filenames** - Library evaluator YAML configs with `output_suffix` ending in `.md` no longer produce double extensions. A new `_normalize_output_suffix()` helper strips trailing `.md` (case-insensitive) before constructing output paths. ([#30](https://github.com/movito/adversarial-workflow/issues/30))
@@ -578,6 +580,14 @@ This release specifically improves the agent integration experience by:
 
 ---
 
+[0.9.2]: https://github.com/movito/adversarial-workflow/compare/v0.9.1...v0.9.2
+[0.9.9]: https://github.com/movito/adversarial-workflow/compare/v0.9.8...v0.9.9
+[0.9.8]: https://github.com/movito/adversarial-workflow/compare/v0.9.7...v0.9.8
+[0.9.7]: https://github.com/movito/adversarial-workflow/compare/v0.9.6...v0.9.7
+[0.9.6]: https://github.com/movito/adversarial-workflow/compare/v0.9.5...v0.9.6
+[0.9.5]: https://github.com/movito/adversarial-workflow/compare/v0.9.4...v0.9.5
+[0.9.4]: https://github.com/movito/adversarial-workflow/compare/v0.9.3...v0.9.4
+[0.9.3]: https://github.com/movito/adversarial-workflow/compare/v0.9.2...v0.9.3
 [0.9.2]: https://github.com/movito/adversarial-workflow/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/movito/adversarial-workflow/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/movito/adversarial-workflow/compare/v0.8.1...v0.9.0
