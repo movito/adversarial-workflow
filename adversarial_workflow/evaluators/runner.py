@@ -22,6 +22,13 @@ from .config import EvaluatorConfig
 from .resolver import ModelResolver, ResolutionError
 
 
+def _normalize_output_suffix(output_suffix: str) -> str:
+    """Strip trailing .md extension from output suffix to avoid double extensions."""
+    if output_suffix.lower().endswith(".md"):
+        return output_suffix[:-3]
+    return output_suffix
+
+
 def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -> int:
     """Run an evaluator on a file.
 
@@ -129,7 +136,7 @@ def _run_custom_evaluator(
     logs_dir.mkdir(parents=True, exist_ok=True)
 
     file_basename = Path(file_path).stem
-    suffix = config.output_suffix.removesuffix(".md")
+    suffix = _normalize_output_suffix(config.output_suffix)
     output_file = logs_dir / f"{file_basename}-{suffix}.md"
 
     # Read input file
@@ -253,7 +260,7 @@ def _execute_script(
 
     # Validate output
     file_basename = Path(file_path).stem
-    suffix = config.output_suffix.removesuffix(".md")
+    suffix = _normalize_output_suffix(config.output_suffix)
     log_file = Path(project_config["log_directory"]) / f"{file_basename}-{suffix}.md"
 
     is_valid, verdict, message = validate_evaluation_output(str(log_file))
