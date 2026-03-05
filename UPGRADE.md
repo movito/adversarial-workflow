@@ -11,9 +11,51 @@ The `aider-chat` dependency requires Python <3.13. If you're on Python 3.13+:
 uv venv .venv --python 3.12
 source .venv/bin/activate
 
-# Then proceed with upgrade
-pip install --upgrade adversarial-workflow
+# Then proceed with upgrade below
 ```
+
+---
+
+## Upgrading to v0.9.9
+
+### What's Fixed
+
+- **Double `.md.md` extension in evaluator output filenames** — all evaluator outputs were getting `.md.md` instead of `.md`. This affected every project using library evaluators. ([#30](https://github.com/movito/adversarial-workflow/issues/30))
+
+### Quick Upgrade
+
+```bash
+# Upgrade the package (pinned to release tag)
+pip install --upgrade git+https://github.com/movito/adversarial-workflow.git@v0.9.9
+```
+
+No `adversarial init --force` needed — this is a Python-only fix, no shell script changes.
+
+### Verify
+
+```bash
+adversarial --version
+# Should show: 0.9.9
+```
+
+### Cleaning Up Old `.md.md` Files
+
+Existing evaluator outputs in `.adversarial/logs/` will have the double extension. New runs will produce correct filenames.
+
+To bulk-rename existing files:
+
+```bash
+cd .adversarial/logs/
+for f in *.md.md; do mv "$f" "${f%.md}"; done
+```
+
+Or delete them if you don't need old outputs:
+
+```bash
+rm -f .adversarial/logs/*.md.md
+```
+
+> **Note:** If handoff files or task specs reference `.md.md` paths, those will need manual correction.
 
 ---
 
@@ -92,8 +134,8 @@ See the [library changelog](https://github.com/movito/adversarial-evaluator-libr
 For any future upgrades, follow this pattern:
 
 ```bash
-# 1. Upgrade package
-pip install --upgrade adversarial-workflow
+# 1. Upgrade package (pin to a release tag)
+pip install --upgrade git+https://github.com/movito/adversarial-workflow.git@v<VERSION>
 
 # 2. Check if scripts need updating
 adversarial check
@@ -106,6 +148,8 @@ adversarial check
 ```
 
 The `adversarial check` command will tell you if your local scripts are outdated compared to the installed package version.
+
+Available release tags: https://github.com/movito/adversarial-workflow/tags
 
 ---
 

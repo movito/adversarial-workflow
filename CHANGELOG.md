@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Double `.md.md` extension in evaluator output filenames** - Library evaluator YAML configs with `output_suffix` ending in `.md` no longer produce double extensions. A new `_normalize_output_suffix()` helper strips trailing `.md` (case-insensitive) before constructing output paths. ([#30](https://github.com/movito/adversarial-workflow/issues/30))
 
+**Upgrade:** See [UPGRADE.md](UPGRADE.md#upgrading-to-v099) for instructions and cleanup steps.
+
 ## [0.9.8] - 2026-02-11
 
 ### Fixed
