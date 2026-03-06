@@ -2,7 +2,7 @@
 
 ## Status
 
-**In Progress** - Comprehensive comparison completed 2025-01-25
+**Updated** - Major sync completed 2026-03-06 (ADV-0039), previous sync 2025-01-26
 
 ## Context
 
@@ -197,12 +197,38 @@ Create a sync script that:
 5. Update agent definitions one by one
 6. Copy `agents/` launch scripts
 
+## Sync History
+
+### ADV-0039 (2026-03-06) — Major Sync
+
+Synced 74 upstream commits (from `5407d4e` to `0c68f0f`). Selective file-copy approach.
+
+**Added**:
+- 10 slash commands (`.claude/commands/`)
+- 5 skills (`.claude/skills/`)
+- 3 new agents (bootstrap, powertest-runner, tycho)
+- 8 new scripts (bootstrap.sh, check-bots.sh, create-agent.sh, etc.)
+- CLAUDE.md (adapted for adversarial-workflow)
+- .coderabbitignore
+- 4 new workflows, patterns.yml
+- Merged settings.json (Serena + upstream permissions)
+
+**Updated**: 11 agent definitions, 4 scripts, 2 workflows, pre-commit config, gitignore
+
+**Preserved**: code-reviewer.md, pypi-publisher.md, conftest.py, find_task_file boundary matching
+
+**Skipped**: ~160 upstream-specific files (ASK-* tasks/reviews, miriad research, curriculum docs, starter-kit ADRs)
+
+### ADV-0027 (2025-01-26) — Initial Alignment
+
+First alignment from starter kit at commit `5407d4e`. Copied scripts, agents, workflows, templates.
+
 ## Action Items
 
-- [ ] Create task to copy missing infrastructure files
-- [ ] Create task to update agent definitions
-- [ ] Decide on Linear integration (yes/no)
-- [ ] Add starter kit as git remote for easy comparison
+- [x] Create task to copy missing infrastructure files (ADV-0039)
+- [x] Create task to update agent definitions (ADV-0039)
+- [x] Decide on Linear integration — **No** (not needed for this project)
+- [ ] Add starter kit as git remote for easier future comparisons
 
 ## References
 
