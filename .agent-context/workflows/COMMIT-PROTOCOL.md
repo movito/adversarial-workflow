@@ -91,7 +91,9 @@ EOF
 - ✅ check-yaml: Validate YAML syntax
 - ✅ check-added-large-files: Prevent large file commits
 - ✅ black: Python code formatting
-- ✅ ruff: Python linting
+- ✅ isort: Import sorting
+- ✅ flake8: Critical linting errors
+- ✅ pattern-lint: Project-specific DK rules (DK001, DK003)
 
 ### Manual (you should do):
 - ✅ Run pytest: Ensure tests pass
@@ -142,33 +144,16 @@ gpush  # Runs CI check + pushes if passes
 
 After pushing to GitHub, you **MUST** verify that GitHub Actions CI/CD passes:
 
-### Option 1: Use ci-checker Agent (Recommended for Agents)
-
-Agents should invoke the **ci-checker** sub-agent using the Task tool:
-
-```
-Use the Task tool with these parameters:
-- subagent_type: "ci-checker"
-- description: "Verify CI for branch <branch-name>"
-- prompt: "Please verify CI status for branch '<branch-name>' after my recent push. Check the latest workflow runs and report PASS/FAIL/TIMEOUT status."
-```
-
-The ci-checker agent will:
-- Monitor GitHub Actions workflows via `gh` CLI
-- Report ✅ PASS / ❌ FAIL / ⏱️ TIMEOUT status
-- Provide failure summaries if needed
-- Take ~20s-10min depending on workflow duration
-
-**Cost**: ~$0.001-0.003 per check (Haiku model)
-
-### Option 2: Use verify-ci.sh Script (Manual or Agent)
+### Use verify-ci.sh Script (Recommended)
 
 ```bash
-./scripts/verify-ci.sh [branch-name] [timeout-seconds]
+./scripts/verify-ci.sh [branch-name] [--wait] [--timeout seconds]
 
 # Examples:
-./scripts/verify-ci.sh                    # Current branch, 10min timeout
-./scripts/verify-ci.sh feature/xyz 300    # Specific branch, 5min timeout
+./scripts/verify-ci.sh                              # Current branch, report status
+./scripts/verify-ci.sh --wait                        # Current branch, wait for completion
+./scripts/verify-ci.sh feature/xyz --wait            # Specific branch, wait (default 300s timeout)
+./scripts/verify-ci.sh feature/xyz --wait --timeout 600  # Custom timeout
 ```
 
 **What It Does**:
@@ -255,9 +240,9 @@ If CI is still running after timeout:
 ✅ Tests pass locally
 ✅ ci-check.sh passed
 ✅ Pushed to GitHub
-⏳ Waiting for CI verification... (ci-checker monitoring)
+⏳ Waiting for CI verification... (verify-ci.sh --wait)
 
-[Wait for ci-checker to report back]
+[Wait for verify-ci.sh to report back]
 
 ✅ CI/CD passed on GitHub
 ✅ Task complete!
@@ -283,7 +268,6 @@ git commit -m "message"      # Formatting + linting + fast tests ✅
 ./scripts/ci-check.sh        # MANDATORY pre-push verification ✅
 git push origin main         # Push to GitHub ✅
 ./scripts/verify-ci.sh       # MANDATORY post-push CI verification ✅
-# OR invoke ci-checker agent and wait for result
 ```
 
 **Key changes**:
@@ -307,6 +291,8 @@ git push origin main         # Push to GitHub ✅
 - Don't commit generated files (unless required)
 - Don't use --no-verify (bypasses hooks) without good reason
 - Don't make massive commits mixing unrelated changes
+- Don't mix planner artifacts (task specs, handoffs) with implementation code in the same PR (see `PR-SIZE-WORKFLOW.md`)
+- Don't push planner artifacts to feature branches — every push restarts bot reviews. Planner commits go to main only (see planner agent Branch Isolation Policy)
 
 ---
 
