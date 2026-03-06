@@ -69,7 +69,6 @@ tests/                pytest test suite
 | `ci-checker` | CI/CD verification |
 | `code-reviewer` | Code quality review |
 | `test-runner` / `powertest-runner` | TDD and testing |
-| `tycho` | Day-to-day project management |
 | `pypi-publisher` | PyPI package releases |
 
 Full listing: `.claude/agents/` -- see `AGENT-TEMPLATE.md` for creating new agents.
