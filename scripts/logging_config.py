@@ -2,7 +2,7 @@
 Logging Configuration
 =====================
 
-Configurable logging infrastructure for the agentive-starter-kit.
+Configurable logging infrastructure for adversarial-workflow.
 
 Features:
     - Environment variable configuration (LOG_LEVEL, LOG_FILE)
