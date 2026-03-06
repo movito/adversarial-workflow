@@ -60,3 +60,25 @@ release-*.diff
 
 # Security files (never commit)
 .pypirc
+*.key
+*.pem
+*.p12
+.secrets/
+
+# Task monitoring system
+.task-monitor.db
+.task-monitor.db-journal
+
+# Serena config (generated from template)
+.serena/project.yml
+
+# Evaluators installed via: ./scripts/project install-evaluators
+.adversarial/evaluators/
+.adversarial/artifacts/
+
+# Dispatch
+.dispatch/config.local.yml
+
+# Development
+.mypy_cache/
+logs/
