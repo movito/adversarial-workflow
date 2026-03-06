@@ -182,8 +182,8 @@ error: externally-managed-environment
 # Activate venv (each terminal session)
 source .venv/bin/activate
 
-# Install dependencies (when venv is active)
-pip install -e ".[dev]"
+# Install dependencies (use scripts/project, not bare pip)
+./scripts/project setup
 
 # Force recreate venv (if corrupted)
 ./scripts/project setup --force

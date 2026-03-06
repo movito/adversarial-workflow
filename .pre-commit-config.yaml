@@ -81,8 +81,8 @@ repos:
     hooks:
       - id: validate-task-status
         name: Validate task status matches folder
-        entry: python scripts/validate_task_status.py
-        language: python
+        entry: python3 scripts/validate_task_status.py
+        language: system
         files: ^delegation/tasks/.*\.md$
         pass_filenames: true
         stages: [pre-commit]

@@ -411,7 +411,7 @@ If the command fails, show the error and suggest:
 Setup failed. Try running manually:
   python3 -m venv .venv
   source .venv/bin/activate
-  pip install -e ".[dev]"
+  .venv/bin/pip install -e ".[dev]"
 ```
 
 Now create the configuration files:
