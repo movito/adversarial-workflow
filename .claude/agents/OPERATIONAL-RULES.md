@@ -1,148 +1,199 @@
 # Operational Rules for All Agents
 
-**Version**: 1.0
-**Last Updated**: 2025-11-28
-**Applies To**: ALL agents in adversarial-workflow
+**Version**: 2.1
+**Last Updated**: 2025-01-28
+**Applies To**: ALL agents in this project
 
 ---
 
-## Project Overview
+## ⚠️ CRITICAL: Task Tool Permission Requirements
 
-**adversarial-workflow** is a Python CLI tool published to PyPI that enables adversarial evaluation of task specifications using GPT-4o via aider.
+### The Problem (RESOLVED)
 
-- **Package**: `adversarial-workflow` on PyPI
-- **CLI**: `adversarial` command
-- **Core Dependency**: `aider-chat` (bundled)
-- **Python**: 3.11 required (aider-chat compatibility)
+**Task tool subagents require explicit tool permissions** in `.claude/settings.local.json` to perform filesystem operations.
 
----
+### Root Cause (Previously Misunderstood)
 
-## Agent Roster
+**Previous misdiagnosis**: We believed Task tool agents ran in ephemeral sandboxes that couldn't persist changes.
 
-| Agent | Role | Primary Tools |
-|-------|------|---------------|
-| **planner** | Coordination, task management, version tracking | All |
-| **feature-developer** | TDD implementation, code changes | Write, Edit, Bash |
-| **test-runner** | Quality assurance, test execution | Bash, Read |
-| **pypi-publisher** | Package releases, version updates | Bash, Edit |
+**Actual cause**: Our `.claude/settings.local.json` was missing `Write` and `Edit` permissions. Subagents invoked via Task tool inherit project permissions, which only included `Read` and `Bash` tools.
 
----
+### Resolution (2025-11-12)
 
-## Serena Activation
+Added the following permissions to `.claude/settings.local.json`:
+- `Write`
+- `Edit`
+- `Glob`
+- `Grep`
+- `TodoWrite`
 
-All agents should activate Serena for semantic code navigation:
-
-```
-mcp__serena__activate_project("adversarial-workflow")
-```
-
-This enables:
-- Go-to-definition
-- Find references
-- Symbol search
-- Efficient code exploration (70-98% token savings)
+Subagents can now perform filesystem operations when launched via Task tool.
 
 ---
 
-## TDD Requirements
+## ✅ Task Tool Usage Guidelines
 
-**All code changes MUST follow TDD:**
+### Task Tool CAN Now Be Used For:
 
-1. Write failing test first
-2. Run test to verify it fails
-3. Implement code to pass test
-4. Run all tests
-5. Refactor while keeping tests green
-6. Commit
+With proper permissions configured in `.claude/settings.local.json`, subagents launched via Task tool can:
 
-**Test Commands**:
-```bash
-source .venv/bin/activate
-pytest tests/ -v
-```
+- **Research and codebase exploration** (Explore agent)
+- **Analysis and investigation tasks**
+- **Answering questions about code**
+- **Searching for patterns or files**
+- **Reading documentation**
+- **Gathering information**
+- **Creating files** (with Write permission)
+- **Editing files** (with Edit permission)
+- **Git commits** (with Bash permission)
+- **Installing dependencies** (with Bash permission)
+- **Running tests** (with Bash permission)
+- **Building projects** (with Bash permission)
 
----
+### Best Practices
 
-## Version Management
+**When to use Task tool for implementation:**
+- ✅ Complex multi-step tasks that benefit from specialized agent context
+- ✅ Tasks where delegation improves clarity and separation of concerns
+- ✅ When you want implementation work tracked in a separate agent context
 
-**Three locations must stay in sync:**
+**When to use direct tools:**
+- ✅ Simple, single-file edits in main conversation
+- ✅ Quick fixes that don't need specialized agent overhead
+- ✅ When you're already in the appropriate agent context
 
-1. `pyproject.toml` - `version = "X.Y.Z"`
-2. `adversarial_workflow/__init__.py` - `__version__ = "X.Y.Z"`
-3. `adversarial_workflow/cli.py` - `__version__ = "X.Y.Z"`
+### User Instruction Clarification
 
-**Only pypi-publisher should update versions.**
-
----
-
-## Task Management
-
-Tasks use prefix `ADV-` and live in `delegation/tasks/`:
-
-| Folder | Status |
-|--------|--------|
-| `1-backlog/` | Planned |
-| `2-todo/` | Ready |
-| `3-in-progress/` | Active |
-| `4-in-review/` | Review |
-| `5-done/` | Complete |
+The `.claude/CLAUDE.md` instruction **"Always launch agents in new tabs"** can mean:
+- ✅ **UI tabs in Claude Desktop** (multiple conversations) - preferred for user visibility
+- ✅ **Task tool invocations** (now functional with proper permissions) - acceptable for complex delegated work
 
 ---
 
-## Evaluation Workflow
+## Verification
 
-Request GPT-4o evaluation for complex tasks:
+After completing work that should modify files (whether via Task tool or direct):
+1. ✅ Check `git status` shows actual changes
+2. ✅ Verify files exist at expected paths
+3. ✅ Confirm commits appear in `git log`
 
-```bash
-adversarial evaluate delegation/tasks/2-todo/ADV-XXXX-task.md
-cat .adversarial/logs/ADV-*-PLAN-EVALUATION.md
-```
-
-**Cost**: ~$0.04 per evaluation
-
----
-
-## Commit Protocol
-
-```bash
-git add <files>
-git commit -m "$(cat <<'EOF'
-type(scope): description
-
-Details here.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
-```
-
-**Types**: feat, fix, docs, test, refactor, chore
+If any verification fails, check:
+- Are the required tools in `.claude/settings.local.json` permissions?
+- Did the operation complete without errors?
 
 ---
 
-## Python Environment
+## Permission Configuration Reference
 
-**Always use the virtual environment:**
+**Required tools in `.claude/settings.local.json` for full subagent functionality:**
 
-```bash
-# Create (if needed)
-/Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m venv .venv
-
-# Activate
-source .venv/bin/activate
-
-# Install in development mode
-pip install -e ".[dev]"
+```json
+{
+  "permissions": {
+    "allow": [
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "TodoWrite",
+      "Bash(...)"
+    ]
+  }
+}
 ```
 
 ---
 
 ## Questions?
 
-Escalate to planner for:
-- Task prioritization decisions
-- Cross-agent coordination
-- Version release decisions
-- Unclear requirements
+If subagents report creating files but nothing appears on disk, check `.claude/settings.local.json` permissions first.
+
+---
+
+## 📁 File Location Standards
+
+### ADRs (Architecture Decision Records)
+
+**Correct location**: `docs/decisions/adr/ADR-NNNN-short-title.md`
+
+**DO NOT create ADRs in**:
+- ❌ `.claude/` (agent/settings directory, not for project documentation)
+- ❌ Root directory
+- ❌ `.agent-context/` (coordination files only)
+
+**Before creating an ADR**: Read `.agent-context/workflows/ADR-CREATION-WORKFLOW.md` for template and numbering.
+
+### Tasks
+
+**Correct location**: `delegation/tasks/[status-folder]/TASK-NNNN-title.md`
+
+Status folders:
+- `1-backlog/` - Planned but not started
+- `2-todo/` - Ready for work
+- `3-in-progress/` - Currently being worked on
+- `5-done/` - Completed
+
+### Research Documents
+
+**Correct location**: Project-specific research folder (e.g., `docs/research/`, `research/`, or project-defined location)
+
+### Agent Definitions
+
+**Correct location**: `.claude/agents/[agent-name].md`
+
+This is the ONLY documentation type that belongs in `.claude/`.
+
+---
+
+## Why File Locations Matter
+
+1. **Discoverability**: Standard locations make it easy to find documents
+2. **Tool Integration**: Linear sync, ADR numbering, and other tools expect specific paths
+3. **Separation of Concerns**: Agent definitions (`.claude/`) vs. project documentation (`docs/`)
+4. **Template Inheritance**: New agents copy the template; correct locations propagate automatically
+
+---
+
+## 🐍 Virtual Environment Handling
+
+### Before Running pip Commands
+
+1. **Check if venv exists**: `ls .venv/bin/activate 2>/dev/null`
+2. **If not, suggest setup**: `./scripts/project setup`
+3. **Always use venv pip**: `.venv/bin/pip install ...`
+
+### Why This Matters
+
+macOS Homebrew Python is "externally managed" and blocks system-wide pip installs:
+```
+error: externally-managed-environment
+× This environment is externally managed
+```
+
+**Never run `pip install` with system Python on macOS.**
+
+### Quick Reference
+
+```bash
+# Set up venv (first time or if missing)
+./scripts/project setup
+
+# Activate venv (each terminal session)
+source .venv/bin/activate
+
+# Install dependencies (when venv is active)
+pip install -e ".[dev]"
+
+# Force recreate venv (if corrupted)
+./scripts/project setup --force
+```
+
+### Detecting Corrupted venv
+
+If you see:
+```
+⚠️  Corrupted venv detected (missing python)
+```
+
+Run: `./scripts/project setup --force`
