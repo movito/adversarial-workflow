@@ -1,7 +1,7 @@
 # Operational Rules for All Agents
 
-**Version**: 2.1
-**Last Updated**: 2025-01-28
+**Version**: 2.2
+**Last Updated**: 2026-03-06
 **Applies To**: ALL agents in this project
 
 ---

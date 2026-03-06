@@ -251,7 +251,7 @@ After implementation is complete and CI passes, you **MUST** create a PR and add
 ### PR & Automated Review Process
 
 1. **Complete implementation**: All acceptance criteria met, tests pass locally
-2. **Verify CI passes**: Use `/check-ci` or `./scripts/ci-check.sh`
+2. **Verify CI passes**: Use `/check-ci` or `./scripts/verify-ci.sh --wait`
 3. **Create Pull Request**:
 
    ```bash

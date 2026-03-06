@@ -86,7 +86,7 @@ These become your TDD test cases — write them BEFORE the implementation.
    gh run list --json status,conclusion,name
    - Returns: JSON array of objects (could be empty)
    - status: "completed" | "in_progress" | "queued" | "waiting" | "requested" | "pending"
-   - conclusion: "success" | "failure" | "cancelled" | "skipped" | null (when not completed)
+   - conclusion: "success" | "failure" | "cancelled" | "skipped" | "action_required" | "neutral" | "stale" | "timed_out" | null (when not completed)
    ```
 
 3. **Copy full status sets from sibling implementations**. If another module in the codebase uses the same API, find its status tuples and copy them completely — don't subset. If a sibling handles 6 possible statuses, your new code must handle all 6, not just the 2 you think are common.

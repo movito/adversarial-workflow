@@ -33,10 +33,11 @@ ls delegation/tasks/3-in-progress/ 2>/dev/null | head -10 || echo "None in progr
 1. **Verify not already on a feature branch**: If the current branch is already `feature/*`, refuse with: "Already on a feature branch. Finish current work first or switch to main."
 2. **Verify task exists in `2-todo/`**: If the task file isn't in `2-todo/`, report where it is and refuse.
 3. **Ensure main is up to date**: Run `git fetch origin main` and check if local main is behind.
+4. **Ensure working tree is clean**: Run `git status --porcelain` and refuse if there are uncommitted changes: "Working tree has uncommitted changes. Commit or stash them first."
 
 ## Step 3: Create branch and start task
 
-1. **Ensure on main**: If not on `main`, run `git checkout main && git pull origin main`
+1. **Ensure on main and up to date**: Run `git checkout main && git pull origin main`
 2. **Create feature branch**:
 
    ```bash

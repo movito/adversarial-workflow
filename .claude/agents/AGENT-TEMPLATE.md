@@ -250,7 +250,7 @@ When creating project documentation, use the correct locations:
 | Document Type | Location | Example |
 |---------------|----------|---------|
 | **ADRs** | `docs/decisions/adr/` | `ADR-004-feature-name.md` |
-| **Tasks** | `delegation/tasks/1-backlog/` | `TASK-0030-task-name.md` |
+| **Tasks** | `delegation/tasks/<status-folder>/` | `TASK-0030-task-name.md` |
 | **Research** | `[project-specific]/research/<topic>/` | `analysis.md` |
 
 **DO NOT create ADRs or documentation in `.claude/`** - that directory is for agent definitions and settings only.

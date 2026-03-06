@@ -412,6 +412,7 @@ Setup failed. Try running manually:
   python3 -m venv .venv
   source .venv/bin/activate
   .venv/bin/pip install -e ".[dev]"
+  pre-commit install
 ```
 
 Now create the configuration files:

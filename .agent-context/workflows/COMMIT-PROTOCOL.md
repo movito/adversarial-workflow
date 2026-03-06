@@ -150,8 +150,7 @@ After pushing to GitHub, you **MUST** verify that GitHub Actions CI/CD passes:
 ./scripts/verify-ci.sh [branch-name] [--wait] [--timeout seconds]
 
 # Examples:
-./scripts/verify-ci.sh                              # Current branch, report status
-./scripts/verify-ci.sh --wait                        # Current branch, wait for completion
+./scripts/verify-ci.sh --wait                        # Current branch, wait for completion (recommended)
 ./scripts/verify-ci.sh feature/xyz --wait            # Specific branch, wait (default 300s timeout)
 ./scripts/verify-ci.sh feature/xyz --wait --timeout 600  # Custom timeout
 ```

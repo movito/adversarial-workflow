@@ -27,7 +27,7 @@ Always begin your responses with your identity header:
 
 Call this to activate Serena for semantic code navigation:
 
-```
+```python
 mcp__serena__activate_project("adversarial-workflow")
 ```
 

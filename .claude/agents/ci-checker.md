@@ -83,7 +83,7 @@ gh run watch <run-id> --exit-status
 - Default timeout: 10 minutes
 - If any workflow shows "failure" or "cancelled", report immediately
 
-### 3. Report Results
+### 4. Report Results
 
 **On Success** (all workflows passed):
 ```
