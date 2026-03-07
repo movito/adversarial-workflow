@@ -26,7 +26,7 @@ Create `.adversarial/evaluators/custom/` with these project-specific evaluators:
 4. **code-reviewer.yml** — Adversarial correctness review (o1)
 5. **spec-compliance.yml** — Verify implementation matches spec (Gemini Flash)
 
-Copy these verbatim from `/Users/broadcaster_three/Github/dispatch-kit/.adversarial/evaluators/custom/`.
+Copy these verbatim from the dispatch-kit project's `.adversarial/evaluators/custom/` directory.
 
 Also copy `link-custom.sh` and run it to symlink into the evaluators root.
 
@@ -71,7 +71,7 @@ Reference dispatch-kit's version as a guide. Key changes:
 
 ## Source
 
-dispatch-kit evaluators: `/Users/broadcaster_three/Github/dispatch-kit/.adversarial/evaluators/`
+dispatch-kit project: `.adversarial/evaluators/` directory
 
 ## PR Template
 
