@@ -6,10 +6,12 @@
 **Audience**: All agents (especially Planner)
 **Tool**: `adversarial` CLI (v0.9.9+)
 
-> **DEPRECATION NOTICE**: The built-in evaluators (`adversarial evaluate`,
-> `adversarial proofread`, `adversarial review`) are **deprecated**. Use library
-> and custom evaluators instead — they support multiple providers (OpenAI, Google,
-> Anthropic, Mistral), configurable models, and role-specific evaluation.
+> **DEPRECATION NOTICE**: The default built-in presets behind
+> `adversarial evaluate <file>`, `adversarial proofread <file>`, and
+> `adversarial review <file>` are **deprecated**. Use the named evaluators
+> instead (e.g., `adversarial architecture-planner-fast <file>`) — they support
+> multiple providers (OpenAI, Google, Anthropic, Mistral), configurable models,
+> and role-specific evaluation.
 >
 > **Quick migration**:
 > - `adversarial evaluate <file>` -> `adversarial architecture-planner-fast <file>`
@@ -47,7 +49,7 @@ Organized by vendor in `.adversarial/evaluators/<provider>/`:
 
 **Anthropic**: `claude-adversarial` (Opus 4.6), `claude-code` (Sonnet 4.5), `claude-quick` (Haiku 4.5)
 **Google**: `gemini-code`, `gemini-deep`, `gemini-flash`, `gemini-pro`
-**OpenAI**: `fast-check`, `gpt4o-code`, `gpt5-diversity`, `gpt5-synthesis`, `gpt52-reasoning`, `o1-code-review`, `o1-mini-code`, `o3-chain`
+**OpenAI**: `arch-review` (o1), `code-reviewer` (o1), `fast-check`, `gpt4o-code`, `gpt5-diversity`, `gpt5-synthesis`, `gpt52-reasoning`, `o1-code-review`, `o1-mini-code`, `o3-chain`
 **Mistral**: `codestral-code`, `mistral-content`, `mistral-fast`
 
 ### Built-in Evaluators (Deprecated)
