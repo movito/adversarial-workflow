@@ -1,0 +1,85 @@
+# Gemini Deep Think Architectural Review Evaluator
+# Extended reasoning analysis of code architecture — faster and cheaper alternative to arch-review
+#
+# Provider: google
+# Use cases:
+#   - Quick architectural sanity check before deeper review
+#   - Design document conformance verification
+#   - Coupling and cohesion analysis
+#   - API consistency review
+#   - Pre-merge architectural gate
+
+name: arch-review-fast
+description: Fast architectural review using Gemini 2.5 Flash extended reasoning
+model: gemini/gemini-2.5-flash
+api_key_env: GEMINI_API_KEY
+model_requirement:
+  family: gemini
+  tier: flash
+  min_version: "2.5"
+output_suffix: -arch-review-fast.md
+timeout: 180  # Flash is faster than o1
+
+prompt: |
+  You are a software architect performing a focused architectural review.
+  Analyze this code for structural quality — not line-level bugs, but design-level concerns
+  about coupling, cohesion, API design, and maintainability.
+
+  {content}
+
+  ## Review Focus Areas
+
+  ### 1. Responsibility & Cohesion
+  - Does this module have a clear, single responsibility?
+  - Do all its public functions/methods serve the same purpose?
+  - Is anything here that belongs in a different module?
+
+  ### 2. Coupling & Dependencies
+  - What does this module depend on? Are those dependencies appropriate?
+  - Could this be tested in isolation?
+  - Are there circular or unexpected dependencies?
+  - Does it depend on concrete implementations where it should depend on abstractions?
+
+  ### 3. API Surface
+  - Is the public API minimal and intuitive?
+  - Are types well-defined (not raw dicts or untyped)?
+  - Is validation at the boundary?
+  - Are error conditions clear?
+
+  ### 4. Pattern Consistency
+  - Does this follow the project's established patterns?
+  - Are there unjustified deviations?
+
+  ### 5. Structural Risks
+  - What happens when complexity doubles? Does the structure hold?
+  - Are there expensive-to-change decisions locked in?
+  - Any premature abstraction or missing abstraction?
+
+  ## Output Format
+
+  ### Quick Assessment
+
+  | Dimension | Rating | One-Line Note |
+  |-----------|--------|---------------|
+  | Responsibility | Clear/Mixed/Unclear | |
+  | Coupling | Low/Moderate/High | |
+  | Cohesion | High/Moderate/Low | |
+  | API quality | Clean/Acceptable/Rough | |
+  | Pattern fit | Consistent/Deviates/Novel | |
+  | Growth readiness | Ready/Needs attention/At risk | |
+
+  ### Findings (if any)
+
+  **[COUPLING/COHESION/API/PATTERN/RISK]: [Title]**
+  - **What**: [the concern]
+  - **Why it matters**: [impact on maintainability or growth]
+  - **Suggestion**: [concrete improvement]
+
+  ### What's Good
+  [Architectural decisions worth preserving]
+
+  ### Verdict
+
+  - **APPROVED**: Architecture is sound
+  - **REVISION_SUGGESTED**: Minor improvements recommended
+  - **RESTRUCTURE_NEEDED**: Significant structural issues
