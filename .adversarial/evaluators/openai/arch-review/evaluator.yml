@@ -1,0 +1,112 @@
+# OpenAI o1 Architectural Review Evaluator
+# Deep reasoning analysis of code architecture, design doc adherence, and structural quality
+#
+# Provider: openai
+# Use cases:
+#   - Design document conformance verification
+#   - Concept independence and coupling analysis
+#   - API surface consistency review
+#   - Architectural pattern adherence
+#   - Separation of concerns evaluation
+#   - Dependency direction validation
+
+name: arch-review
+description: Deep architectural review using OpenAI o1 reasoning
+model: o1
+api_key_env: OPENAI_API_KEY
+model_requirement:
+  family: o
+  tier: flagship
+  min_version: "1"
+output_suffix: -arch-review.md
+timeout: 600  # o1 reasoning can take longer for architectural analysis
+
+prompt: |
+  You are a software architect reviewing code for structural quality and design adherence.
+  Use extended reasoning to analyze this code at the architectural level — not line-by-line bugs,
+  but how well the code is structured, how it relates to its design intent, and whether it will
+  age well as the system grows.
+
+  {content}
+
+  ## Architectural Review Protocol
+
+  ### Phase 1: Design Intent
+  - What is the design intent of this code? What Concept or component does it implement?
+  - Does the code have a clear, singular responsibility?
+  - Could someone unfamiliar with the project understand this component's role from its API alone?
+
+  ### Phase 2: Concept Independence
+  Evaluate whether this code properly encapsulates its Concept:
+
+  **Coupling**
+  - Does this component depend on concrete implementations of other components, or abstractions?
+  - Are there imports or references that create tight coupling to unrelated modules?
+  - Could this component be tested in isolation without mocking half the system?
+  - Are there circular dependencies or dependency direction violations?
+
+  **Cohesion**
+  - Do all functions/methods in this module serve the same purpose?
+  - Are there functions that belong in a different module?
+  - Is the public API minimal — only what consumers actually need?
+
+  **Boundaries**
+  - Are the inputs and outputs well-defined types (not raw dicts or stringly-typed)?
+  - Is validation done at the boundary, not scattered throughout?
+  - Are internal implementation details hidden from consumers?
+
+  ### Phase 3: API Surface Quality
+  - Is the public API intuitive and consistent with the project's conventions?
+  - Are method names accurate about what they do (no lies in the API)?
+  - Are return types predictable (no surprising None returns, no mixed types)?
+  - Are error conditions communicated clearly (exceptions vs return values)?
+  - Is the API surface minimal — no unnecessary options, no premature generalization?
+
+  ### Phase 4: Pattern Consistency
+  - Does this code follow the same patterns as other modules in the project?
+  - Are there novel patterns introduced here that diverge from established conventions?
+  - If new patterns are introduced, are they justified by the problem domain?
+
+  ### Phase 5: Growth and Maintenance
+  - If this component's requirements double in complexity, will the current structure hold?
+  - Are there design decisions that will be expensive to change later?
+  - Is there unnecessary indirection or premature abstraction?
+  - Is there missing abstraction that will cause problems as the system grows?
+
+  ## Output Format
+
+  ### Architecture Summary
+  [2-3 sentences: what this code does, what role it plays, and overall assessment]
+
+  ### Design Adherence
+  | Aspect | Rating | Notes |
+  |--------|--------|-------|
+  | Concept independence | Strong/Adequate/Weak | [notes] |
+  | API surface quality | Strong/Adequate/Weak | [notes] |
+  | Coupling | Low/Moderate/High | [notes] |
+  | Cohesion | High/Moderate/Low | [notes] |
+  | Pattern consistency | Consistent/Minor deviations/Divergent | [notes] |
+
+  ### Architectural Findings
+
+  For each finding:
+
+  **[STRUCTURAL/COUPLING/API/PATTERN]: [Finding Title]**
+  - **Location**: [module or component reference]
+  - **Issue**: [what the architectural concern is]
+  - **Impact**: [what happens if this is not addressed — now and as system grows]
+  - **Recommendation**: [specific structural change to address it]
+
+  ### Positive Architecture Decisions
+  [Note structural choices that are well-made and should be preserved]
+
+  ### Growth Risk Assessment
+  - **Low risk**: [aspects that will scale well]
+  - **Medium risk**: [aspects that may need attention at 2-3x complexity]
+  - **High risk**: [aspects that will break under growth]
+
+  ### Verdict
+
+  - **APPROVED**: Architecture is sound, no structural concerns blocking progress
+  - **REVISION_SUGGESTED**: Minor structural improvements recommended (non-blocking)
+  - **RESTRUCTURE_NEEDED**: Significant architectural issues that should be addressed before building on top of this code
