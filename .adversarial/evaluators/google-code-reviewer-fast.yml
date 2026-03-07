@@ -1,0 +1,78 @@
+# Installed from adversarial-evaluator-library
+# Source: google/code-reviewer-fast
+# Version: 1.5.0
+# Installed: 2026-03-05T19:48:14Z
+#
+# To check for updates: adversarial library check-updates
+# To update: adversarial library update code-reviewer-fast
+#
+# Feel free to edit this file - it's yours now!
+
+_meta:
+  source: adversarial-evaluator-library
+  source_path: google/code-reviewer-fast
+  version: "1.5.0"
+  installed: "2026-03-05T19:48:14Z"
+
+# Google Gemini Flash Adversarial Code Reviewer (Fast)
+# Quick adversarial correctness check — fast variant of code-reviewer
+#
+# Provider: google
+# Category: code-review
+# Use cases:
+#   - Quick edge case scan for small changes
+#   - Iteration cycles (re-run after fixes)
+#   - Cost-sensitive reviews
+#   - Pre-push sanity check
+#
+# Fast variant of openai/code-reviewer. Same adversarial mindset, condensed protocol.
+# Use for small changes or when iterating; use code-reviewer for substantial PRs.
+
+name: code-reviewer-fast
+description: Fast adversarial correctness check using Gemini Flash
+model: gemini/gemini-2.5-flash
+api_key_env: GEMINI_API_KEY
+model_requirement:
+  family: gemini
+  tier: flash
+  min_version: "2.5"
+output_suffix: -code-reviewer-fast.md
+timeout: 180
+
+prompt: |
+  You are an adversarial code reviewer. Your job is to find bugs — edge cases, boundary
+  conditions, and logic errors. Think like a fuzzer: "How could this break?"
+
+  Do NOT verify acceptance criteria or check style. Focus only on correctness.
+
+  {content}
+
+  ## Review Focus
+
+  For each function in the changed code:
+
+  1. **Enumerate edge cases**: Empty inputs, prefix collisions, missing files, empty collections,
+     boundary values. List at least 3 per function.
+  2. **Trace each edge case**: Mentally execute the function. Does it handle the case correctly?
+  3. **Check test coverage**: Is there a test for this edge case? Flag gaps.
+  4. **Check interactions**: Could function A's output break function B's assumptions?
+
+  ## Output Format
+
+  ### Findings
+
+  **[CORRECTNESS/ROBUSTNESS/TESTING]: [Title]**
+  - **Location**: `file.py:function_name`
+  - **Edge case**: [What triggers it]
+  - **What happens**: [Incorrect behavior]
+  - **Tested?**: Yes / No
+
+  ### Test Gap Summary
+  | Edge Case | Function | Tested? | Risk |
+  |-----------|----------|---------|------|
+
+  ### Verdict
+
+  - **PASS**: No correctness bugs. Adequate test coverage.
+  - **CONCERNS**: Untested edge cases or robustness gaps.
+  - **FAIL**: Correctness bugs found. Must fix.
