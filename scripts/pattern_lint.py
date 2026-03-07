@@ -133,20 +133,24 @@ def check_dk003(tree: ast.AST, source_lines: list[str], path: str) -> list[Viola
         if not isinstance(node, ast.Compare):
             continue
 
+        current_left = node.left
         for op, comparator in zip(node.ops, node.comparators, strict=False):
             if not isinstance(op, ast.In):
+                current_left = comparator
                 continue
 
             # Skip collection literals — set, list, tuple, dict on the right
             if isinstance(comparator, (ast.Set, ast.List, ast.Tuple, ast.Dict)):
+                current_left = comparator
                 continue
             # Skip set/frozenset/list/dict/tuple constructor calls
             if isinstance(comparator, ast.Call):
                 func_name = _extract_name(comparator.func)
                 if func_name in {"set", "frozenset", "list", "dict", "tuple"}:
+                    current_left = comparator
                     continue
 
-            left = node.left
+            left = current_left
             left_name = _extract_name(left)
             right_name = _extract_name(comparator)
 
@@ -187,6 +191,7 @@ def check_dk003(tree: ast.AST, source_lines: list[str], path: str) -> list[Viola
                     ),
                 )
             )
+            current_left = comparator
 
     return violations
 
