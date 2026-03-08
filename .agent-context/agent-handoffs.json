@@ -1,18 +1,19 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-02-06",
+  "last_updated": "2026-03-08",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0031 APPROVED, ready for merge and v0.9.0 release",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADV-0040",
+      "brief_note": "COMPLETE: ADV-0040 task spec and handoff ready for feature-developer-v3",
+      "details_link": "delegation/tasks/2-todo/ADV-0040-sync-slash-commands.md",
+      "handoff_file": ".agent-context/ADV-0040-HANDOFF-feature-developer-v3.md"
     },
-    "feature-developer": {
+    "feature-developer-v3": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0031 complete, awaiting PR merge",
+      "brief_note": "Awaiting ADV-0040 assignment",
       "details_link": null
     },
     "code-reviewer": {
@@ -29,15 +30,18 @@
     }
   },
   "recent_completions": [
+    "v0.9.9 Released (2026-03-07) - Double .md extension fix",
     "v0.9.0 Released (2026-02-06) - Library Evaluator Execution",
-    "ADV-0031: Library Evaluator Execution - PR #24 MERGED",
-    "v0.8.1 Released (2026-02-05) - BugBot fixes",
-    "ADV-0030: BugBot fixes - PR #23 MERGED"
+    "ADV-0031: Library Evaluator Execution - PR #24 MERGED"
   ],
-  "pending_tasks": [],
+  "pending_tasks": [
+    "ADV-0040: Sync slash commands from dispatch-kit (ready for assignment)",
+    "ADV-0051: Install evaluator library + custom evaluators (depends on ADV-0040)",
+    "ADV-0041–0050: Remaining upstream sync tasks (queued)"
+  ],
   "blocked_items": [],
   "architecture_status": {
-    "current_version": "0.9.0",
+    "current_version": "0.9.9",
     "next_minor": null,
     "registry_schema": "1.0 - Published in library repo"
   },
@@ -46,5 +50,5 @@
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "v0.9.0 released. Library evaluators can now be executed with --evaluator flag. All pending tasks complete."
+  "notes": "Working through ADV-0039 upstream sync epic (11 PRs). ADV-0040 (slash commands) is first. PRs #36/#37 (evaluator setup) closed — revised approach in ADV-0051."
 }
