@@ -5,15 +5,15 @@
   "agents": {
     "planner": {
       "status": "completed",
-      "current_task": "ADV-0040",
-      "brief_note": "COMPLETE: ADV-0040 task spec and handoff ready for feature-developer-v3",
-      "details_link": "delegation/tasks/2-todo/ADV-0040-sync-slash-commands.md",
-      "handoff_file": ".agent-context/ADV-0040-HANDOFF-feature-developer-v3.md"
+      "current_task": "ADV-0051",
+      "brief_note": "COMPLETE: ADV-0051 task spec and handoff ready for feature-developer-v3",
+      "details_link": "delegation/tasks/2-todo/ADV-0051-evaluator-setup-from-dispatch-kit.md",
+      "handoff_file": ".agent-context/ADV-0051-HANDOFF-feature-developer-v3.md"
     },
     "feature-developer-v3": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "Awaiting ADV-0040 assignment",
+      "brief_note": "ADV-0040 delivered and merged. Awaiting ADV-0051.",
       "details_link": null
     },
     "code-reviewer": {
@@ -30,25 +30,25 @@
     }
   },
   "recent_completions": [
+    "ADV-0040: Sync slash commands - PR merged (2026-03-08)",
     "v0.9.9 Released (2026-03-07) - Double .md extension fix",
-    "v0.9.0 Released (2026-02-06) - Library Evaluator Execution",
-    "ADV-0031: Library Evaluator Execution - PR #24 MERGED"
+    "v0.9.0 Released (2026-02-06) - Library Evaluator Execution"
   ],
   "pending_tasks": [
-    "ADV-0040: Sync slash commands from dispatch-kit (ready for assignment)",
-    "ADV-0051: Install evaluator library + custom evaluators (depends on ADV-0040)",
+    "ADV-0051: Install evaluator library + custom evaluators (ready for assignment)",
     "ADV-0041–0050: Remaining upstream sync tasks (queued)"
   ],
   "blocked_items": [],
   "architecture_status": {
     "current_version": "0.9.9",
     "next_minor": null,
-    "registry_schema": "1.0 - Published in library repo"
+    "registry_schema": "1.0 - Published in library repo",
+    "evaluator_library": "v0.5.3 (all 26 items from issue #12 fixed)"
   },
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "Working through ADV-0039 upstream sync epic (11 PRs). ADV-0040 (slash commands) is first. PRs #36/#37 (evaluator setup) closed — revised approach in ADV-0051."
+  "notes": "ADV-0040 merged. ADV-0051 ready — uses adversarial library install (v0.5.3 fixes included) + custom evaluators from dispatch-kit v0.4.2. PRs #36/#37 closed (old approach)."
 }
