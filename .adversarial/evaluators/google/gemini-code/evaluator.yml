@@ -1,4 +1,4 @@
-# Gemini 3 Pro Code Review Evaluator
+# Gemini 3.1 Pro Code Review Evaluator
 # Code-focused review using Google's advanced model
 #
 # Provider: google
@@ -10,13 +10,13 @@
 #   - Multi-file codebase review
 
 name: gemini-code
-description: Code review using Gemini 3 Pro for security and quality analysis
-model: gemini/gemini-3-pro-20260101
+description: Code review using Gemini 3.1 Pro for security and quality analysis
+model: gemini/gemini-3.1-pro-preview
 api_key_env: GEMINI_API_KEY
 model_requirement:
   family: gemini
   tier: pro
-  min_version: "3"
+  min_version: "3.1"
 output_suffix: -gemini-code.md
 timeout: 180  # Standard category timeout
 

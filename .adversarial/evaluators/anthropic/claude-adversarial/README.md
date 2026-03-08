@@ -1,6 +1,6 @@
-# Claude 4 Opus Adversarial Evaluator
+# Claude Opus 4.6 Adversarial Evaluator
 
-Rigorous adversarial review using Claude 4 Opus for critical analysis and stress-testing.
+Rigorous adversarial review using Claude Opus 4.6 for critical analysis and stress-testing.
 
 ## Use Cases
 
@@ -40,7 +40,7 @@ This evaluator provides Anthropic's perspective on adversarial analysis. Use alo
 
 ```yaml
 api_key_env: ANTHROPIC_API_KEY
-model: claude-4-opus-20260115
+model: anthropic/claude-opus-4-6
 ```
 
 ## Example Usage

@@ -30,7 +30,7 @@ Large-context evaluator for synthesizing research across documents.
 **Not ideal for:**
 - Quick checks (use gemini-flash)
 - Deep reasoning on small docs (use gemini-deep)
-- Adversarial review (use gpt52-reasoning)
+- Adversarial review (use claude-adversarial or gpt52-reasoning)
 
 ## Configuration
 

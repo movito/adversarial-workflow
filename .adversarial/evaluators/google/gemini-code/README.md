@@ -1,6 +1,6 @@
-# Gemini 3 Pro Code Review Evaluator
+# Gemini 3.1 Pro Code Review Evaluator
 
-Code-focused security and quality review using Google's Gemini 3 Pro.
+Code-focused security and quality review using Google's Gemini 3.1 Pro.
 
 ## Use Cases
 
@@ -51,7 +51,7 @@ This evaluator provides Google's perspective on code security. Combine with clau
 
 ```yaml
 api_key_env: GEMINI_API_KEY
-model: gemini/gemini-3-pro-20260101
+model: gemini/gemini-3.1-pro-preview
 ```
 
 ## Example Usage

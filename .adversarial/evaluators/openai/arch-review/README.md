@@ -31,13 +31,13 @@ Use this evaluator for foundational components where structural quality matters 
 
 ```bash
 # Review a core module's architecture
-adversarial evaluate --evaluator arch-review src/dispatch_kit/bus.py
+adversarial evaluate --evaluator arch-review src/your_project/bus.py
 
 # Review a data model's structure
 adversarial evaluate --evaluator arch-review src/models/event.py
 
 # Review an entire package
-adversarial evaluate --evaluator arch-review src/dispatch_kit/
+adversarial evaluate --evaluator arch-review src/your_project/
 ```
 
 ## Output

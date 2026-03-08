@@ -1,7 +1,7 @@
 # Adversarial Evaluation Workflow
 
 **Created**: 2025-11-01
-**Updated**: 2026-03-07 (port evaluator setup from dispatch-kit v0.4.1)
+**Updated**: 2026-03-08 (port evaluator setup from dispatch-kit v0.4.2)
 **Purpose**: Complete guide to using the adversarial evaluation workflow
 **Audience**: All agents (especially Planner)
 **Tool**: `adversarial` CLI (v0.9.9+)
@@ -163,4 +163,4 @@ adversarial list-evaluators
 
 ## Source
 
-Evaluators ported from [dispatch-kit v0.4.1](https://github.com/movito/dispatch-kit/releases/tag/v0.4.1).
+Evaluators ported from [dispatch-kit v0.4.2](https://github.com/movito/dispatch-kit/releases/tag/v0.4.2).

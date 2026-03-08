@@ -28,10 +28,10 @@ A lighter, faster alternative to `arch-review` for quick architectural sanity ch
 
 ```bash
 # Quick architectural check during development
-adversarial evaluate --evaluator arch-review-fast src/dispatch_kit/bus.py
+adversarial evaluate --evaluator arch-review-fast src/your_project/core.py
 
-# Run on multiple files
-adversarial evaluate --evaluator arch-review-fast src/dispatch_kit/models/event.py
+# Run on another file
+adversarial evaluate --evaluator arch-review-fast src/your_project/models/event.py
 ```
 
 ## Output

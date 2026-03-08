@@ -33,7 +33,7 @@ prompt: |
 
   ## Review Focus
 
-  For each function or method in the changed code:
+  For each function or method in the changed code (if the change is non-code such as config, YAML, or markdown, focus on structural correctness, invalid values, and broken references instead):
 
   1. **Enumerate edge cases**: Empty inputs, prefix collisions, missing files, empty collections,
      boundary values. List at least 3 per function.
@@ -45,7 +45,7 @@ prompt: |
 
   ### Findings
 
-  **[CORRECTNESS/ROBUSTNESS/TESTING]: [Title]**
+  **[CORRECTNESS/ROBUSTNESS/TESTING/INTERACTION]: [Title]**
   - **Location**: `file:function_name`
   - **Edge case**: [What triggers it]
   - **What happens**: [Incorrect behavior]

@@ -6,7 +6,7 @@ All notable changes to the claude-code evaluator will be documented in this file
 
 ### Added
 
-- Initial release of Claude 4 Sonnet code review evaluator
+- Initial release of Claude Sonnet 4.5 code review evaluator
 - Security-focused prompt adapted from o1-code-review
 - Checks for injection, XSS, path traversal, hardcoded secrets
 - Standardized output format with severity labels (CRITICAL/HIGH/MEDIUM/LOW)

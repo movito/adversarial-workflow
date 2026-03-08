@@ -36,6 +36,7 @@ api_key_env: GEMINI_API_KEY
 ```
 
 Requires Google AI API key. Set in environment:
+
 ```bash
 export GEMINI_API_KEY="your-key-here"
 ```
@@ -43,7 +44,7 @@ export GEMINI_API_KEY="your-key-here"
 ## Example Usage
 
 ```bash
-adversarial evaluate evaluators/google/gemini-flash/evaluator.yml document.md
+adversarial evaluate --evaluator gemini-flash document.md
 ```
 
 ## Related Evaluators

@@ -1,4 +1,4 @@
-# Gemini 3 Pro Knowledge Synthesis Evaluator
+# Gemini 3.1 Pro Knowledge Synthesis Evaluator
 # Large-context evaluator for synthesizing research across documents
 #
 # Provider: google
@@ -10,13 +10,13 @@
 #   - Research completeness verification
 
 name: gemini-pro
-description: Large-context knowledge synthesis using Gemini 3 Pro (1M tokens)
-model: gemini/gemini-3-pro
+description: Large-context knowledge synthesis using Gemini 3.1 Pro (1M tokens)
+model: gemini/gemini-3.1-pro-preview
 api_key_env: GEMINI_API_KEY
 model_requirement:
   family: gemini
   tier: pro
-  min_version: "3"
+  min_version: "3.1"
 output_suffix: -gemini-pro.md
 timeout: 400  # Extended for large context processing
 
