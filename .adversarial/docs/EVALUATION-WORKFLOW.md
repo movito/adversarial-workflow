@@ -48,7 +48,7 @@ These are tailored for our workflow in `.adversarial/evaluators/custom/`:
 Organized by vendor in `.adversarial/evaluators/<provider>/`:
 
 **Anthropic**: `claude-adversarial` (Opus 4.6), `claude-code` (Sonnet 4.5), `claude-quick` (Haiku 4.5)
-**Google**: `gemini-code`, `gemini-deep`, `gemini-flash`, `gemini-pro`
+**Google**: `arch-review-fast`, `code-reviewer-fast`, `gemini-code`, `gemini-deep`, `gemini-flash`, `gemini-pro`
 **OpenAI**: `arch-review` (o1), `code-reviewer` (o1), `fast-check`, `gpt4o-code`, `gpt5-diversity`, `gpt5-synthesis`, `gpt52-reasoning`, `o1-code-review`, `o1-mini-code`, `o3-chain`
 **Mistral**: `codestral-code`, `mistral-content`, `mistral-fast`
 

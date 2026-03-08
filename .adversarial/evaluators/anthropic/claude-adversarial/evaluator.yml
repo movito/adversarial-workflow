@@ -70,4 +70,5 @@ prompt: |
   - **NEEDS_REVISION**: Issues found that must be addressed before approval
   - **REJECT**: Fundamental flaws that require significant rework
 
-  Summarize the 2-3 most critical issues and their impact.
+  If issues were found, summarize the 2-3 most critical ones and their impact.
+  If no material issues were found, briefly explain why the content is ready to proceed.

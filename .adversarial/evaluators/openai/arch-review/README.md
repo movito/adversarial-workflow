@@ -59,11 +59,11 @@ The evaluator produces:
 | Pre-merge review of architectural components | Yes |
 | After major refactors | Yes |
 | Quick PR review | No, use arch-review-fast |
-| Security-focused review | No, use o1-code-review |
-| Line-level bug finding | No, use gpt4o-code |
+| Security-focused review | No, use code-reviewer |
+| Line-level bug finding | No, use code-reviewer-fast |
 
 ## See Also
 
 - [arch-review-fast](../../google/arch-review-fast/) - Faster/cheaper alternative using Gemini
-- [o1-code-review](../o1-code-review/) - Line-level security and correctness review
-- [gpt4o-code](../gpt4o-code/) - Fast general code review
+- [code-reviewer](../code-reviewer/) - Deep adversarial correctness review
+- [code-reviewer-fast](../../google/code-reviewer-fast/) - Fast adversarial correctness check

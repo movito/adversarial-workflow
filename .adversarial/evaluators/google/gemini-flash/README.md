@@ -26,7 +26,7 @@ Fast, cost-effective evaluator for quick document assessment.
 
 **Not ideal for:**
 - Deep reasoning or complex analysis
-- Adversarial review (use gpt52-reasoning)
+- Adversarial review (use o3-chain or claude-adversarial)
 - Large documents (use gemini-pro)
 
 ## Configuration

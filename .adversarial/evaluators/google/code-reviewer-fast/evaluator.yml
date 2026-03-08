@@ -9,7 +9,7 @@
 #   - Cost-sensitive reviews
 #   - Pre-push sanity check
 #
-# Fast variant of openai/code-reviewer. Same adversarial mindset, condensed protocol.
+# Fast variant of the code-reviewer evaluator. Same adversarial mindset, condensed protocol.
 # Use for small changes or when iterating; use code-reviewer for substantial PRs.
 
 name: code-reviewer-fast
