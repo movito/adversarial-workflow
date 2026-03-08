@@ -1,6 +1,6 @@
 # ADV-0040: Upstream Sync — Slash Commands
 
-**Status**: Todo
+**Status**: In Progress
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 15 minutes
