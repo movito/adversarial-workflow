@@ -247,11 +247,11 @@ After implementation is complete and CI passes, you **MUST** request code review
 
 1. **Complete implementation**: All acceptance criteria met, tests pass
 2. **Verify CI passes**: Use `/check-ci` or `./scripts/core/verify-ci.sh`
-3. **Move task to 4-in-review**: `./project move <TASK-ID> in-review`
+3. **Move task to 4-in-review**: `./scripts/core/project move <TASK-ID> in-review`
 4. **Create review starter**: Write `.agent-context/<TASK-ID>-REVIEW-STARTER.md`
 5. **Notify user**: Tell them to invoke code-reviewer in a new tab
 6. **Address feedback**: Fix any issues raised by reviewer
-7. **After approval**: Move to `5-done` with `./project complete <TASK-ID>`
+7. **After approval**: Move to `5-done` with `./scripts/core/project complete <TASK-ID>`
 
 ### Creating Review Starter
 

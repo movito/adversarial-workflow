@@ -55,7 +55,7 @@ for op, comparator in zip(node.ops, node.comparators, strict=False):
 
 ## Source
 
-- Upstream: `/private/tmp/agentive-starter-kit/scripts/core/pattern_lint.py`
+- Upstream: `agentive-starter-kit/scripts/core/pattern_lint.py`
 - Fix reference: commit 4e328e2 on branch `sync/adv-0039-upstream-sync`
 
 ## PR Template
@@ -75,7 +75,7 @@ Part of ADV-0039 (upstream sync).
 
 ## Acceptance Criteria
 
-- [ ] pattern_lint.py added to `scripts/`
+- [ ] pattern_lint.py added to `scripts/core/`
 - [ ] test_pattern_lint.py added to `tests/`
 - [ ] Chained `in` comparison fix applied (current_left tracking)
 - [ ] All 31 tests pass

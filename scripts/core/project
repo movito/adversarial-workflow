@@ -6,12 +6,12 @@ Project CLI - Command Launcher for Agentive Projects
 Simple memorable command interface for common project operations.
 
 Usage:
-    ./project linearsync     - Sync tasks to Linear
-    ./project sync           - Alias for linearsync
-    ./project move <id> <status> - Move task and update Status field
-    ./project complete <id>  - Move task to done
-    ./project validate       - Validate all task statuses
-    ./project help           - Show help
+    ./scripts/core/project linearsync     - Sync tasks to Linear
+    ./scripts/core/project sync           - Alias for linearsync
+    ./scripts/core/project move <id> <status> - Move task and update Status field
+    ./scripts/core/project complete <id>  - Move task to done
+    ./scripts/core/project validate       - Validate all task statuses
+    ./scripts/core/project help           - Show help
 """
 
 import os
@@ -31,11 +31,7 @@ def _get_evaluator_library_version():
 
         with open("pyproject.toml", "rb") as f:
             config = tomllib.load(f)
-        return (
-            config.get("tool", {})
-            .get("adversarial", {})
-            .get("library_version", "v0.5.3")
-        )
+        return config.get("tool", {}).get("adversarial", {}).get("library_version", "v0.5.3")
     except (FileNotFoundError, ImportError):
         return "v0.5.3"
 
@@ -184,7 +180,7 @@ def validate_all_tasks(project_dir: Path) -> bool:
         print(f"❌ Found {len(errors)} status mismatches:\n")
         for error in errors:
             print(f"  • {error}")
-        print(f"\nTo fix, use: ./project move <task-id> <status>")
+        print(f"\nTo fix, use: ./scripts/core/project move <task-id> <status>")
         return False
 
     print(f"✅ All {checked} tasks have matching Status and folder")
@@ -286,11 +282,7 @@ def _verify_identity_leaks(project_dir: Path) -> int:
             # names (e.g. "tests"), prefix match for multi-component
             # paths (e.g. "docs/UPSTREAM" matches "docs/UPSTREAM-*.md")
             if any(
-                (
-                    excl in rel_path.parts
-                    if "/" not in excl
-                    else rel_str.startswith(excl)
-                )
+                (excl in rel_path.parts if "/" not in excl else rel_str.startswith(excl))
                 for excl in exclude_path_parts
             ):
                 continue
@@ -396,15 +388,10 @@ def reconfigure_project(project_dir: Path, *, verify: bool = False) -> bool:
                     needs_update = any(m != project_name for m in matches)
 
                     if needs_update:
-                        new_content = activate_pattern.sub(
-                            activate_replacement, content
-                        )
+                        new_content = activate_pattern.sub(activate_replacement, content)
                         agent_file.write_text(new_content)
                         old_names = set(m for m in matches if m != project_name)
-                        print(
-                            f"  ✓ {agent_file.name} - updated"
-                            f" (was: {', '.join(old_names)})"
-                        )
+                        print(f"  ✓ {agent_file.name} - updated (was: {', '.join(old_names)})")
                         total_updated += 1
                     else:
                         print(f"  · {agent_file.name} - already configured")
@@ -612,7 +599,7 @@ def cmd_setup(args):
             print()
             print("   Recommended: Install uv (auto-manages Python versions)")
             print("   curl -LsSf https://astral.sh/uv/install.sh | sh")
-            print("   Then run: ./scripts/project setup")
+            print("   Then run: ./scripts/core/project setup")
             print()
             print("   Alternative options:")
             print("   - Use pyenv: pyenv install 3.12 && pyenv local 3.12")
@@ -639,9 +626,7 @@ def cmd_setup(args):
             venv_python = venv_dir / "bin" / "python"
             if not venv_python.exists():
                 print("⚠️  Corrupted venv detected (missing python)")
-                print(
-                    "   Run with --force to recreate: ./scripts/project setup --force"
-                )
+                print("   Run with --force to recreate: ./scripts/core/project setup --force")
                 sys.exit(1)
             # If we need Python 3.12 (use_uv case), verify existing venv has it
             if use_uv:
@@ -665,18 +650,14 @@ def cmd_setup(args):
                         and version_parts[1] == "12"
                     )
                     if not is_valid_312:
+                        print(f"⚠️  Existing venv uses Python {venv_version}, need 3.12")
                         print(
-                            f"⚠️  Existing venv uses Python {venv_version}, need 3.12"
-                        )
-                        print(
-                            "   Run with --force to recreate: ./scripts/project setup --force"
+                            "   Run with --force to recreate: ./scripts/core/project setup --force"
                         )
                         sys.exit(1)
                 except Exception as e:
                     print(f"⚠️  Could not verify venv Python version: {e}")
-                    print(
-                        "   Run with --force to recreate: ./scripts/project setup --force"
-                    )
+                    print("   Run with --force to recreate: ./scripts/core/project setup --force")
                     sys.exit(1)
             print(f"✅ Virtual environment exists: {venv_dir}")
             print("   (use --force to recreate)")
@@ -724,9 +705,7 @@ def cmd_setup(args):
             # Show last 500 chars of stderr for debugging
             stderr = result.stderr
             print(stderr[-500:] if len(stderr) > 500 else stderr)
-            print(
-                "\nTry manually: source .venv/bin/activate && pip install -e '.[dev]'"
-            )
+            print("\nTry manually: source .venv/bin/activate && pip install -e '.[dev]'")
             sys.exit(1)
         print("✅ Dependencies installed")
     except Exception as e:
@@ -773,7 +752,7 @@ def cmd_setup(args):
         print("Then you can run:")
         print("    pytest tests/ -v          # Run tests")
         print("    adversarial --help        # Evaluation CLI")
-        print("    ./scripts/project help    # Project commands")
+        print("    ./scripts/core/project help    # Project commands")
 
 
 def cmd_install_evaluators(args, project_dir):
@@ -859,9 +838,7 @@ def cmd_install_evaluators(args, project_dir):
             capture_output=True,
             text=True,
         )
-        commit_hash = (
-            hash_result.stdout.strip()[:8] if hash_result.returncode == 0 else "unknown"
-        )
+        commit_hash = hash_result.stdout.strip()[:8] if hash_result.returncode == 0 else "unknown"
 
         # Copy evaluators
         src = Path(tmpdir) / "evaluators"
@@ -1007,8 +984,8 @@ except Exception as e:
     elif command == "move":
         # Move task to new status folder
         if len(sys.argv) < 4:
-            print("Usage: ./scripts/project move <task-id> <status>")
-            print("       ./project move ASK-0001 done")
+            print("Usage: ./scripts/core/project move <task-id> <status>")
+            print("       ./scripts/core/project move ASK-0001 done")
             print(f"       Valid statuses: {', '.join(STATUS_FOLDER_MAP.keys())}")
             sys.exit(1)
         task_id = sys.argv[2]
@@ -1019,7 +996,7 @@ except Exception as e:
     elif command == "complete":
         # Shorthand for moving to done
         if len(sys.argv) < 3:
-            print("Usage: ./scripts/project complete <task-id>")
+            print("Usage: ./scripts/core/project complete <task-id>")
             sys.exit(1)
         task_id = sys.argv[2]
         success = move_task(task_id, "done", project_dir)
@@ -1028,7 +1005,7 @@ except Exception as e:
     elif command == "start":
         # Shorthand for moving to in-progress
         if len(sys.argv) < 3:
-            print("Usage: ./scripts/project start <task-id>")
+            print("Usage: ./scripts/core/project start <task-id>")
             sys.exit(1)
         task_id = sys.argv[2]
         success = move_task(task_id, "in-progress", project_dir)
@@ -1037,7 +1014,7 @@ except Exception as e:
     elif command == "block":
         # Shorthand for moving to blocked
         if len(sys.argv) < 3:
-            print("Usage: ./scripts/project block <task-id>")
+            print("Usage: ./scripts/core/project block <task-id>")
             sys.exit(1)
         task_id = sys.argv[2]
         success = move_task(task_id, "blocked", project_dir)
@@ -1054,7 +1031,7 @@ except Exception as e:
         unknown = [a for a in args if a.startswith("-") and a != "--verify"]
         if unknown:
             print(f"❌ Unknown option(s): {', '.join(unknown)}")
-            print("Usage: ./scripts/project reconfigure [--verify]")
+            print("Usage: ./scripts/core/project reconfigure [--verify]")
             sys.exit(1)
         verify = "--verify" in args
         success = reconfigure_project(project_dir, verify=verify)
@@ -1231,7 +1208,7 @@ try:
             if len(missing) > 5:
                 print(f'  ... and {len(missing) - 5} more')
         print()
-        print('Run: ./project linearsync')
+        print('Run: ./scripts/core/project linearsync')
     else:
         diff = linear_count - local_count
         print(f'Status: ⚠️  Mismatch detected ({diff} extra in Linear)')
@@ -1270,7 +1247,7 @@ except Exception as e:
 
     else:
         print(f"❌ Unknown command: {command}")
-        print("Run './project help' for available commands.")
+        print("Run './scripts/core/project help' for available commands.")
         sys.exit(1)
 
     # Run the command from project directory
@@ -1296,7 +1273,7 @@ def print_help():
 Project CLI - Agentive Starter Kit
 ==================================
 
-Usage: ./scripts/project <command> [options]
+Usage: ./scripts/core/project <command> [options]
 
 Setup:
   setup [--force]        Create venv and install dependencies
@@ -1329,12 +1306,12 @@ Other:
   version              Show version information
 
 Examples:
-  ./project complete ASK-0001    Move task to done, update Status
-  ./project move ASK-0002 todo   Move task to todo folder
-  ./project validate             Check all statuses match folders
-  ./project reconfigure          Update project identity after pulling upstream
-  ./project reconfigure --verify Same + verify no leaks remain
-  ./project linearsync           Sync all tasks to Linear
+  ./scripts/core/project complete ASK-0001    Move task to done, update Status
+  ./scripts/core/project move ASK-0002 todo   Move task to todo folder
+  ./scripts/core/project validate             Check all statuses match folders
+  ./scripts/core/project reconfigure          Update project identity after pulling upstream
+  ./scripts/core/project reconfigure --verify Same + verify no leaks remain
+  ./scripts/core/project linearsync           Sync all tasks to Linear
 
 Valid statuses for 'move':
   backlog, todo, in-progress, in-review, done, canceled, blocked
