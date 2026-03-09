@@ -1317,14 +1317,14 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     # Python
     python_version = sys.version.split()[0]
     major, minor = map(int, python_version.split(".")[:2])
-    if (major, minor) >= (3, 8):
+    if (major, minor) >= (3, 10):
         check_pass("dependencies", f"Python: {python_version} (compatible)")
     else:
         check_fail(
             "dependencies",
-            f"Python: {python_version} (requires 3.8+)",
-            fix="Upgrade Python to 3.8 or higher",
-            recommendation="Python 3.8+ required - upgrade your Python installation",
+            f"Python: {python_version} (requires 3.10+)",
+            fix="Upgrade Python to 3.10 or higher",
+            recommendation="Python 3.10+ required - upgrade your Python installation",
         )
 
     # Aider
