@@ -1581,7 +1581,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                         "tasks",
                         "No task files found (create with adversarial quickstart)",
                     )
-            except:
+            except Exception:
                 check_info("tasks", "Could not count task files")
         else:
             check_warn(
