@@ -71,11 +71,7 @@ def check_dk001(tree: ast.AST, source_lines: list[str], path: str) -> list[Viola
             and isinstance(second_arg, ast.Constant)
             and second_arg.value == ""
         ):
-            line = (
-                source_lines[node.lineno - 1]
-                if node.lineno <= len(source_lines)
-                else ""
-            )
+            line = source_lines[node.lineno - 1] if node.lineno <= len(source_lines) else ""
             if "# noqa: DK001" not in line:
                 violations.append(
                     Violation(
@@ -123,11 +119,7 @@ def check_dk002(tree: ast.AST, source_lines: list[str], path: str) -> list[Viola
         }:
             if any(kw.arg == "encoding" for kw in node.keywords):
                 continue
-            line = (
-                source_lines[node.lineno - 1]
-                if node.lineno <= len(source_lines)
-                else ""
-            )
+            line = source_lines[node.lineno - 1] if node.lineno <= len(source_lines) else ""
             if "# noqa: DK002" not in line:
                 violations.append(
                     Violation(
@@ -168,11 +160,7 @@ def check_dk002(tree: ast.AST, source_lines: list[str], path: str) -> list[Viola
                 break
         else:
             # No binary mode kwarg found — this is a text-mode open() without encoding
-            line = (
-                source_lines[node.lineno - 1]
-                if node.lineno <= len(source_lines)
-                else ""
-            )
+            line = source_lines[node.lineno - 1] if node.lineno <= len(source_lines) else ""
             if "# noqa: DK002" not in line:
                 violations.append(
                     Violation(
@@ -262,11 +250,7 @@ def check_dk003(tree: ast.AST, source_lines: list[str], path: str) -> list[Viola
             if not (left_is_id and right_is_id):
                 continue
 
-            line = (
-                source_lines[node.lineno - 1]
-                if node.lineno <= len(source_lines)
-                else ""
-            )
+            line = source_lines[node.lineno - 1] if node.lineno <= len(source_lines) else ""
 
             # Suppressed by '# substring:' comment
             if "# substring:" in line or "# noqa: DK003" in line:
