@@ -34,7 +34,7 @@ try:
 
     __version__ = _get_version("adversarial-workflow")
 except Exception:
-    __version__ = "0.9.6"  # Fallback for editable installs
+    __version__ = "0.9.9"  # Fallback for editable installs
 
 # ANSI color codes for better output
 RESET = "\033[0m"
