@@ -1,8 +1,9 @@
 """Data models for the evaluator library client."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Optional
 
 
 @dataclass
@@ -17,7 +18,7 @@ class EvaluatorEntry:
     description: str
 
     @classmethod
-    def from_dict(cls, data: dict) -> "EvaluatorEntry":
+    def from_dict(cls, data: dict) -> EvaluatorEntry:
         """Create an EvaluatorEntry from a dictionary."""
         return cls(
             name=data["name"],
@@ -44,7 +45,7 @@ class IndexData:
     fetched_at: datetime | None = None
 
     @classmethod
-    def from_dict(cls, data: dict) -> "IndexData":
+    def from_dict(cls, data: dict) -> IndexData:
         """Create an IndexData from a dictionary."""
         evaluators = [EvaluatorEntry.from_dict(e) for e in data.get("evaluators", [])]
         return cls(
@@ -81,7 +82,7 @@ class InstalledEvaluatorMeta:
     file_path: str | None = None  # Path to the installed file
 
     @classmethod
-    def from_dict(cls, data: dict) -> Optional["InstalledEvaluatorMeta"]:
+    def from_dict(cls, data: dict) -> InstalledEvaluatorMeta | None:
         """Create from _meta dictionary, returns None if invalid."""
         if not data:
             return None
