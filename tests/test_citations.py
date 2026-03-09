@@ -5,18 +5,12 @@ Tests URL extraction, checking, caching, inline marking, and task generation.
 """
 
 import asyncio
-import json
 import time
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 
 from adversarial_workflow.utils.citations import (
-    BOT_DETECTION_PATTERNS,
-    DEFAULT_CONFIG,
-    URL_PATTERN,
-    ExtractedURL,
     URLResult,
     URLStatus,
     check_url_async,
@@ -91,7 +85,10 @@ class TestURLExtraction:
 
     def test_extract_urls_with_context(self):
         """Test that context is captured around URLs."""
-        document = "According to the official documentation at https://example.com/docs the feature works as follows."
+        document = (
+            "According to the official documentation at "
+            "https://example.com/docs the feature works as follows."
+        )
         urls = extract_urls(document)
         assert len(urls) == 1
         assert "official documentation" in urls[0].context

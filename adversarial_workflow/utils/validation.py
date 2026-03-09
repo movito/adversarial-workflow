@@ -35,21 +35,6 @@ def validate_evaluation_output(
             f"Log file too small ({len(content)} bytes) - evaluation likely failed",
         )
 
-    # Check for evaluation markers (case-insensitive)
-    # Note: Library evaluators may use varied formats, so this is informational only
-    content_lower = content.lower()
-    evaluation_markers = [
-        "verdict:",
-        "approved",
-        "needs_revision",
-        "rejected",
-        "evaluation summary",
-        "strengths",
-        "concerns",
-    ]
-
-    has_evaluation_content = any(marker in content_lower for marker in evaluation_markers)
-
     # Extract verdict
     verdict = None
     verdict_patterns = [

@@ -4,7 +4,6 @@ import json
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Optional, Tuple
 
 from .cache import CacheManager
 from .config import LibraryConfig, get_library_config
@@ -47,10 +46,10 @@ class LibraryClient:
 
     def __init__(
         self,
-        base_url: Optional[str] = None,
-        cache_dir: Optional[Path] = None,
+        base_url: str | None = None,
+        cache_dir: Path | None = None,
         timeout: int = DEFAULT_TIMEOUT,
-        config: Optional[LibraryConfig] = None,
+        config: LibraryConfig | None = None,
     ):
         """
         Initialize the library client.
@@ -114,7 +113,7 @@ class LibraryClient:
         except OSError as e:
             raise NetworkError(f"Network error fetching {url}: {e}") from e
 
-    def fetch_index(self, no_cache: bool = False) -> Tuple[IndexData, bool]:
+    def fetch_index(self, no_cache: bool = False) -> tuple[IndexData, bool]:
         """
         Fetch the library index.
 
@@ -137,7 +136,7 @@ class LibraryClient:
             if cached_data:
                 try:
                     return IndexData.from_dict(cached_data), True
-                except (KeyError, TypeError) as e:
+                except (KeyError, TypeError):
                     # Cache data is invalid, will try to fetch fresh
                     pass
 
@@ -187,7 +186,7 @@ class LibraryClient:
         url = f"{self.base_url}/{path}"
         return self._fetch_url(url)
 
-    def fetch_readme(self, provider: str, name: str) -> Optional[str]:
+    def fetch_readme(self, provider: str, name: str) -> str | None:
         """
         Fetch an evaluator's README.md for extended info.
 
@@ -205,7 +204,7 @@ class LibraryClient:
         except NetworkError:
             return None
 
-    def get_cache_age(self) -> Optional[float]:
+    def get_cache_age(self) -> float | None:
         """
         Get the age of the cached index in seconds.
 

@@ -1,8 +1,9 @@
 """Data models for the evaluator library client."""
 
-from dataclasses import dataclass, field
+from __future__ import annotations
+
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
 
 
 @dataclass
@@ -17,7 +18,7 @@ class EvaluatorEntry:
     description: str
 
     @classmethod
-    def from_dict(cls, data: Dict) -> "EvaluatorEntry":
+    def from_dict(cls, data: dict) -> EvaluatorEntry:
         """Create an EvaluatorEntry from a dictionary."""
         return cls(
             name=data["name"],
@@ -39,12 +40,12 @@ class IndexData:
     """Parsed library index data."""
 
     version: str
-    evaluators: List[EvaluatorEntry]
-    categories: Dict[str, str]
-    fetched_at: Optional[datetime] = None
+    evaluators: list[EvaluatorEntry]
+    categories: dict[str, str]
+    fetched_at: datetime | None = None
 
     @classmethod
-    def from_dict(cls, data: Dict) -> "IndexData":
+    def from_dict(cls, data: dict) -> IndexData:
         """Create an IndexData from a dictionary."""
         evaluators = [EvaluatorEntry.from_dict(e) for e in data.get("evaluators", [])]
         return cls(
@@ -54,18 +55,18 @@ class IndexData:
             fetched_at=datetime.now(timezone.utc),
         )
 
-    def get_evaluator(self, provider: str, name: str) -> Optional[EvaluatorEntry]:
+    def get_evaluator(self, provider: str, name: str) -> EvaluatorEntry | None:
         """Find an evaluator by provider and name."""
         for e in self.evaluators:
             if e.provider == provider and e.name == name:
                 return e
         return None
 
-    def filter_by_provider(self, provider: str) -> List[EvaluatorEntry]:
+    def filter_by_provider(self, provider: str) -> list[EvaluatorEntry]:
         """Filter evaluators by provider."""
         return [e for e in self.evaluators if e.provider == provider]
 
-    def filter_by_category(self, category: str) -> List[EvaluatorEntry]:
+    def filter_by_category(self, category: str) -> list[EvaluatorEntry]:
         """Filter evaluators by category."""
         return [e for e in self.evaluators if e.category == category]
 
@@ -78,10 +79,10 @@ class InstalledEvaluatorMeta:
     source_path: str
     version: str
     installed: str
-    file_path: Optional[str] = None  # Path to the installed file
+    file_path: str | None = None  # Path to the installed file
 
     @classmethod
-    def from_dict(cls, data: Dict) -> Optional["InstalledEvaluatorMeta"]:
+    def from_dict(cls, data: dict) -> InstalledEvaluatorMeta | None:
         """Create from _meta dictionary, returns None if invalid."""
         if not data:
             return None

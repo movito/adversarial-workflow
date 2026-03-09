@@ -38,9 +38,7 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=3.0",
     "pytest-asyncio>=0.21.0",
-    "black>=22.0",
-    "isort>=5.0",
-    "flake8>=4.0",
+    "ruff>=0.14.7",
     "tomli>=2.0; python_version < '3.11'",
 ]
 
@@ -60,13 +58,37 @@ include = ["adversarial_workflow*"]
 [tool.setuptools.package-data]
 adversarial_workflow = ["templates/*", "templates/.*", "templates/agent-context/*"]
 
-[tool.black]
+[tool.ruff]
 line-length = 100
-target-version = ['py310', 'py311', 'py312']
+target-version = "py310"
 
-[tool.isort]
-profile = "black"
-line_length = 100
+[tool.ruff.lint]
+external = ["DK001", "DK002", "DK003", "DK004"]  # Custom pattern lint rules (scripts/pattern_lint.py)
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "W",      # pycodestyle warnings
+    "I",      # isort (import sorting)
+    "N",      # pep8-naming
+    "B",      # flake8-bugbear (defensive coding)
+    "SIM",    # flake8-simplify
+    "ARG",    # unused arguments
+    "UP",     # pyupgrade (modern Python)
+    "S",      # flake8-bandit (security basics)
+    "RUF",    # ruff-specific rules
+]
+ignore = [
+    "E203",   # conflicts with Black-style formatting
+    "S101",   # assert used -- fine in tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ARG", "S", "F841", "SIM103", "SIM105", "SIM117", "RUF059"]
+"scripts/**" = ["S603", "S607", "S110"]
+"adversarial_workflow/cli.py" = ["E501", "E722", "E741", "SIM108", "SIM102", "SIM103", "SIM118", "N806", "S103", "S110", "S310", "S603", "S607", "ARG001", "F841", "RUF001", "RUF013"]
+"adversarial_workflow/evaluators/runner.py" = ["S603", "ARG001"]
+"adversarial_workflow/library/client.py" = ["S310"]
+"adversarial_workflow/library/cache.py" = ["SIM105"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -18,14 +18,12 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
 import re
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 # Module logger for debugging URL check failures
 logger = logging.getLogger(__name__)
@@ -46,10 +44,10 @@ class URLResult:
 
     url: str
     status: URLStatus
-    status_code: Optional[int] = None
-    final_url: Optional[str] = None
-    error: Optional[str] = None
-    checked_at: Optional[float] = None
+    status_code: int | None = None
+    final_url: str | None = None
+    error: str | None = None
+    checked_at: float | None = None
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
@@ -156,7 +154,7 @@ def extract_urls(document: str, max_urls: int = 100) -> list[ExtractedURL]:
     return urls
 
 
-def get_cache_path(cache_dir: Optional[Path] = None) -> Path:
+def get_cache_path(cache_dir: Path | None = None) -> Path:
     """Get the path to the URL cache file."""
     if cache_dir is None:
         cache_dir = Path.cwd() / ".adversarial"
@@ -183,10 +181,10 @@ def save_cache(cache_path: Path, cache: dict[str, dict]) -> None:
 
 def get_cache_key(url: str) -> str:
     """Generate a cache key for a URL."""
-    return hashlib.md5(url.encode()).hexdigest()
+    return hashlib.md5(url.encode()).hexdigest()  # noqa: S324 — not security-sensitive
 
 
-def classify_response(status_code: int, _headers: dict, content: Optional[str] = None) -> URLStatus:
+def classify_response(status_code: int, _headers: dict, content: str | None = None) -> URLStatus:
     """
     Classify HTTP response into a URL status.
 
@@ -295,7 +293,7 @@ async def check_urls_parallel(
     urls: list[str],
     concurrency: int = 10,
     timeout: int = 10,
-    cache: Optional[dict] = None,
+    cache: dict | None = None,
     cache_ttl: int = 86400,
 ) -> list[URLResult]:
     """
@@ -382,7 +380,7 @@ def check_urls(
     urls: list[str],
     concurrency: int = 10,
     timeout: int = 10,
-    cache_dir: Optional[Path] = None,
+    cache_dir: Path | None = None,
     cache_ttl: int = 86400,
 ) -> list[URLResult]:
     """
@@ -508,7 +506,7 @@ def mark_urls_inline(document: str, results: list[URLResult]) -> str:
 def generate_blocked_tasks(
     results: list[URLResult],
     document_path: str,
-    output_path: Optional[Path] = None,
+    output_path: Path | None = None,
 ) -> str:
     """
     Generate a task file for blocked URLs requiring manual verification.
@@ -571,11 +569,11 @@ def generate_blocked_tasks(
 
 def verify_document(
     document_path: Path,
-    output_tasks_path: Optional[Path] = None,
+    output_tasks_path: Path | None = None,
     mark_inline: bool = True,
     concurrency: int = 10,
     timeout: int = 10,
-    cache_dir: Optional[Path] = None,
+    cache_dir: Path | None = None,
 ) -> tuple[str, list[URLResult], str]:
     """
     Verify all citations in a document.

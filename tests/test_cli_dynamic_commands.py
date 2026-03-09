@@ -5,11 +5,6 @@ registered as CLI subcommands, with proper alias support and static command
 protection.
 """
 
-from pathlib import Path
-from unittest.mock import patch
-
-import pytest
-
 
 class TestBuiltinEvaluatorsInHelp:
     """Test that built-in evaluators appear in CLI help output."""

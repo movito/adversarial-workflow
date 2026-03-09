@@ -24,34 +24,15 @@ repos:
       - id: check-toml
         name: Check TOML syntax
 
-  # Python code formatting
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
+  # Python formatting and linting (Ruff replaces Black + isort + flake8)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.7
     hooks:
-      - id: black
-        name: Format code with Black
-        args: ['--line-length=88']
-        language_version: python3
-
-  # Import sorting
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        name: Sort imports with isort
-        args: ['--profile=black', '--line-length=88']
-
-  # Linting (critical errors only)
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
-    hooks:
-      - id: flake8
-        name: Check with flake8
-        args: [
-          '--max-line-length=88',
-          '--extend-ignore=E203,W503',
-          '--select=E9,F63,F7,F82'
-        ]
+      - id: ruff
+        name: Lint with Ruff
+        args: [--fix]
+      - id: ruff-format
+        name: Format with Ruff
 
   # Run fast tests before commit (optional - skips if no tests)
   # To skip: SKIP_TESTS=1 git commit -m "WIP"

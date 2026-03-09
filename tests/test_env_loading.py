@@ -21,9 +21,9 @@ class TestEnvFileLoading:
         # The check command should see the API key from .env
         # It will show as valid (green checkmark) in the output
         combined_output = result.stdout + result.stderr
-        assert (
-            "OPENAI_API_KEY" in combined_output
-        ), f"Expected OPENAI_API_KEY check. stdout: {result.stdout}, stderr: {result.stderr}"
+        assert "OPENAI_API_KEY" in combined_output, (
+            f"Expected OPENAI_API_KEY check. stdout: {result.stdout}, stderr: {result.stderr}"
+        )
 
     def test_env_loaded_before_evaluator_commands(self, tmp_path, monkeypatch, run_cli):
         """API keys in .env are available to evaluator commands."""
@@ -94,7 +94,7 @@ class TestCheckEnvCount:
         """
         # Create .env with 3 variables
         (tmp_path / ".env").write_text(
-            "OPENAI_API_KEY=sk-test\n" "ANTHROPIC_API_KEY=ant-test\n" "CUSTOM_KEY=custom-value\n"
+            "OPENAI_API_KEY=sk-test\nANTHROPIC_API_KEY=ant-test\nCUSTOM_KEY=custom-value\n"
         )
 
         # Remove keys from environment to isolate test
@@ -108,9 +108,9 @@ class TestCheckEnvCount:
         result = run_cli(["check"], cwd=tmp_path, env=env)
 
         # Should report "3 variables configured", not "0 variables"
-        assert (
-            "3 variables" in result.stdout
-        ), f"Expected '3 variables' in output. Got: {result.stdout}"
+        assert "3 variables" in result.stdout, (
+            f"Expected '3 variables' in output. Got: {result.stdout}"
+        )
 
     def test_check_handles_empty_env_file(self, tmp_path, run_cli):
         """check() handles empty .env file gracefully."""
@@ -122,9 +122,9 @@ class TestCheckEnvCount:
         result = run_cli(["check"], cwd=tmp_path, env=env)
 
         # Should report "0 variables configured"
-        assert (
-            "0 variables" in result.stdout
-        ), f"Expected '0 variables' in output. Got: {result.stdout}"
+        assert "0 variables" in result.stdout, (
+            f"Expected '0 variables' in output. Got: {result.stdout}"
+        )
 
     def test_check_handles_comments_in_env(self, tmp_path, run_cli):
         """check() correctly counts variables, ignoring comments and empty lines."""
@@ -142,9 +142,9 @@ class TestCheckEnvCount:
         result = run_cli(["check"], cwd=tmp_path, env=env)
 
         # Should report 2 variables (comments and empty lines ignored)
-        assert (
-            "2 variables" in result.stdout
-        ), f"Expected '2 variables' in output. Got: {result.stdout}"
+        assert "2 variables" in result.stdout, (
+            f"Expected '2 variables' in output. Got: {result.stdout}"
+        )
 
     def test_check_handles_unusual_env_entries(self, tmp_path, run_cli):
         """check() handles unusual .env entries without crashing.
@@ -169,6 +169,6 @@ class TestCheckEnvCount:
 
         # Should not crash - at least 2 valid variables should be counted
         # (dotenv behavior for lines without '=' varies by version)
-        assert (
-            "2 variables" in result.stdout or "3 variables" in result.stdout
-        ), f"Expected '2 variables' or '3 variables' in output. Got: {result.stdout}"
+        assert "2 variables" in result.stdout or "3 variables" in result.stdout, (
+            f"Expected '2 variables' or '3 variables' in output. Got: {result.stdout}"
+        )

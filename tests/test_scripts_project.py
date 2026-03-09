@@ -5,12 +5,11 @@ This tests the algorithm from scripts/project to ensure ADV-1 doesn't match ADV-
 """
 
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
 
-def find_task_file(task_id: str, project_dir: Path) -> Optional[Path]:
+def find_task_file(task_id: str, project_dir: Path) -> Path | None:
     """Find a task file by ID across all workflow folders.
 
     Mirror of scripts/project:find_task_file for testing.

@@ -6,8 +6,6 @@ with defaults and environment variable overrides.
 """
 
 import os
-import tempfile
-from pathlib import Path
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -167,7 +165,7 @@ test_command: pytest
     @patch("os.path.exists", return_value=True)
     def test_load_config_file_read_error(self, mock_exists):
         """Test load_config handles file read errors."""
-        with patch("builtins.open", side_effect=IOError("Permission denied")):
+        with patch("builtins.open", side_effect=OSError("Permission denied")):
             with pytest.raises(IOError):
                 load_config("config.yml")
 

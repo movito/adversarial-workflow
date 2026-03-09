@@ -81,10 +81,9 @@ def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -
     line_count, estimated_tokens = _check_file_size(file_path)
     if line_count > 500 or estimated_tokens > 20000:
         _warn_large_file(line_count, estimated_tokens)
-        if line_count > 700:
-            if not _confirm_continue():
-                print("Evaluation cancelled.")
-                return 0
+        if line_count > 700 and not _confirm_continue():
+            print("Evaluation cancelled.")
+            return 0
 
     # 7. Determine execution method
     if config.source == "builtin":
@@ -196,7 +195,7 @@ def _run_custom_evaluator(
 
         # Write output
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-        header = f"""# {suffix.replace('-', ' ').replace('_', ' ').title()}
+        header = f"""# {suffix.replace("-", " ").replace("_", " ").title()}
 
 **Source**: {file_path}
 **Evaluator**: {config.name}
@@ -296,7 +295,7 @@ def _report_verdict(verdict: str | None, log_file: Path, config: EvaluatorConfig
 # Helper functions
 def _check_file_size(file_path: str) -> tuple[int, int]:
     """Return (line_count, estimated_tokens)."""
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         lines = f.readlines()
         f.seek(0)
         content = f.read()

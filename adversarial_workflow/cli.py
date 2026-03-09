@@ -25,16 +25,16 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import yaml
 from dotenv import dotenv_values, load_dotenv
 
 try:
     from importlib.metadata import version as _get_version
+
     __version__ = _get_version("adversarial-workflow")
 except Exception:
-    __version__ = "0.9.6"  # Fallback for editable installs
+    __version__ = "0.9.9"  # Fallback for editable installs
 
 # ANSI color codes for better output
 RESET = "\033[0m"
@@ -46,7 +46,7 @@ CYAN = "\033[96m"
 GRAY = "\033[90m"
 
 
-def print_box(title: str, lines: List[str], width: int = 70) -> None:
+def print_box(title: str, lines: list[str], width: int = 70) -> None:
     """Print a nice box with content."""
     print()
     print("━" * width)
@@ -74,7 +74,7 @@ def prompt_user(prompt: str, default: str = "", secret: bool = False) -> str:
     return value if value else default
 
 
-def validate_api_key(key: str, provider: str) -> Tuple[bool, str]:
+def validate_api_key(key: str, provider: str) -> tuple[bool, str]:
     """
     Validate an API key by checking its format.
 
@@ -304,11 +304,11 @@ def init_interactive(project_path: str = ".") -> int:
         ],
     )
 
-    project_name = prompt_user(
+    _project_name = prompt_user(
         "Project name", default=os.path.basename(os.path.abspath(project_path))
     )
-    test_command = prompt_user("Test framework", default="pytest")
-    task_directory = prompt_user("Task directory", default="tasks/")
+    _test_command = prompt_user("Test framework", default="pytest")
+    _task_directory = prompt_user("Task directory", default="tasks/")
 
     # Now run the standard init
     result = init(project_path, interactive=False)
@@ -441,7 +441,7 @@ def quickstart() -> int:
     if show_task.lower() in ["y", "yes", ""]:
         print()
         print(f"{GRAY}{'─' * 70}{RESET}")
-        with open(example_task_path, "r") as f:
+        with open(example_task_path) as f:
             for line in f:
                 print(f"{GRAY}{line.rstrip()}{RESET}")
         print(f"{GRAY}{'─' * 70}{RESET}")
@@ -542,7 +542,7 @@ The `process_items()` function has an off-by-one error.
     print(f"{GREEN}✅ Created: {task_path}{RESET}")
 
 
-def load_config(config_path: str = ".adversarial/config.yml") -> Dict:
+def load_config(config_path: str = ".adversarial/config.yml") -> dict:
     """Load configuration from YAML file with environment variable overrides."""
     # Default configuration
     config = {
@@ -555,7 +555,7 @@ def load_config(config_path: str = ".adversarial/config.yml") -> Dict:
 
     # Load from file if exists
     if os.path.exists(config_path):
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             file_config = yaml.safe_load(f) or {}
             config.update(file_config)
 
@@ -574,9 +574,9 @@ def load_config(config_path: str = ".adversarial/config.yml") -> Dict:
     return config
 
 
-def render_template(template_path: str, output_path: str, variables: Dict) -> None:
+def render_template(template_path: str, output_path: str, variables: dict) -> None:
     """Render a template file with variable substitution."""
-    with open(template_path, "r") as f:
+    with open(template_path) as f:
         content = f.read()
 
     # Replace {{variable}} with values
@@ -759,7 +759,7 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
                 shutil.copy(str(agent_guide_template), str(agent_guide_dest))
                 if interactive:
                     print("  ✓ Agent coordination guide installed")
-            except (IOError, OSError) as e:
+            except OSError as e:
                 # Non-critical failure - agent guide is optional
                 if interactive:
                     print(f"  ⚠️  Could not install agent guide: {e}")
@@ -773,7 +773,7 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
         ]
 
         if os.path.exists(gitignore_path):
-            with open(gitignore_path, "r") as f:
+            with open(gitignore_path) as f:
                 existing = f.read()
 
             with open(gitignore_path, "a") as f:
@@ -808,8 +808,8 @@ def check() -> int:
     print(f"\n{BOLD}🔍 Checking adversarial workflow setup...{RESET}")
     print()
 
-    issues: List[Dict] = []
-    good_checks: List[str] = []
+    issues: list[dict] = []
+    good_checks: list[str] = []
 
     # Check for .env file (note: already loaded by main() at startup)
     env_file = Path(".env")
@@ -1011,16 +1011,14 @@ def check() -> int:
                 path = f".adversarial/scripts/{script}"
                 if os.path.exists(path):
                     try:
-                        with open(path, "r") as f:
+                        with open(path) as f:
                             # Read first 5 lines to find SCRIPT_VERSION
                             for _ in range(5):
                                 line = f.readline()
                                 if line.startswith("# SCRIPT_VERSION:"):
                                     script_ver = line.split(":")[1].strip()
                                     if script_ver != package_ver:
-                                        outdated_scripts.append(
-                                            f"{script} (v{script_ver})"
-                                        )
+                                        outdated_scripts.append(f"{script} (v{script_ver})")
                                     break
                             else:
                                 # No version found - script is pre-versioning
@@ -1112,7 +1110,6 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         0 if healthy (>90% checks pass), 1 if degraded or critical
     """
     import json
-    from datetime import datetime
 
     # Initialize results tracking
     results = {
@@ -1212,14 +1209,14 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                 if task_dir.exists():
                     check_pass(
                         "configuration",
-                        f'task_directory: {config["task_directory"]} (exists)',
+                        f"task_directory: {config['task_directory']} (exists)",
                     )
                 else:
                     check_fail(
                         "configuration",
-                        f'task_directory: {config["task_directory"]} (not found)',
-                        fix=f'mkdir -p {config["task_directory"]}',
-                        recommendation=f'Create task directory: mkdir -p {config["task_directory"]}',
+                        f"task_directory: {config['task_directory']} (not found)",
+                        fix=f"mkdir -p {config['task_directory']}",
+                        recommendation=f"Create task directory: mkdir -p {config['task_directory']}",
                     )
 
             if "log_directory" in config:
@@ -1228,24 +1225,24 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                     if os.access(log_dir, os.W_OK):
                         check_pass(
                             "configuration",
-                            f'log_directory: {config["log_directory"]} (writable)',
+                            f"log_directory: {config['log_directory']} (writable)",
                         )
                     else:
                         check_fail(
                             "configuration",
-                            f'log_directory: {config["log_directory"]} (not writable)',
-                            fix=f'chmod +w {config["log_directory"]}',
+                            f"log_directory: {config['log_directory']} (not writable)",
+                            fix=f"chmod +w {config['log_directory']}",
                         )
                 else:
                     check_warn(
                         "configuration",
-                        f'log_directory: {config["log_directory"]} (will be created)',
-                        recommendation=f"Log directory will be created automatically",
+                        f"log_directory: {config['log_directory']} (will be created)",
+                        recommendation="Log directory will be created automatically",
                     )
 
             # Check test command
             if "test_command" in config:
-                check_info("configuration", f'test_command: {config["test_command"]}')
+                check_info("configuration", f"test_command: {config['test_command']}")
 
         except yaml.YAMLError as e:
             check_fail(
@@ -1320,14 +1317,14 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     # Python
     python_version = sys.version.split()[0]
     major, minor = map(int, python_version.split(".")[:2])
-    if (major, minor) >= (3, 8):
+    if (major, minor) >= (3, 10):
         check_pass("dependencies", f"Python: {python_version} (compatible)")
     else:
         check_fail(
             "dependencies",
-            f"Python: {python_version} (requires 3.8+)",
-            fix="Upgrade Python to 3.8 or higher",
-            recommendation="Python 3.8+ required - upgrade your Python installation",
+            f"Python: {python_version} (requires 3.10+)",
+            fix="Upgrade Python to 3.10 or higher",
+            recommendation="Python 3.10+ required - upgrade your Python installation",
         )
 
     # Aider
@@ -1454,7 +1451,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                 if "meta" in handoffs and "last_updated" in handoffs["meta"]:
                     check_info(
                         "agent_coordination",
-                        f'Last updated: {handoffs["meta"]["last_updated"]}',
+                        f"Last updated: {handoffs['meta']['last_updated']}",
                     )
 
             except json.JSONDecodeError as e:
@@ -1558,7 +1555,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     if config and "task_directory" in config:
         task_dir = Path(config["task_directory"])
         if task_dir.exists():
-            check_pass("tasks", f'{config["task_directory"]} directory exists')
+            check_pass("tasks", f"{config['task_directory']} directory exists")
 
             # Count tasks
             try:
@@ -1572,25 +1569,25 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                 if len(active_tasks) > 0:
                     check_info(
                         "tasks",
-                        f'{len(active_tasks)} active tasks in {config["task_directory"]}active/',
+                        f"{len(active_tasks)} active tasks in {config['task_directory']}active/",
                     )
                 elif len(task_files) > 0:
                     check_info(
                         "tasks",
-                        f'{len(task_files)} task files in {config["task_directory"]}',
+                        f"{len(task_files)} task files in {config['task_directory']}",
                     )
                 else:
                     check_info(
                         "tasks",
-                        f"No task files found (create with adversarial quickstart)",
+                        "No task files found (create with adversarial quickstart)",
                     )
-            except:
+            except Exception:
                 check_info("tasks", "Could not count task files")
         else:
             check_warn(
                 "tasks",
-                f'{config["task_directory"]} directory not found',
-                recommendation=f'Create with: mkdir -p {config["task_directory"]}',
+                f"{config['task_directory']} directory not found",
+                recommendation=f"Create with: mkdir -p {config['task_directory']}",
             )
     else:
         check_info("tasks", "Task directory not configured")
@@ -1640,12 +1637,12 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         log_dir = Path(config["log_directory"])
         if log_dir.exists():
             if os.access(log_dir, os.W_OK):
-                check_pass("permissions", f'{config["log_directory"]} - Writable')
+                check_pass("permissions", f"{config['log_directory']} - Writable")
             else:
                 check_fail(
                     "permissions",
-                    f'{config["log_directory"]} - Not writable',
-                    fix=f'chmod +w {config["log_directory"]}',
+                    f"{config['log_directory']} - Not writable",
+                    fix=f"chmod +w {config['log_directory']}",
                 )
 
     if not json_output:
@@ -1732,13 +1729,13 @@ def estimate_file_tokens(file_path: str) -> int:
     Returns:
         Estimated token count (integer)
     """
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         char_count = len(f.read())
 
     return char_count // 4  # Rough estimate
 
 
-def extract_token_count_from_log(log_file_path: str) -> Optional[int]:
+def extract_token_count_from_log(log_file_path: str) -> int | None:
     """
     Extract tokens sent from evaluation log.
 
@@ -1754,7 +1751,7 @@ def extract_token_count_from_log(log_file_path: str) -> Optional[int]:
     if not os.path.exists(log_file_path):
         return None
 
-    with open(log_file_path, "r") as f:
+    with open(log_file_path) as f:
         content = f.read()
 
     # Pattern: "Tokens: 12k sent" or "Tokens: 12000 sent"
@@ -1795,17 +1792,17 @@ def verify_token_count(task_file: str, log_file: str) -> None:
         print(f"   File size estimate: ~{expected_tokens:,} tokens")
         print(f"   Actually sent: {actual_tokens:,} tokens")
         print(
-            f"   Difference: {expected_tokens - actual_tokens:,} tokens ({100 - int(actual_tokens/expected_tokens*100)}% less)"
+            f"   Difference: {expected_tokens - actual_tokens:,} tokens ({100 - int(actual_tokens / expected_tokens * 100)}% less)"
         )
         print()
         print(f"{BOLD}Note:{RESET} Large files may not be fully processed by evaluator.")
-        print(f"      Consider splitting into smaller documents (<1,000 lines).")
+        print("      Consider splitting into smaller documents (<1,000 lines).")
         print()
 
 
 def validate_evaluation_output(
     log_file_path: str,
-) -> Tuple[bool, Optional[str], str]:
+) -> tuple[bool, str | None, str]:
     """
     Validate that evaluation log contains actual GPT-4o evaluation content.
 
@@ -1826,7 +1823,7 @@ def validate_evaluation_output(
     if not os.path.exists(log_file_path):
         return False, None, f"Log file not found: {log_file_path}"
 
-    with open(log_file_path, "r") as f:
+    with open(log_file_path) as f:
         content = f.read()
 
     # Check minimum content size (working evaluations are >1000 bytes)
@@ -1928,7 +1925,7 @@ def evaluate(task_file: str) -> int:
         return 1
 
     # Pre-flight check for file size
-    with open(task_file, "r") as f:
+    with open(task_file) as f:
         line_count = len(f.readlines())
         f.seek(0)
         file_size = len(f.read())
@@ -1943,14 +1940,14 @@ def evaluate(task_file: str) -> int:
         print(f"   Estimated tokens: ~{estimated_tokens:,}")
         print()
         print(f"{BOLD}Note:{RESET} Files over 500 lines may exceed OpenAI rate limits.")
-        print(f"      If evaluation fails, consider splitting into smaller documents.")
+        print("      If evaluation fails, consider splitting into smaller documents.")
         print()
 
         # Give user a chance to cancel for very large files
         if line_count > 700:
             print(f"{RED}⚠️  WARNING: File is very large (>{line_count} lines){RESET}")
-            print(f"   This will likely fail on Tier 1 OpenAI accounts (30k TPM limit)")
-            print(f"   Recommended: Split into files <500 lines each")
+            print("   This will likely fail on Tier 1 OpenAI accounts (30k TPM limit)")
+            print("   Recommended: Split into files <500 lines each")
             print()
             response = input("Continue anyway? [y/N]: ").strip().lower()
             if response not in ["y", "yes"]:
@@ -1983,12 +1980,12 @@ def evaluate(task_file: str) -> int:
             print()
 
             # Extract file size for helpful message
-            with open(task_file, "r") as f:
+            with open(task_file) as f:
                 line_count = len(f.readlines())
 
             print(f"{BOLD}FILE SIZE:{RESET}")
             print(f"   Lines: {line_count:,}")
-            print(f"   Recommended limit: 500 lines")
+            print("   Recommended limit: 500 lines")
             print()
             print(f"{BOLD}SOLUTIONS:{RESET}")
             print("   1. Split your task into smaller documents (<500 lines each)")
@@ -2015,7 +2012,7 @@ def evaluate(task_file: str) -> int:
         print("   2. Try a smaller task file")
         print("   3. Wait a few minutes and retry")
         return 1
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         # Check if this is a bash/platform issue
         if platform.system() == "Windows":
             print(f"{RED}❌ ERROR: Cannot execute workflow scripts{RESET}")
@@ -2092,17 +2089,17 @@ def evaluate(task_file: str) -> int:
     print()
     if verdict == "APPROVED":
         print(f"{GREEN}✅ Evaluation APPROVED!{RESET}")
-        print(f"   Plan is ready for implementation")
+        print("   Plan is ready for implementation")
         print(f"   Review output: {log_file}")
         return 0
     elif verdict == "NEEDS_REVISION":
         print(f"{YELLOW}⚠️  Evaluation NEEDS_REVISION{RESET}")
-        print(f"   Review feedback and update plan")
+        print("   Review feedback and update plan")
         print(f"   Details: {log_file}")
         return 1
     elif verdict == "REJECTED":
         print(f"{RED}❌ Evaluation REJECTED{RESET}")
-        print(f"   Plan has fundamental issues - major revision needed")
+        print("   Plan has fundamental issues - major revision needed")
         print(f"   Details: {log_file}")
         return 1
     else:  # UNKNOWN or other
@@ -2163,7 +2160,7 @@ def review() -> int:
     return 0
 
 
-def validate(test_command: Optional[str] = None) -> int:
+def validate(test_command: str | None = None) -> int:
     """Run Phase 4: Test validation."""
 
     print("🧪 Validating with tests...")
@@ -2212,7 +2209,7 @@ def validate(test_command: Optional[str] = None) -> int:
     return 0
 
 
-def select_agent_template() -> Dict[str, str]:
+def select_agent_template() -> dict[str, str]:
     """
     Prompt user for agent template selection.
 
@@ -2264,7 +2261,7 @@ def select_agent_template() -> Dict[str, str]:
         return {"type": "standard", "url": None}
 
 
-def fetch_agent_template(url: str, template_type: str = "standard") -> Optional[str]:
+def fetch_agent_template(url: str, template_type: str = "standard") -> str | None:
     """
     Fetch agent template from URL or package templates.
 
@@ -2287,7 +2284,7 @@ def fetch_agent_template(url: str, template_type: str = "standard") -> Optional[
 
         if template_path.exists():
             try:
-                with open(template_path, "r") as f:
+                with open(template_path) as f:
                     return f.read()
             except Exception as e:
                 print(f"{RED}❌ ERROR: Could not read {template_type} template: {e}{RESET}")
@@ -2449,7 +2446,7 @@ def agent_onboard(project_path: str = ".") -> int:
 
         if len(task_files) > 0:
             print(f"  Found {len(task_files)} task file(s) in tasks/")
-            print(f"  Backup will be created at: tasks.backup/")
+            print("  Backup will be created at: tasks.backup/")
             print()
 
             migrate = prompt_user("Migrate tasks/ → delegation/tasks/active/?", "Y")
@@ -2600,7 +2597,7 @@ def agent_onboard(project_path: str = ".") -> int:
 
         try:
             config_path = ".adversarial/config.yml"
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 config = yaml.safe_load(f)
 
             # Update task_directory
@@ -2615,7 +2612,7 @@ def agent_onboard(project_path: str = ".") -> int:
 
         except Exception as e:
             print(f"  {YELLOW}⚠️{RESET}  Could not update config: {e}")
-            print(f"     Manually set task_directory: delegation/tasks/ in .adversarial/config.yml")
+            print("     Manually set task_directory: delegation/tasks/ in .adversarial/config.yml")
 
     # 9. Update .gitignore
     print()
@@ -2630,7 +2627,7 @@ def agent_onboard(project_path: str = ".") -> int:
 
         existing_content = ""
         if os.path.exists(gitignore_path):
-            with open(gitignore_path, "r") as f:
+            with open(gitignore_path) as f:
                 existing_content = f.read()
 
         with open(gitignore_path, "a") as f:
@@ -2709,7 +2706,7 @@ def agent_onboard(project_path: str = ".") -> int:
         }[template_type]
         print(f"  ✓ agent-handoffs.json - {agent_count} initialized")
     else:
-        print(f"  ○ agent-handoffs.json - Manual setup required")
+        print("  ○ agent-handoffs.json - Manual setup required")
 
     print("  ✓ current-state.json - Project state tracking")
     print("  ✓ AGENT-SYSTEM-GUIDE.md - Comprehensive guide")
@@ -2725,7 +2722,7 @@ def agent_onboard(project_path: str = ".") -> int:
     print("  4. Assign agents in: .agent-context/agent-handoffs.json")
     print()
     print(f"{CYAN}ℹ️{RESET}  Agent coordination extends adversarial-workflow core")
-    print(f"   Use both systems together for optimal development workflow")
+    print("   Use both systems together for optimal development workflow")
     print()
 
     return 0
@@ -2781,16 +2778,16 @@ def split(
         print(f"{YELLOW}⚠️  File exceeds recommended limit ({max_lines} lines){RESET}")
 
         # Read file content for splitting
-        with open(task_file, "r", encoding="utf-8") as f:
+        with open(task_file, encoding="utf-8") as f:
             content = f.read()
 
         # Apply split strategy
         if strategy == "sections":
             splits = split_by_sections(content, max_lines=max_lines)
-            print(f"\n💡 Suggested splits (by sections):")
+            print("\n💡 Suggested splits (by sections):")
         elif strategy == "phases":
             splits = split_by_phases(content)
-            print(f"\n💡 Suggested splits (by phases):")
+            print("\n💡 Suggested splits (by phases):")
         else:
             print(f"{RED}Error: Unknown strategy '{strategy}'. Use 'sections' or 'phases'.{RESET}")
             return 1
@@ -2876,7 +2873,7 @@ def list_evaluators() -> int:
 
 def check_citations(
     file_path: str,
-    output_tasks: Optional[str] = None,
+    output_tasks: str | None = None,
     mark_inline: bool = False,
     concurrency: int = 10,
     timeout: int = 10,

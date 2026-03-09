@@ -5,13 +5,8 @@ Tests the evaluate function which runs Phase 1: Plan evaluation using aider.
 This includes error handling, file validation, subprocess management, and output parsing.
 """
 
-import os
-import platform
 import subprocess
-from pathlib import Path
-from unittest.mock import Mock, mock_open, patch
-
-import pytest
+from unittest.mock import Mock, patch
 
 from adversarial_workflow.cli import (
     evaluate,

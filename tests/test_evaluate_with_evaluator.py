@@ -4,8 +4,6 @@ Tests the ability to select and run library-installed evaluators
 via the `adversarial evaluate --evaluator <name>` command.
 """
 
-import pytest
-
 
 class TestEvaluatorFlagInHelp:
     """Test that --evaluator flag appears in evaluate command help."""
