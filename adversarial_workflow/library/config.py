@@ -1,9 +1,9 @@
 """Library configuration with env > file > defaults precedence."""
 
+import contextlib
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 import yaml
 
@@ -22,7 +22,7 @@ class LibraryConfig:
     enabled: bool = True
 
 
-def get_library_config(config_path: Optional[Path] = None) -> LibraryConfig:
+def get_library_config(config_path: Path | None = None) -> LibraryConfig:
     """
     Load library configuration with precedence: env > file > defaults.
 
@@ -38,7 +38,7 @@ def get_library_config(config_path: Optional[Path] = None) -> LibraryConfig:
     config_file = config_path or Path(".adversarial/config.yml")
     if config_file.exists():
         try:
-            with open(config_file, "r", encoding="utf-8") as f:
+            with open(config_file, encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
             # Handle non-dict YAML (list, scalar, etc.) gracefully
             if not isinstance(data, dict):
@@ -66,10 +66,8 @@ def get_library_config(config_path: Optional[Path] = None) -> LibraryConfig:
 
     # Process TTL first, then NO_CACHE (so NO_CACHE always wins)
     if ttl := os.environ.get("ADVERSARIAL_LIBRARY_CACHE_TTL"):
-        try:
+        with contextlib.suppress(ValueError):
             config.cache_ttl = int(ttl)
-        except ValueError:
-            pass  # Invalid TTL, keep current value
 
     # NO_CACHE takes precedence over CACHE_TTL - check it last
     if os.environ.get("ADVERSARIAL_LIBRARY_NO_CACHE"):

@@ -5,17 +5,16 @@
 # Usage: ./scripts/ci-check.sh
 #
 # This script runs the SAME checks as GitHub Actions:
-#   1. Black formatting check
-#   2. isort import sorting check
-#   3. flake8 linting
-#   4. Full test suite with coverage (80% threshold)
+#   1. Ruff format check
+#   2. Ruff lint check
+#   3. Full test suite with coverage (80% threshold)
 #
 # Run this before every push to prevent CI failures.
 
 set -e  # Exit on first error
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔍 Running local CI checks"
+echo "Running local CI checks"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo
 
@@ -26,65 +25,53 @@ FAILED=0
 if [ -z "$VIRTUAL_ENV" ]; then
     # Try to activate local venv
     if [ -f ".venv/bin/activate" ]; then
-        echo "📦 Activating virtual environment..."
+        echo "Activating virtual environment..."
         source .venv/bin/activate
     elif [ -f "venv/bin/activate" ]; then
-        echo "📦 Activating virtual environment..."
+        echo "Activating virtual environment..."
         source venv/bin/activate
     else
-        echo "⚠️  No virtual environment found. Using system Python."
+        echo "WARNING: No virtual environment found. Using system Python."
     fi
 fi
 
 echo "Python: $(which python)"
 echo
 
-# 1. Black formatting check
+# 1. Ruff format check
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "1/4 🎨 Checking formatting with Black..."
+echo "1/3 Checking formatting with Ruff..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if black --check --diff . 2>/dev/null; then
-    echo "✅ Black: All files formatted correctly"
+if ruff format --check . 2>/dev/null; then
+    echo "OK: Ruff format: All files formatted correctly"
 else
-    echo "❌ Black: Formatting issues found"
-    echo "   Run: black . to fix"
+    echo "FAIL: Ruff format: Formatting issues found"
+    echo "   Run: ruff format . to fix"
     FAILED=1
 fi
 echo
 
-# 2. isort import sorting check
+# 2. Ruff lint check
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "2/4 📋 Checking import sorting with isort..."
+echo "2/3 Linting with Ruff..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if isort --check-only --diff . 2>/dev/null; then
-    echo "✅ isort: Imports sorted correctly"
+if ruff check . 2>/dev/null; then
+    echo "OK: Ruff check: No lint errors"
 else
-    echo "❌ isort: Import sorting issues found"
-    echo "   Run: isort . to fix"
+    echo "FAIL: Ruff check: Lint errors found"
+    echo "   Run: ruff check --fix . to auto-fix"
     FAILED=1
 fi
 echo
 
-# 3. flake8 linting
+# 3. Full test suite with coverage
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "3/4 🔎 Linting with flake8..."
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if flake8 scripts/ tests/ --max-line-length=88 --extend-ignore=E203,W503 --select=E9,F63,F7,F82 2>/dev/null; then
-    echo "✅ flake8: No critical linting errors"
-else
-    echo "❌ flake8: Linting errors found"
-    FAILED=1
-fi
-echo
-
-# 4. Full test suite with coverage
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "4/4 🧪 Running full test suite with coverage..."
+echo "3/3 Running full test suite with coverage..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if pytest tests/ -v --cov=adversarial_workflow --cov-report=term-missing; then
-    echo "✅ Tests: All tests passed"
+    echo "OK: Tests: All tests passed"
 else
-    echo "❌ Tests: Test failures or coverage below 80%"
+    echo "FAIL: Tests: Test failures or coverage below 80%"
     FAILED=1
 fi
 echo
@@ -92,12 +79,12 @@ echo
 # Summary
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if [ $FAILED -eq 0 ]; then
-    echo "✅ All CI checks passed!"
+    echo "All CI checks passed!"
     echo "   Safe to push: git push origin $(git branch --show-current)"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     exit 0
 else
-    echo "❌ CI checks failed!"
+    echo "CI checks failed!"
     echo "   Fix the issues above before pushing."
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     exit 1

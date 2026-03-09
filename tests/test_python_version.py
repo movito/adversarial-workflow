@@ -44,27 +44,27 @@ def test_python_classifiers_exclude_old_versions():
     python_38_classifier = "Programming Language :: Python :: 3.8"
     python_39_classifier = "Programming Language :: Python :: 3.9"
 
-    assert (
-        python_38_classifier not in classifiers
-    ), f"Python 3.8 classifier should be removed: {python_38_classifier}"
-    assert (
-        python_39_classifier not in classifiers
-    ), f"Python 3.9 classifier should be removed: {python_39_classifier}"
+    assert python_38_classifier not in classifiers, (
+        f"Python 3.8 classifier should be removed: {python_38_classifier}"
+    )
+    assert python_39_classifier not in classifiers, (
+        f"Python 3.9 classifier should be removed: {python_39_classifier}"
+    )
 
     # Check that 3.10+ are still present
     python_310_classifier = "Programming Language :: Python :: 3.10"
     python_311_classifier = "Programming Language :: Python :: 3.11"
     python_312_classifier = "Programming Language :: Python :: 3.12"
 
-    assert (
-        python_310_classifier in classifiers
-    ), f"Python 3.10 classifier should be present: {python_310_classifier}"
-    assert (
-        python_311_classifier in classifiers
-    ), f"Python 3.11 classifier should be present: {python_311_classifier}"
-    assert (
-        python_312_classifier in classifiers
-    ), f"Python 3.12 classifier should be present: {python_312_classifier}"
+    assert python_310_classifier in classifiers, (
+        f"Python 3.10 classifier should be present: {python_310_classifier}"
+    )
+    assert python_311_classifier in classifiers, (
+        f"Python 3.11 classifier should be present: {python_311_classifier}"
+    )
+    assert python_312_classifier in classifiers, (
+        f"Python 3.12 classifier should be present: {python_312_classifier}"
+    )
 
 
 def test_current_python_version_compatibility():
@@ -77,23 +77,17 @@ def test_current_python_version_compatibility():
     )
 
 
-def test_black_target_versions_updated():
-    """Test that black tool configuration excludes old Python versions."""
+def test_ruff_target_version_updated():
+    """Test that ruff tool configuration targets py310+."""
     # Load pyproject.toml
     pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
 
     with open(pyproject_path, "rb") as f:
         config = tomllib.load(f)
 
-    # Check black configuration
-    black_config = config.get("tool", {}).get("black", {})
-    target_version = black_config.get("target-version", [])
+    # Check ruff configuration (replaced black)
+    ruff_config = config.get("tool", {}).get("ruff", {})
+    target_version = ruff_config.get("target-version", "")
 
-    # Should not include py38 or py39
-    assert "py38" not in target_version, "Black should not target py38"
-    assert "py39" not in target_version, "Black should not target py39"
-
-    # Should include py310+
-    assert "py310" in target_version, "Black should target py310"
-    assert "py311" in target_version, "Black should target py311"
-    assert "py312" in target_version, "Black should target py312"
+    # Should target py310
+    assert target_version == "py310", f"Ruff should target py310, got {target_version}"

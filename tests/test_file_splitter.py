@@ -5,7 +5,6 @@ These tests should fail initially (RED phase) then pass after implementation (GR
 
 import os
 import tempfile
-from pathlib import Path
 
 import pytest
 
@@ -284,7 +283,7 @@ class TestGenerateSplitFiles:
                 assert os.path.exists(file_path)
 
                 # Files should contain metadata headers
-                with open(file_path, "r") as f:
+                with open(file_path) as f:
                     content = f.read()
                     assert "<!-- Split from" in content
                     assert "Part" in content
@@ -306,7 +305,7 @@ class TestGenerateSplitFiles:
             created_files = generate_split_files(original_file, splits, temp_dir)
 
             # Check metadata content
-            with open(created_files[0], "r") as f:
+            with open(created_files[0]) as f:
                 content = f.read()
 
                 # Should have metadata header

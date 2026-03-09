@@ -1188,7 +1188,7 @@ output_suffix: VALID
     def test_discover_nested_evaluator(self, tmp_path):
         """Discover evaluators in nested library structure (provider/name/evaluator.yml)."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
-        
+
         # Create nested structure like the library repo
         nested = eval_dir / "google" / "gemini-flash"
         nested.mkdir(parents=True)
@@ -1212,7 +1212,7 @@ output_suffix: -GEMINI
     def test_discover_mixed_flat_and_nested(self, tmp_path):
         """Discover both flat files and nested structure evaluators."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
-        
+
         # Create flat structure
         eval_dir.mkdir(parents=True)
         (eval_dir / "flat-eval.yml").write_text(
@@ -1225,7 +1225,7 @@ prompt: Flat prompt
 output_suffix: -FLAT
 """
         )
-        
+
         # Create nested structure
         nested = eval_dir / "anthropic" / "claude-review"
         nested.mkdir(parents=True)
@@ -1249,7 +1249,7 @@ output_suffix: -CLAUDE
     def test_discover_flat_takes_precedence_over_nested(self, tmp_path, caplog):
         """Flat files take precedence over nested files with same evaluator name."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
-        
+
         # Create flat file first (processed first due to sorted order)
         eval_dir.mkdir(parents=True)
         (eval_dir / "google-gemini-flash.yml").write_text(
@@ -1262,7 +1262,7 @@ prompt: Flat prompt
 output_suffix: -FLAT
 """
         )
-        
+
         # Create nested structure with same evaluator name
         nested = eval_dir / "google" / "gemini-flash"
         nested.mkdir(parents=True)
@@ -1290,9 +1290,13 @@ output_suffix: -NESTED
     def test_discover_multiple_nested_evaluators(self, tmp_path):
         """Discover multiple evaluators from nested structure."""
         eval_dir = tmp_path / ".adversarial" / "evaluators"
-        
+
         # Create multiple nested evaluators
-        for provider, name in [("google", "gemini-flash"), ("openai", "gpt-check"), ("anthropic", "claude-review")]:
+        for provider, name in [
+            ("google", "gemini-flash"),
+            ("openai", "gpt-check"),
+            ("anthropic", "claude-review"),
+        ]:
             nested = eval_dir / provider / name
             nested.mkdir(parents=True)
             (nested / "evaluator.yml").write_text(

@@ -12,7 +12,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import yaml
@@ -22,7 +22,7 @@ from adversarial_workflow.library.commands import (
     library_install,
     library_update,
 )
-from adversarial_workflow.library.config import LibraryConfig, get_library_config
+from adversarial_workflow.library.config import get_library_config
 from adversarial_workflow.library.models import IndexData
 
 # Sample test data

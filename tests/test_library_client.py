@@ -2,7 +2,6 @@
 
 import json
 import tempfile
-from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -11,7 +10,6 @@ import pytest
 from adversarial_workflow.library.cache import CacheManager
 from adversarial_workflow.library.client import (
     LibraryClient,
-    LibraryClientError,
     NetworkError,
     ParseError,
 )

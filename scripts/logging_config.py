@@ -31,8 +31,9 @@ import functools
 import logging
 import os
 import time
+from collections.abc import Callable
 from logging.handlers import RotatingFileHandler
-from typing import Callable, TypeVar
+from typing import TypeVar
 
 # Type variable for preserving function signatures
 F = TypeVar("F", bound=Callable)

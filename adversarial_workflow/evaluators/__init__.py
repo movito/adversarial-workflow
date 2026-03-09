@@ -42,14 +42,14 @@ def get_all_evaluators() -> dict[str, EvaluatorConfig]:
 
 
 __all__ = [
+    "BUILTIN_EVALUATORS",
     "EvaluatorConfig",
     "EvaluatorParseError",
     "ModelRequirement",
     "ModelResolver",
     "ResolutionError",
-    "run_evaluator",
-    "get_all_evaluators",
     "discover_local_evaluators",
+    "get_all_evaluators",
     "parse_evaluator_yaml",
-    "BUILTIN_EVALUATORS",
+    "run_evaluator",
 ]

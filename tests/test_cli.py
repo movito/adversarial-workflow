@@ -6,10 +6,7 @@ works correctly before refactoring the monolithic cli.py.
 """
 
 from importlib.metadata import version
-from pathlib import Path
 from unittest.mock import Mock, patch
-
-import pytest
 
 from adversarial_workflow.cli import check, health, load_config, main
 

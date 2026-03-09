@@ -1,14 +1,11 @@
 """Tests for the generic evaluator runner."""
 
-import os
 import shutil
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from adversarial_workflow.evaluators.config import EvaluatorConfig, ModelRequirement
-from adversarial_workflow.evaluators.resolver import ModelResolver, ResolutionError
 from adversarial_workflow.evaluators.runner import (
     _check_file_size,
     _execute_script,
@@ -241,12 +238,7 @@ class TestUtilsModule:
         """Color constants are importable."""
         from adversarial_workflow.utils.colors import (
             BOLD,
-            CYAN,
-            GRAY,
-            GREEN,
-            RED,
             RESET,
-            YELLOW,
         )
 
         assert RESET == "\033[0m"

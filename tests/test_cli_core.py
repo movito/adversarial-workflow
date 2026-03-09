@@ -16,11 +16,8 @@ Task: ADV-0033 - CLI Core Commands Test Coverage
 
 import os
 import shutil
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
-
-import pytest
+from unittest.mock import Mock, patch
 
 from adversarial_workflow.cli import (
     check,
@@ -96,8 +93,12 @@ class TestInitCommand:
         from adversarial_workflow import __version__
 
         # Check all scripts have version headers
-        for script_name in ["evaluate_plan.sh", "review_implementation.sh",
-                           "validate_tests.sh", "proofread_content.sh"]:
+        for script_name in [
+            "evaluate_plan.sh",
+            "review_implementation.sh",
+            "validate_tests.sh",
+            "proofread_content.sh",
+        ]:
             script_path = scripts_dir / script_name
             content = script_path.read_text()
             lines = content.splitlines()
@@ -105,12 +106,12 @@ class TestInitCommand:
 
             # First line should be shebang, second should be version
             assert lines[0].startswith("#!/bin/bash"), f"{script_name} missing shebang"
-            assert lines[1].startswith("# SCRIPT_VERSION:"), \
+            assert lines[1].startswith("# SCRIPT_VERSION:"), (
                 f"{script_name} missing SCRIPT_VERSION header"
+            )
 
             # Version should be current package version
-            assert __version__ in lines[1], \
-                f"{script_name} has wrong version: {lines[1]}"
+            assert __version__ in lines[1], f"{script_name} has wrong version: {lines[1]}"
 
     def test_init_creates_aider_config(self, tmp_path, capsys):
         """init should create .aider.conf.yml in project root."""
@@ -1410,7 +1411,7 @@ class TestInitTemplateErrors:
 
         def failing_copy(src, dst):
             if ".aider.conf" in str(dst):
-                raise IOError("Mock copy failure")
+                raise OSError("Mock copy failure")
             return original_copy(src, dst)
 
         with patch("shutil.copy", side_effect=failing_copy):

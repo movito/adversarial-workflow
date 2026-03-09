@@ -29,28 +29,23 @@ from .config import LibraryConfig, get_library_config
 from .models import EvaluatorEntry, IndexData, InstalledEvaluatorMeta, UpdateInfo
 
 __all__ = [
-    # Client
-    "LibraryClient",
-    "LibraryClientError",
-    "NetworkError",
-    "ParseError",
+    "DEFAULT_CACHE_DIR",
+    "DEFAULT_CACHE_TTL",
     "DEFAULT_LIBRARY_URL",
-    # Models
+    "CacheManager",
     "EvaluatorEntry",
     "IndexData",
     "InstalledEvaluatorMeta",
-    "UpdateInfo",
-    # Cache
-    "CacheManager",
-    "DEFAULT_CACHE_DIR",
-    "DEFAULT_CACHE_TTL",
-    # Config
+    "LibraryClient",
+    "LibraryClientError",
     "LibraryConfig",
+    "NetworkError",
+    "ParseError",
+    "UpdateInfo",
     "get_library_config",
-    # Commands
-    "library_list",
+    "library_check_updates",
     "library_info",
     "library_install",
-    "library_check_updates",
+    "library_list",
     "library_update",
 ]

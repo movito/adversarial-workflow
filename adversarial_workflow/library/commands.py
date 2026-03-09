@@ -4,12 +4,11 @@ import difflib
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
 
 import yaml
 
-from .client import LibraryClient, LibraryClientError, NetworkError, ParseError
-from .models import IndexData, InstalledEvaluatorMeta, UpdateInfo
+from .client import LibraryClient, NetworkError, ParseError
+from .models import InstalledEvaluatorMeta, UpdateInfo
 
 # ANSI color codes (matching cli.py)
 RESET = "\033[0m"
@@ -26,9 +25,7 @@ def get_evaluators_dir() -> Path:
     return Path.cwd() / ".adversarial" / "evaluators"
 
 
-def format_table(
-    headers: List[str], rows: List[List[str]], widths: Optional[List[int]] = None
-) -> str:
+def format_table(headers: list[str], rows: list[list[str]], widths: list[int] | None = None) -> str:
     """
     Format data as a simple table.
 
@@ -49,12 +46,12 @@ def format_table(
                     widths[i] = max(widths[i], len(str(cell)))
 
     # Format header
-    header_line = "  ".join(h.ljust(w) for h, w in zip(headers, widths))
+    header_line = "  ".join(h.ljust(w) for h, w in zip(headers, widths, strict=False))
     lines = [header_line]
 
     # Format rows
     for row in rows:
-        row_line = "  ".join(str(c).ljust(w) for c, w in zip(row, widths))
+        row_line = "  ".join(str(c).ljust(w) for c, w in zip(row, widths, strict=False))
         lines.append(row_line)
 
     return "\n".join(lines)
@@ -82,7 +79,7 @@ _meta:
 """
 
 
-def scan_installed_evaluators() -> List[InstalledEvaluatorMeta]:
+def scan_installed_evaluators() -> list[InstalledEvaluatorMeta]:
     """
     Scan the evaluators directory for installed library evaluators.
 
@@ -96,7 +93,7 @@ def scan_installed_evaluators() -> List[InstalledEvaluatorMeta]:
     installed = []
     for yaml_file in evaluators_dir.glob("*.yml"):
         try:
-            with open(yaml_file, "r", encoding="utf-8") as f:
+            with open(yaml_file, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
 
             if data and "_meta" in data:
@@ -112,8 +109,8 @@ def scan_installed_evaluators() -> List[InstalledEvaluatorMeta]:
 
 
 def library_list(
-    provider: Optional[str] = None,
-    category: Optional[str] = None,
+    provider: str | None = None,
+    category: str | None = None,
     verbose: bool = False,
     no_cache: bool = False,
 ) -> int:
@@ -173,7 +170,8 @@ def library_list(
     cache_note = f" {GRAY}(cached){RESET}" if from_cache else ""
     print()
     print(
-        f"{BOLD}Available evaluators from adversarial-evaluator-library (v{index.version}){RESET}{cache_note}"
+        f"{BOLD}Available evaluators from adversarial-evaluator-library "
+        f"(v{index.version}){RESET}{cache_note}"
     )
     print()
 
@@ -350,11 +348,11 @@ def _display_extended_info(readme: str) -> None:
 
 
 def library_install(
-    evaluator_specs: List[str],
+    evaluator_specs: list[str],
     force: bool = False,
     skip_validation: bool = False,
     dry_run: bool = False,
-    category: Optional[str] = None,
+    category: str | None = None,
     yes: bool = False,
 ) -> int:
     """
@@ -568,7 +566,7 @@ def library_install(
     return 0
 
 
-def library_check_updates(name: Optional[str] = None, no_cache: bool = False) -> int:
+def library_check_updates(name: str | None = None, no_cache: bool = False) -> int:
     """
     Check for available updates to installed evaluators.
 
@@ -601,7 +599,7 @@ def library_check_updates(name: Optional[str] = None, no_cache: bool = False) ->
     print()
 
     try:
-        index, from_cache = client.fetch_index(no_cache=no_cache)
+        index, _from_cache = client.fetch_index(no_cache=no_cache)
     except NetworkError as e:
         print(f"{RED}Error: Network unavailable{RESET}")
         print(f"  {e}")
@@ -612,7 +610,7 @@ def library_check_updates(name: Optional[str] = None, no_cache: bool = False) ->
         return 1
 
     # Compare versions
-    updates: List[UpdateInfo] = []
+    updates: list[UpdateInfo] = []
     for meta in installed:
         entry = index.get_evaluator(meta.provider, meta.name)
         if entry:
@@ -667,7 +665,7 @@ def library_check_updates(name: Optional[str] = None, no_cache: bool = False) ->
 
 
 def library_update(
-    name: Optional[str] = None,
+    name: str | None = None,
     all_evaluators: bool = False,
     yes: bool = False,
     diff_only: bool = False,
@@ -771,7 +769,7 @@ def library_update(
             old_path = evaluators_dir / f"{meta.name}.yml"
             current_path = new_path if new_path.exists() else old_path
         try:
-            with open(current_path, "r", encoding="utf-8") as f:
+            with open(current_path, encoding="utf-8") as f:
                 current_content = f.read()
         except OSError as e:
             print(f"  {RED}Error: Could not read current file{RESET}")
@@ -822,7 +820,7 @@ def library_update(
         # Confirm update
         if not yes:
             print()
-            response = input(f"  Apply update? [y/N]: ").strip().lower()
+            response = input("  Apply update? [y/N]: ").strip().lower()
             if response not in ("y", "yes"):
                 print(f"  {GRAY}Skipped.{RESET}")
                 continue

@@ -211,7 +211,8 @@ def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
             raise EvaluatorParseError("model_requirement.min_context must be an integer, got bool")
         if min_context and not isinstance(min_context, int):
             raise EvaluatorParseError(
-                f"model_requirement.min_context must be an integer, got {type(min_context).__name__}"
+                f"model_requirement.min_context must be an integer, "
+                f"got {type(min_context).__name__}"
             )
 
         model_requirement = ModelRequirement(

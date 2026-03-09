@@ -7,10 +7,10 @@ independently evaluable chunks to work around OpenAI's rate limits.
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
-def analyze_task_file(file_path: str) -> Dict[str, Any]:
+def analyze_task_file(file_path: str) -> dict[str, Any]:
     """Analyze file structure and suggest split points.
 
     Args:
@@ -30,7 +30,7 @@ def analyze_task_file(file_path: str) -> Dict[str, Any]:
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
 
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
 
     if not content.strip():
@@ -42,7 +42,6 @@ def analyze_task_file(file_path: str) -> Dict[str, Any]:
     # Detect markdown sections
     sections = []
     current_section = None
-    current_start = 1
 
     for i, line in enumerate(lines, 1):
         # Check for markdown headings (# or ##)
@@ -65,7 +64,6 @@ def analyze_task_file(file_path: str) -> Dict[str, Any]:
                 "end_line": None,
                 "line_count": 0,
             }
-            current_start = i
 
     # Close final section
     if current_section is not None:
@@ -104,7 +102,7 @@ def analyze_task_file(file_path: str) -> Dict[str, Any]:
     }
 
 
-def split_by_sections(content: str, max_lines: int = 500) -> List[Dict[str, Any]]:
+def split_by_sections(content: str, max_lines: int = 500) -> list[dict[str, Any]]:
     """Split file by markdown sections.
 
     Args:
@@ -131,7 +129,6 @@ def split_by_sections(content: str, max_lines: int = 500) -> List[Dict[str, Any]
     splits = []
     current_split_lines = []
     current_start = 1
-    current_title = "Part"
     split_count = 1
 
     for i, line in enumerate(lines, 1):
@@ -175,7 +172,7 @@ def split_by_sections(content: str, max_lines: int = 500) -> List[Dict[str, Any]
     return splits
 
 
-def split_by_phases(content: str) -> List[Dict[str, Any]]:
+def split_by_phases(content: str) -> list[dict[str, Any]]:
     """Split file by implementation phases.
 
     Args:
@@ -248,7 +245,7 @@ def split_by_phases(content: str) -> List[Dict[str, Any]]:
     return splits
 
 
-def split_at_lines(content: str, line_numbers: List[int]) -> List[Dict[str, Any]]:
+def split_at_lines(content: str, line_numbers: list[int]) -> list[dict[str, Any]]:
     """Split at specified line numbers.
 
     Args:
@@ -316,7 +313,7 @@ def split_at_lines(content: str, line_numbers: List[int]) -> List[Dict[str, Any]
     return splits
 
 
-def generate_split_files(original: str, splits: List[Dict[str, Any]], output_dir: str) -> List[str]:
+def generate_split_files(original: str, splits: list[dict[str, Any]], output_dir: str) -> list[str]:
     """Generate split files with metadata and cross-references.
 
     Args:
@@ -341,7 +338,7 @@ def generate_split_files(original: str, splits: List[Dict[str, Any]], output_dir
         # Create content with metadata header
         metadata_header = f"""<!-- Split from {original} -->
 <!-- Part {i} of {len(splits)} -->
-<!-- Lines {split['start_line']}-{split['end_line']} ({split['line_count']} lines) -->
+<!-- Lines {split["start_line"]}-{split["end_line"]} ({split["line_count"]} lines) -->
 
 """
 
@@ -357,8 +354,8 @@ def generate_split_files(original: str, splits: List[Dict[str, Any]], output_dir
 
 
 def _suggest_section_splits(
-    sections: List[Dict[str, Any]], max_lines: int = 500
-) -> List[Dict[str, Any]]:
+    sections: list[dict[str, Any]], max_lines: int = 500
+) -> list[dict[str, Any]]:
     """Suggest optimal split points based on sections.
 
     Args:

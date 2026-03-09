@@ -1,6 +1,6 @@
 # ADV-0053: Migrate from Black+flake8 to Ruff
 
-**Status**: Todo
+**Status**: In Progress
 **Priority**: High
 **Type**: Infrastructure
 **Estimated Effort**: 1.5 hours

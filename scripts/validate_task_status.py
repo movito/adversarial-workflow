@@ -16,7 +16,6 @@ Exit codes:
 import re
 import sys
 from pathlib import Path
-from typing import Optional, Tuple
 
 # Folder to expected status mapping
 FOLDER_STATUS_MAP = {
@@ -33,7 +32,7 @@ FOLDER_STATUS_MAP = {
 EXCLUDED_FOLDERS = {"8-archive", "9-reference"}
 
 
-def get_folder_from_path(file_path: Path) -> Optional[str]:
+def get_folder_from_path(file_path: Path) -> str | None:
     """Extract the workflow folder name from a task file path."""
     parts = file_path.parts
     for i, part in enumerate(parts):
@@ -42,7 +41,7 @@ def get_folder_from_path(file_path: Path) -> Optional[str]:
     return None
 
 
-def get_status_from_file(file_path: Path) -> Optional[str]:
+def get_status_from_file(file_path: Path) -> str | None:
     """Extract the Status field from a task file."""
     try:
         content = file_path.read_text()
@@ -55,7 +54,7 @@ def get_status_from_file(file_path: Path) -> Optional[str]:
     return None
 
 
-def validate_task(file_path: Path) -> Tuple[bool, Optional[str]]:
+def validate_task(file_path: Path) -> tuple[bool, str | None]:
     """
     Validate that a task's Status field matches its folder location.
 

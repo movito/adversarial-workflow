@@ -1,7 +1,5 @@
 """Tests for validation utilities."""
 
-import pytest
-
 from adversarial_workflow.utils.validation import validate_evaluation_output
 
 

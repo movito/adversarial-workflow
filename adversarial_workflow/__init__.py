@@ -14,6 +14,7 @@ Usage:
 
 try:
     from importlib.metadata import version as _get_version
+
     __version__ = _get_version("adversarial-workflow")
 except Exception:
     __version__ = "0.9.8"  # Fallback for editable installs
@@ -22,4 +23,4 @@ __license__ = "MIT"
 
 from .cli import check, evaluate, init, main, review, validate
 
-__all__ = ["main", "init", "check", "evaluate", "review", "validate", "__version__"]
+__all__ = ["__version__", "check", "evaluate", "init", "main", "review", "validate"]

@@ -1,7 +1,5 @@
 """Tests for EvaluatorConfig dataclass."""
 
-import pytest
-
 from adversarial_workflow.evaluators import EvaluatorConfig
 
 

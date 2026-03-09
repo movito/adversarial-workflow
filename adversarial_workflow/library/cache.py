@@ -1,10 +1,9 @@
 """Cache management for the evaluator library client."""
 
 import json
-import os
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Default cache TTL: 1 hour (3600 seconds)
 DEFAULT_CACHE_TTL = 3600
@@ -18,7 +17,7 @@ class CacheManager:
 
     def __init__(
         self,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         ttl: int = DEFAULT_CACHE_TTL,
     ):
         """
@@ -56,7 +55,7 @@ class CacheManager:
         except OSError:
             return True
 
-    def get(self, key: str) -> Optional[Dict[str, Any]]:
+    def get(self, key: str) -> dict[str, Any] | None:
         """
         Get a value from the cache.
 
@@ -75,12 +74,12 @@ class CacheManager:
             return None
 
         try:
-            with open(cache_path, "r", encoding="utf-8") as f:
+            with open(cache_path, encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             return None
 
-    def get_stale(self, key: str) -> Optional[Dict[str, Any]]:
+    def get_stale(self, key: str) -> dict[str, Any] | None:
         """
         Get a value from the cache even if expired.
 
@@ -98,12 +97,12 @@ class CacheManager:
             return None
 
         try:
-            with open(cache_path, "r", encoding="utf-8") as f:
+            with open(cache_path, encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             return None
 
-    def set(self, key: str, value: Dict[str, Any]) -> bool:
+    def set(self, key: str, value: dict[str, Any]) -> bool:
         """
         Store a value in the cache.
 
@@ -162,7 +161,7 @@ class CacheManager:
             pass
         return count
 
-    def get_age(self, key: str) -> Optional[float]:
+    def get_age(self, key: str) -> float | None:
         """
         Get the age of a cache entry in seconds.
 

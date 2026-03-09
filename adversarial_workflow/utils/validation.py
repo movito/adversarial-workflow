@@ -48,7 +48,8 @@ def validate_evaluation_output(
         "concerns",
     ]
 
-    has_evaluation_content = any(marker in content_lower for marker in evaluation_markers)
+    # Check for evaluation content markers (reserved for future use)
+    any(marker in content_lower for marker in evaluation_markers)
 
     # Extract verdict
     verdict = None

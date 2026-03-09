@@ -6,8 +6,6 @@ YAML config -> CLI parsing -> runner execution.
 
 from unittest.mock import patch
 
-import pytest
-
 
 class TestTimeoutIntegration:
     """Integration tests for timeout configuration."""
