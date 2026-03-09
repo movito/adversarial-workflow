@@ -23,7 +23,7 @@ Add new agent definitions from upstream that don't exist in our repo yet.
 
 BugBot found that the task lifecycle section was missing the branch creation
 step. The "Starting a Task" section must include `git checkout -b` as the
-first mandatory step before `./scripts/project start`.
+first mandatory step before `./scripts/core/project start`.
 
 Also needs Serena project name set to `adversarial-workflow`:
 ```python

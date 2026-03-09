@@ -110,7 +110,7 @@ def test_model_field_takes_priority_over_requirement(self):
 - [ ] `resolve()` raises error when neither present
 - [ ] Existing tests pass (may need updates)
 - [ ] New priority test passes
-- [ ] `./scripts/ci-check.sh` passes
+- [ ] `./scripts/core/ci-check.sh` passes
 
 ---
 
@@ -138,6 +138,6 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ## After Implementation
 
 1. Run tests: `pytest tests/test_model_resolver.py -v`
-2. Run full CI: `./scripts/ci-check.sh`
+2. Run full CI: `./scripts/core/ci-check.sh`
 3. Commit and push
 4. Create PR targeting `main`

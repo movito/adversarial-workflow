@@ -52,7 +52,7 @@ where noted).
 | 6. Settings & config | ADV-0045 | `ADV-0045` |
 | 7. CLAUDE.md & docs | ADV-0046 | `ADV-0046` |
 | 8. Upstream scripts (as-is) | ADV-0047 | `ADV-0047` |
-| 9. scripts/project patch | ADV-0048 | `ADV-0048` |
+| 9. scripts/core/project patch | ADV-0048 | `ADV-0048` |
 | 10. pattern_lint + tests | ADV-0049 | `ADV-0049` |
 | 11. Workflows & patterns | ADV-0050 | `ADV-0050` |
 

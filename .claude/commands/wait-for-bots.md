@@ -11,7 +11,7 @@ to 10 minutes.
 ## Step 1: Run the wait-for-bots script
 
 ```bash
-./scripts/wait-for-bots.sh $ARGUMENTS
+./scripts/core/wait-for-bots.sh $ARGUMENTS
 ```
 
 The script polls check-bots.sh every 30 seconds and prints progress to stderr.
@@ -30,7 +30,7 @@ If timeout is reached (10 minutes), it exits 1.
 Override defaults by passing flags:
 
 ```bash
-./scripts/wait-for-bots.sh --interval 15 --timeout 300
+./scripts/core/wait-for-bots.sh --interval 15 --timeout 300
 ```
 
 | Flag | Default | Description |

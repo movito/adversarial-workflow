@@ -18,7 +18,7 @@ developed in the monolithic PR).
 
 ### Files to Add
 
-1. `scripts/pattern_lint.py` — Defensive coding pattern linter (DK001-DK004)
+1. `scripts/core/pattern_lint.py` — Defensive coding pattern linter (DK001-DK004)
 2. `tests/test_pattern_lint.py` — Test suite (31 tests)
 
 ### Critical Fix Required
@@ -55,7 +55,7 @@ for op, comparator in zip(node.ops, node.comparators, strict=False):
 
 ## Source
 
-- Upstream: `/private/tmp/agentive-starter-kit/scripts/pattern_lint.py`
+- Upstream: `/private/tmp/agentive-starter-kit/scripts/core/pattern_lint.py`
 - Fix reference: commit 4e328e2 on branch `sync/adv-0039-upstream-sync`
 
 ## PR Template

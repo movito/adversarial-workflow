@@ -286,7 +286,7 @@ class TestEvaluateWithFlag:
 - [ ] API key validated before running
 - [ ] All existing tests pass
 - [ ] New tests pass
-- [ ] `./scripts/ci-check.sh` passes
+- [ ] `./scripts/core/ci-check.sh` passes
 
 ---
 
@@ -311,7 +311,7 @@ Part of library evaluator integration (ADV-0031).
 ## After Implementation
 
 1. Run full test suite: `pytest tests/ -v`
-2. Run CI check: `./scripts/ci-check.sh`
+2. Run CI check: `./scripts/core/ci-check.sh`
 3. Commit with message above
 4. Push and create PR targeting `main`
 5. Request code review

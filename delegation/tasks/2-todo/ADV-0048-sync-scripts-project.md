@@ -1,4 +1,4 @@
-# ADV-0048: Upstream Sync — scripts/project Patch
+# ADV-0048: Upstream Sync — scripts/core/project Patch
 
 **Status**: Todo
 **Priority**: High
@@ -11,7 +11,7 @@
 
 ## Summary
 
-Update `scripts/project` with upstream version, then patch back our
+Update `scripts/core/project` with upstream version, then patch back our
 boundary-aware `find_task_file` function. This is the most integration-heavy
 script in the sync.
 
@@ -54,14 +54,14 @@ def find_task_file(task_id: str, project_dir: Path) -> Path | None:
 
 ### Integration Steps
 
-1. Copy upstream `scripts/project` to replace ours
+1. Copy upstream `scripts/core/project` to replace ours
 2. Find the `find_task_file` function
 3. Replace it with our boundary-aware version above
-4. Verify all `./scripts/project` subcommands still work
+4. Verify all `./scripts/core/project` subcommands still work
 
 ### Bot Findings (From PR #34)
 
-CodeRabbit raised several findings about scripts/project:
+CodeRabbit raised several findings about scripts/core/project:
 - Line 448: Broaden Phase 2 identity replacements
 - Line 615: Check for existing .venv before rejecting Python 3.13
 - Line 809: --ref ignored when evaluators already installed
@@ -74,11 +74,11 @@ check doesn't false-positive on our project name.
 ## PR Template
 
 ```
-Title: sync: Update scripts/project with boundary-aware find_task_file (ADV-0048)
+Title: sync: Update scripts/core/project with boundary-aware find_task_file (ADV-0048)
 
 Body:
 ## Summary
-Updates scripts/project from upstream (adds setup, install-evaluators,
+Updates scripts/core/project from upstream (adds setup, install-evaluators,
 uv detection). Preserves our boundary-aware find_task_file patch to
 prevent ADV-1 matching ADV-10/ADV-11.
 
@@ -87,9 +87,9 @@ Part of ADV-0039 (upstream sync).
 
 ## Acceptance Criteria
 
-- [ ] scripts/project updated with upstream version
+- [ ] scripts/core/project updated with upstream version
 - [ ] find_task_file has boundary-aware matching
-- [ ] `./scripts/project start ADV-0040` works correctly
-- [ ] `./scripts/project start ADV-4` does NOT match ADV-0040
+- [ ] `./scripts/core/project start ADV-0040` works correctly
+- [ ] `./scripts/core/project start ADV-4` does NOT match ADV-0040
 - [ ] CI passes
 - [ ] PR created and merged

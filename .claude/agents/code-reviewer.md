@@ -330,7 +330,7 @@ Ready for implementation agent to address these findings.
 .venv/bin/pytest tests/cli/test_foo.py -v     # Specific test file
 
 # Full CI check (includes lint, format, tests)
-./scripts/ci-check.sh
+./scripts/core/ci-check.sh
 
 # DO NOT USE (will fail):
 # python -m pytest ...     # 'python' not found
@@ -346,7 +346,7 @@ Before approving, verify CI has passed:
 # Check CI status
 /check-ci main
 # OR
-./scripts/verify-ci.sh main
+./scripts/core/verify-ci.sh main
 ```
 
 If CI is failing, verdict should be CHANGES_REQUESTED regardless of code quality.

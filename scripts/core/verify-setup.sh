@@ -10,12 +10,53 @@ echo
 ERRORS=0
 WARNINGS=0
 
+# Read Python version constraint from pyproject.toml, fallback to >=3.10
+PY_MIN=10
+PY_MAX=13
+PROJECT_NAME="this project"
+if [ -f "pyproject.toml" ]; then
+    _PY_REQUIRES=$(python3 -c "
+import pathlib, re
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
+p = pathlib.Path('pyproject.toml')
+data = tomllib.loads(p.read_text(encoding='utf-8'))
+req = data.get('project', {}).get('requires-python', '')
+print(req)
+" 2>/dev/null || true)
+    if [ -n "$_PY_REQUIRES" ]; then
+        _MIN=$(echo "$_PY_REQUIRES" | grep -oE '>=3\.([0-9]+)' | grep -oE '[0-9]+$')
+        _MAX=$(echo "$_PY_REQUIRES" | grep -oE '<3\.([0-9]+)' | grep -oE '[0-9]+$')
+        [ -n "$_MIN" ] && PY_MIN="$_MIN"
+        [ -n "$_MAX" ] && PY_MAX="$_MAX"
+    fi
+    PROJECT_NAME=$(python3 -c "
+import pathlib
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
+p = pathlib.Path('pyproject.toml')
+print(tomllib.loads(p.read_text(encoding='utf-8')).get('project', {}).get('name', 'this project'))
+" 2>/dev/null || echo "this project")
+fi
+
 # Check Python version
-echo -n "Python 3.9+: "
-if python3 --version 2>/dev/null | grep -qE "Python 3\.(9|1[0-9])"; then
-    echo "✅ $(python3 --version 2>&1)"
+echo -n "Python 3.${PY_MIN}-3.$((PY_MAX - 1)): "
+PY_VERSION=$(python3 --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.0")
+PY_MAJOR=$(echo "$PY_VERSION" | cut -d. -f1)
+PY_MINOR=$(echo "$PY_VERSION" | cut -d. -f2)
+
+if [ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -ge "$PY_MIN" ] && [ "$PY_MINOR" -lt "$PY_MAX" ]; then
+    echo "✅ Python $PY_VERSION"
+elif [ "$PY_MAJOR" -lt 3 ] || { [ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -lt "$PY_MIN" ]; }; then
+    echo "❌ Python $PY_VERSION is too old (3.${PY_MIN}+ required)"
+    ERRORS=$((ERRORS + 1))
 else
-    echo "❌ Python 3.9+ required"
+    echo "❌ Python $PY_VERSION is too new (<3.${PY_MAX} required)"
+    echo "   $PROJECT_NAME requires Python >=3.${PY_MIN},<3.${PY_MAX}"
     ERRORS=$((ERRORS + 1))
 fi
 

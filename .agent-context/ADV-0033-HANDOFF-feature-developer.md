@@ -244,5 +244,5 @@ pytest tests/ --cov=adversarial_workflow.cli --cov-report=term-missing | grep cl
 1. Run tests: `pytest tests/test_cli_core.py -v`
 2. Check coverage: `pytest tests/ --cov=adversarial_workflow.cli`
 3. Verify coverage >= 50%
-4. Run full CI: `./scripts/ci-check.sh`
+4. Run full CI: `./scripts/core/ci-check.sh`
 5. Commit and push
