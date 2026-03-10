@@ -1,7 +1,7 @@
 ---
 name: security-reviewer
 description: Security analysis and hardening specialist
-model: claude-opus-4-5-20251101
+model: claude-opus-4-6
 tools:
   - Read
   - Grep
@@ -44,13 +44,13 @@ adversarial evaluate delegation/tasks/3-in-progress/TASK-FILE.md
 # For large files (>500 lines) requiring confirmation:
 echo y | adversarial evaluate delegation/tasks/3-in-progress/TASK-FILE.md
 
-# Read GPT-4o feedback
+# Read evaluator feedback
 cat .adversarial/logs/TASK-*-PLAN-EVALUATION.md
 ```
 
 **Iteration Limits**: Max 2-3 evaluations. Escalate to user if contradictory feedback.
 
-**Technical**: External GPT-4o, non-interactive, ~$0.04/eval
+**Technical**: External AI via adversarial-workflow, non-interactive, cost varies by evaluator
 
 ## Task Starter Protocol (Multi-Session Workflows)
 

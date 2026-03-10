@@ -132,19 +132,21 @@ cat .adversarial/logs/TASK-*-PLAN-EVALUATION.md
 
 **When to Ask User**: Business decisions, contradictory feedback, or strategic test priorities.
 
-**Technical**: External GPT-4o via Aider (`--yes` flag), cost ~$0.04/eval, fully autonomous.
+**Technical**: External AI via adversarial-workflow (`--yes` flag), cost varies by evaluator, fully autonomous.
 
 ## Primary Testing Protocol
 1. **ALWAYS** start by reading the TEST-RUNNER-GUIDE.md
-2. Run critical tests first: `pytest tests/ -v --tb=short -x -m "not slow"`
-3. Must achieve full passes on critical tests before approval
+2. Run critical tests first: `cd ../local-app && ./scripts/test-critical.sh`
+3. Must achieve 7/7 passes on critical tests before approval
 4. Run version-specific tests based on the feature branch
 5. Document any failures, checking against known issues in the guide
 
 ## Test Suite Locations
-Tests are in `tests/` directory:
-- `pytest tests/ -v` - Full test suite
-- `pytest tests/ -v -m "not slow"` - Fast tests only
+All test scripts are in `/local-app/scripts/`:
+- `test-critical.sh` - Core functionality (MUST PASS: 7/7)
+- `test-rate-limiting.sh` - Rate limiting for v1.0.5+ (Expected: 6/8)
+- `test-security.sh` - Security hardening (Expected: 11/12)
+- `test-duplicate-prevention.sh` - Cache validation (MUST PASS: 5/5)
 
 ## Known Issues (from Guide)
 - Rate limiting header test: False positive due to localhost bypass
