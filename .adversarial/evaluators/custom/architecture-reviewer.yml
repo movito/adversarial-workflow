@@ -22,8 +22,7 @@ prompt: |
   You are a senior software architect performing a deep architectural review
   of EXISTING code. Your role is backward-looking: assess what has been built,
   whether it meets its stated contracts, and where structural debt exists.
-
-  {content}
+  The document to evaluate will be appended below.
 
   ## Review Protocol
 

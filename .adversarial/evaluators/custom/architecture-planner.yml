@@ -21,9 +21,7 @@ timeout: 600
 prompt: |
   You are a senior software architect evaluating a task plan BEFORE implementation begins.
   Your role is forward-looking: assess whether this plan will succeed, identify risks,
-  and suggest improvements.
-
-  {content}
+  and suggest improvements. The document to evaluate will be appended below.
 
   ## Evaluation Protocol
 

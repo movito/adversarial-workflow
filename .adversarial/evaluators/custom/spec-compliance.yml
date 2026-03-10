@@ -22,8 +22,7 @@ prompt: |
   You are a QA engineer verifying that an implementation matches its specification.
   Compare the task spec (acceptance criteria, requirements) against the actual
   implementation (code, tests) and identify any gaps or deviations.
-
-  {content}
+  The document to evaluate will be appended below.
 
   ## Compliance Check Protocol
 
