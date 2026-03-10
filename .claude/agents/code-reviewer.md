@@ -184,8 +184,7 @@ ls -la .agent-context/reviews/ASK-XXXX-review*.md 2>/dev/null
 
 **Naming convention**:
 - Round 1: `ASK-XXXX-review.md`
-- Round 2: `ASK-XXXX-review-round2.md`
-- (No Round 3 - escalate to human instead)
+- Round N: `ASK-XXXX-review-roundN.md`
 
 Create your review report at `.agent-context/reviews/ASK-XXXX-review.md` (or `-round2.md` for second review):
 
@@ -299,9 +298,9 @@ Clearly state the verdict and next steps.
 - If APPROVED: Done, task moves to 5-done
 - If CHANGES_REQUESTED: Implementation agent addresses issues
 
-**Round 2**: Re-review after changes
+**Subsequent rounds**: Re-review after changes
 - If APPROVED: Done
-- If still issues: ESCALATE_TO_HUMAN (no round 3)
+- If still issues: Continue until the user decides to stop
 
 **Communication**: After writing review report, summarize for the user:
 ```

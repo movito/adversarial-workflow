@@ -271,19 +271,24 @@ def _execute_script(
     return _report_verdict(verdict, log_file, config)
 
 
+_PASS_VERDICTS = {"APPROVED", "PROCEED", "COMPLIANT", "PASS"}
+_REVISE_VERDICTS = {"NEEDS_REVISION", "REVISION_SUGGESTED", "MOSTLY_COMPLIANT", "CONCERNS"}
+_REJECT_VERDICTS = {"REJECTED", "RETHINK", "RESTRUCTURE_NEEDED", "NON_COMPLIANT", "FAIL"}
+
+
 def _report_verdict(verdict: str | None, log_file: Path, config: EvaluatorConfig) -> int:
     """Report the evaluation verdict to terminal."""
     print()
-    if verdict == "APPROVED":
-        print(f"{GREEN}Evaluation APPROVED!{RESET}")
+    if verdict in _PASS_VERDICTS:
+        print(f"{GREEN}Evaluation {verdict}!{RESET}")
         print(f"   Review output: {log_file}")
         return 0
-    elif verdict == "NEEDS_REVISION":
-        print(f"{YELLOW}Evaluation NEEDS_REVISION{RESET}")
+    elif verdict in _REVISE_VERDICTS:
+        print(f"{YELLOW}Evaluation {verdict}{RESET}")
         print(f"   Details: {log_file}")
         return 1
-    elif verdict == "REJECTED":
-        print(f"{RED}Evaluation REJECTED{RESET}")
+    elif verdict in _REJECT_VERDICTS:
+        print(f"{RED}Evaluation {verdict}{RESET}")
         print(f"   Details: {log_file}")
         return 1
     else:

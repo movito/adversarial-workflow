@@ -50,6 +50,11 @@ htmlcov/
 .adversarial/logs/
 .adversarial/url_cache.json
 .adversarial/blocked-citations/
+
+# Library-installed evaluators (installed per-environment, like node_modules)
+.adversarial/evaluators/*.yml
+# But DO commit custom evaluators
+!.adversarial/evaluators/custom/
 release-*.txt
 release-*.diff
 

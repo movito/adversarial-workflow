@@ -88,11 +88,10 @@ User invokes code-reviewer again in new tab. Per KIT-ADR-0014:
 
 ### Step 4: Resolution
 
-| Round 2 Verdict | Action |
-|-----------------|--------|
+| Verdict | Action |
+|---------|--------|
 | APPROVED | Move task to `5-done/`, merge PR |
-| CHANGES_REQUESTED | ESCALATE_TO_HUMAN (no Round 3) |
-| ESCALATE_TO_HUMAN | User reviews and decides |
+| CHANGES_REQUESTED | Fix and re-review (no round cap — user decides when to stop) |
 
 ## File Locations
 
