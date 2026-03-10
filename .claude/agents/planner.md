@@ -293,9 +293,9 @@ When code-reviewer returns CHANGES_REQUESTED, create a lightweight fix prompt in
 
 ### Iteration Limits
 
-- Max 2 review rounds
-- After round 2 with issues: ESCALATE_TO_HUMAN
-- No round 3 (prevents infinite loops)
+- No round cap — continue triaging until the user decides to stop
+- Always fix Major/Critical findings regardless of round number
+- Present triage table each round for user confirmation
 
 ### Skip Conditions
 

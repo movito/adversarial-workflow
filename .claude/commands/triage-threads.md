@@ -81,6 +81,6 @@ Ask for confirmation before proceeding with fixes.
 ./scripts/core/gh-review-helper.sh resolve PRRT_node_id
 ```
 
-After push: Run `/check-bots` to wait for re-scan, then re-run `/triage-threads` if this is round 1.
+After push: Run `/check-bots` to wait for re-scan, then re-run `/triage-threads` for the next round.
 
-**Round cap** — after round 2, resolve remaining Trivial/Low/Medium threads and proceed. Major/Critical findings get one final fix push (Round 3 = hard stop). See bot-triage skill for full policy.
+**No round cap** — continue triaging until the user decides to stop. Always fix Major/Critical findings regardless of round number. Present the triage table each round and let the user confirm.

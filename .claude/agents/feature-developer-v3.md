@@ -266,7 +266,7 @@ You MUST address **every** thread before proceeding.
    - **Won't fix**: Reply with clear technical justification
 5. **Mark EVERY thread as resolved** after commenting — use the GraphQL `resolveReviewThread` mutation (see bot-triage skill)
 6. **Verify zero unresolved**: Re-run `/check-bots` — target: `Unresolved: 0`
-7. **Round 2** (if bots re-scan after push): Repeat steps 2-6. After round 2, resolve remaining Trivial/Low/Medium threads with justification and proceed. **Exception**: Major/Critical findings in Round 3 get one final batch fix push — then hard stop (see bot-triage skill).
+7. **Next round** (if bots re-scan after push): Repeat steps 2-6. Continue triaging until the user decides to stop. Always fix Major/Critical findings regardless of round number.
 
 **Every thread gets a comment. Every thread gets resolved. No exceptions.**
 
