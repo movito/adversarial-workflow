@@ -15,7 +15,7 @@ model_requirement:
   family: gemini
   tier: flash
   min_version: "2.5"
-output_suffix: -spec-compliance.md
+output_suffix: spec-compliance.md
 timeout: 180
 
 prompt: |

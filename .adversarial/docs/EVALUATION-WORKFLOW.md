@@ -296,7 +296,7 @@ cat .adversarial/logs/TASK-XXXX-description-architecture-planner.md
 
 **4. Address CRITICAL and HIGH priority feedback**, then repeat if NEEDS_REVISION.
 
-**5. If APPROVED (or planner override): Assign to specialized agent.**
+**5. If PROCEED (or planner override): Assign to specialized agent.**
 
 ---
 
@@ -317,8 +317,8 @@ adversarial code-reviewer-fast src/feature/new_module.py
 # Deep review (for critical code)
 adversarial code-reviewer src/feature/new_module.py
 
-# Spec compliance check
-adversarial spec-compliance delegation/tasks/3-in-progress/TASK-0001.md
+# Spec compliance (pass both spec and implementation)
+adversarial spec-compliance src/feature/new_module.py --context delegation/tasks/3-in-progress/TASK-0001.md
 ```
 
 **3. Read review output and address findings**

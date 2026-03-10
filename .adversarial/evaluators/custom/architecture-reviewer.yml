@@ -15,7 +15,7 @@ model_requirement:
   family: o
   tier: flagship
   min_version: "1"
-output_suffix: -architecture-reviewer.md
+output_suffix: architecture-reviewer.md
 timeout: 600
 
 prompt: |

@@ -15,7 +15,7 @@ model_requirement:
   family: o
   tier: flagship
   min_version: "1"
-output_suffix: -architecture-planner.md
+output_suffix: architecture-planner.md
 timeout: 600
 
 prompt: |
