@@ -45,7 +45,7 @@ Confirm in your response: "✅ Serena activated: [languages]. Ready for code nav
 - **Task Management**: `delegation/tasks/` with Linear sync
 
 ## Development Guidelines
-1. **Start the task properly**: Run `./scripts/project start <TASK-ID>` first (see Task Lifecycle below)
+1. **Start the task properly**: Run `./scripts/core/project start <TASK-ID>` first (see Task Lifecycle below)
 2. **Read task specifications**: `delegation/tasks/3-in-progress/TASK-*.md` after starting
 3. **Follow TDD workflow**: Write tests before implementation (see `.agent-context/workflows/TESTING-WORKFLOW.md`)
 4. **Always read existing code** before making changes
@@ -65,7 +65,7 @@ When you pick up a task, you **MUST** move it to the correct folder and update i
 **FIRST THING when beginning work** on a task from `2-todo/`:
 
 ```bash
-./scripts/project start <TASK-ID>
+./scripts/core/project start <TASK-ID>
 ```
 
 This command:
@@ -75,7 +75,7 @@ This command:
 
 **Example**:
 ```bash
-./scripts/project start ASK-0042
+./scripts/core/project start ASK-0042
 # Output: Moved ASK-0042 to 3-in-progress/, updated Status to In Progress
 ```
 
@@ -83,16 +83,16 @@ This command:
 
 ```
 2-todo → 3-in-progress → 4-in-review → 5-done
-         ./scripts/project start  ./scripts/project move  ./scripts/project complete
+         ./scripts/core/project start  ./scripts/core/project move  ./scripts/core/project complete
                           <id> in-review  <id>
 ```
 
 ### Other Status Commands
 
 ```bash
-./scripts/project move <TASK-ID> in-review   # After implementation, before code review
-./scripts/project complete <TASK-ID>          # After code review approved
-./scripts/project move <TASK-ID> blocked      # If blocked by dependencies
+./scripts/core/project move <TASK-ID> in-review   # After implementation, before code review
+./scripts/core/project complete <TASK-ID>          # After code review approved
+./scripts/core/project move <TASK-ID> blocked      # If blocked by dependencies
 ```
 
 ### Why This Matters
@@ -101,7 +101,7 @@ This command:
 - **Linear sync**: Status changes sync to Linear for project tracking
 - **Coordination**: Other agents/humans know what's in progress
 
-**Never skip `./scripts/project start`** - it's the first command you run when picking up a task.
+**Never skip `./scripts/core/project start`** - it's the first command you run when picking up a task.
 
 ## Code Navigation Tools
 
@@ -129,7 +129,7 @@ This command:
 
 ## Testing Requirements
 - **Pre-commit**: Tests run automatically (fast tests only)
-- **Pre-push**: Run `./scripts/ci-check.sh` before pushing (full test suite)
+- **Pre-push**: Run `./scripts/core/ci-check.sh` before pushing (full test suite)
 - **Post-push**: Verify CI/CD passes (see CI Verification below)
 - **Manual**: `pytest tests/ -v` for local verification
 - **Coverage**: Maintain or improve coverage baseline (53%+)
@@ -246,12 +246,12 @@ After implementation is complete and CI passes, you **MUST** request code review
 ### Code Review Process
 
 1. **Complete implementation**: All acceptance criteria met, tests pass
-2. **Verify CI passes**: Use `/check-ci` or `./scripts/verify-ci.sh`
-3. **Move task to 4-in-review**: `./project move <TASK-ID> in-review`
+2. **Verify CI passes**: Use `/check-ci` or `./scripts/core/verify-ci.sh`
+3. **Move task to 4-in-review**: `./scripts/core/project move <TASK-ID> in-review`
 4. **Create review starter**: Write `.agent-context/<TASK-ID>-REVIEW-STARTER.md`
 5. **Notify user**: Tell them to invoke code-reviewer in a new tab
 6. **Address feedback**: Fix any issues raised by reviewer
-7. **After approval**: Move to `5-done` with `./project complete <TASK-ID>`
+7. **After approval**: Move to `5-done` with `./scripts/core/project complete <TASK-ID>`
 
 ### Creating Review Starter
 
@@ -348,7 +348,7 @@ You'll receive something like:
 2. **Read the original task file** - refresh on acceptance criteria
 3. **Address required changes** - focus on HIGH severity first
 4. **Run tests**: `pytest tests/ -v`
-5. **Verify CI**: `/check-ci` or `./scripts/verify-ci.sh`
+5. **Verify CI**: `/check-ci` or `./scripts/core/verify-ci.sh`
 6. **Update review-starter** - note what was fixed
 7. **Notify user** - ready for re-review (Round 2)
 
@@ -470,7 +470,7 @@ You have full development permissions including:
 - Always preserve backward compatibility
 - Don't skip pre-commit hooks (use `SKIP_TESTS=1` only for WIP commits)
 - Don't commit without tests for new features (TDD required)
-- Don't push without running `./scripts/ci-check.sh` first
+- Don't push without running `./scripts/core/ci-check.sh` first
 - **Don't mark task complete without verifying CI/CD passes on GitHub**
 
 Remember: Test-driven development, clear documentation, and thorough testing are mandatory. When in doubt, request evaluation.

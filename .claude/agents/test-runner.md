@@ -49,7 +49,7 @@ When you pick up a testing task, you **MUST** move it to the correct folder and 
 **FIRST THING when beginning work** on a task from `2-todo/`:
 
 ```bash
-./scripts/project start <TASK-ID>
+./scripts/core/project start <TASK-ID>
 ```
 
 This command:
@@ -59,16 +59,16 @@ This command:
 
 **Example**:
 ```bash
-./scripts/project start ASK-0042
+./scripts/core/project start ASK-0042
 # Output: Moved ASK-0042 to 3-in-progress/, updated Status to In Progress
 ```
 
 ### Other Status Commands
 
 ```bash
-./scripts/project move <TASK-ID> in-review   # After testing complete, before review
-./scripts/project complete <TASK-ID>          # After review approved
-./scripts/project move <TASK-ID> blocked      # If blocked by dependencies
+./scripts/core/project move <TASK-ID> in-review   # After testing complete, before review
+./scripts/core/project complete <TASK-ID>          # After review approved
+./scripts/core/project move <TASK-ID> blocked      # If blocked by dependencies
 ```
 
 ### Why This Matters
@@ -77,7 +77,7 @@ This command:
 - **Linear sync**: Status changes sync to Linear for project tracking
 - **Coordination**: Other agents/humans know what's in progress
 
-**Never skip `./scripts/project start`** - it's the first command you run when picking up a task.
+**Never skip `./scripts/core/project start`** - it's the first command you run when picking up a task.
 
 ## Code Navigation Tools
 
@@ -136,17 +136,15 @@ cat .adversarial/logs/TASK-*-PLAN-EVALUATION.md
 
 ## Primary Testing Protocol
 1. **ALWAYS** start by reading the TEST-RUNNER-GUIDE.md
-2. Run critical tests first: `cd ../local-app && ./scripts/test-critical.sh`
-3. Must achieve 7/7 passes on critical tests before approval
+2. Run critical tests first: `pytest tests/ -v --tb=short -x -m "not slow"`
+3. Must achieve full passes on critical tests before approval
 4. Run version-specific tests based on the feature branch
 5. Document any failures, checking against known issues in the guide
 
 ## Test Suite Locations
-All test scripts are in `/local-app/scripts/`:
-- `test-critical.sh` - Core functionality (MUST PASS: 7/7)
-- `test-rate-limiting.sh` - Rate limiting for v1.0.5+ (Expected: 6/8)
-- `test-security.sh` - Security hardening (Expected: 11/12)
-- `test-duplicate-prevention.sh` - Cache validation (MUST PASS: 5/5)
+Tests are in `tests/` directory:
+- `pytest tests/ -v` - Full test suite
+- `pytest tests/ -v -m "not slow"` - Fast tests only
 
 ## Known Issues (from Guide)
 - Rate limiting header test: False positive due to localhost bypass
@@ -174,7 +172,7 @@ Use the test report template from TEST-RUNNER-GUIDE.md:
 If you push code changes to GitHub (test fixes, test additions, etc.):
 
 1. **Push your changes**: `git push origin <branch>`
-2. **Verify CI**: Use `/check-ci` slash command or run `./scripts/verify-ci.sh <branch>`
+2. **Verify CI**: Use `/check-ci` slash command or run `./scripts/core/verify-ci.sh <branch>`
 3. **Wait for result**: Check CI passes before marking work complete
 4. **Handle failures**: If CI fails, fix issues and repeat
 
@@ -185,7 +183,7 @@ If you push code changes to GitHub (test fixes, test additions, etc.):
 /check-ci main
 
 # Option 2: Direct script
-./scripts/verify-ci.sh <branch-name>
+./scripts/core/verify-ci.sh <branch-name>
 ```
 
 **Proactive CI Fix**: When CI fails, offer to analyze logs and implement fix. Report failure clearly to user and ask if you should fix it.

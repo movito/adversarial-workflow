@@ -85,13 +85,13 @@ Tasks flow through numbered folders in `delegation/tasks/`:
 8-archive/      → Historical reference
 ```
 
-**Move tasks with:** `./scripts/project start <TASK-ID>`
+**Move tasks with:** `./scripts/core/project start <TASK-ID>`
 
 ### Standard Workflow Pattern
 
 ```
 1. Planner creates task in 2-todo/
-2. Agent runs: ./scripts/project start TASK-ID
+2. Agent runs: ./scripts/core/project start TASK-ID
    → Task moves to 3-in-progress/
 3. Agent implements, writes tests
 4. Agent requests plan evaluation: adversarial evaluate task.md

@@ -31,9 +31,9 @@ findings are upstream's responsibility.
 
 ### Files NOT to Copy
 
-- `scripts/project` — Handled separately in ADV-0048 (needs find_task_file patch)
-- `scripts/pattern_lint.py` — Handled separately in ADV-0049
-- `scripts/ci-check.sh` — Check if we already have this; if so, take upstream version
+- `scripts/core/project` — Handled separately in ADV-0048 (needs find_task_file patch)
+- `scripts/core/pattern_lint.py` — Handled separately in ADV-0049
+- `scripts/core/ci-check.sh` — Check if we already have this; if so, take upstream version
 
 ### Integration Notes
 
@@ -76,6 +76,6 @@ Part of ADV-0039 (upstream sync).
 
 - [ ] All listed scripts copied to `scripts/`
 - [ ] All shell scripts are executable
-- [ ] scripts/project NOT included (see ADV-0048)
+- [ ] scripts/core/project NOT included (see ADV-0048)
 - [ ] CI passes
 - [ ] PR created and merged

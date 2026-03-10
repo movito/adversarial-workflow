@@ -1,65 +1,49 @@
 # Scripts Directory
 
-Utility scripts for development and CI/CD operations.
+Scripts are organized into three tiers following the agentive-starter-kit convention.
 
-## Available Scripts
+## Directory Structure
 
-### `verify-setup.sh`
-
-Verifies project setup is complete and working:
-- Python version check (3.9+)
-- Virtual environment status
-- Dependencies installed (pytest, pre-commit)
-- Pre-commit hooks installed
-- Tests directory exists
-
-**Usage:**
-```bash
-./scripts/verify-setup.sh
+```
+scripts/
+  core/          # Synced from agentive-starter-kit (DO NOT edit directly)
+  local/         # Project-specific scripts (not synced)
+  optional/      # Opt-in scripts copied from ASK as needed
+  .core-manifest.json   # Tracks core script versions and sync state
 ```
 
-### `verify-ci.sh`
+## Core Scripts (`scripts/core/`)
 
-Checks GitHub Actions CI status for a branch:
-- Lists recent workflow runs
-- Shows pass/fail status
-- Provides commands to watch specific runs
+These scripts are synced from [agentive-starter-kit](https://github.com/movito/agentive-starter-kit).
+Do NOT edit them directly -- changes will be overwritten on next sync.
+To check sync status: `./scripts/core/check-sync.sh`
 
-**Usage:**
-```bash
-./scripts/verify-ci.sh [branch-name]
-# Default: current branch
-```
+| Script | Purpose |
+|--------|---------|
+| `project` | Task lifecycle CLI (start, move, complete, list) |
+| `ci-check.sh` | Local CI: lint + format + tests |
+| `verify-ci.sh` | Check GitHub Actions CI status |
+| `verify-setup.sh` | Verify project setup (Python, venv, deps) |
+| `check-bots.sh` | Check bot review status on PRs |
+| `wait-for-bots.sh` | Wait for bot reviews to complete |
+| `gh-review-helper.sh` | PR review thread management |
+| `preflight-check.sh` | Pre-merge preflight checks |
+| `check-sync.sh` | Verify core scripts match upstream |
+| `pattern_lint.py` | Defensive coding pattern linter |
+| `validate_task_status.py` | Task file status validation |
+| `logging_config.py` | Shared logging configuration |
+| `VERSION` | Core scripts version (1.2.0) |
 
-**Prerequisites:** GitHub CLI (`gh`) must be installed and authenticated.
+## Local Scripts (`scripts/local/`)
 
-## Adding New Scripts
+Project-specific scripts that are NOT synced from upstream. Add new scripts here.
 
-1. Create script in this directory
-2. Add shebang: `#!/bin/bash`
-3. Make executable: `chmod +x scripts/your-script.sh`
-4. Add documentation to this README
-5. Test on fresh clone if possible
+## Optional Scripts (`scripts/optional/`)
 
-## Common Patterns
+Opt-in scripts from agentive-starter-kit. Copy from ASK when needed.
 
-### Exit on Error
-```bash
-set -e  # Exit immediately if a command fails
-```
+## Sync Status
 
-### Check for Dependencies
-```bash
-if ! command -v gh &> /dev/null; then
-    echo "❌ GitHub CLI (gh) not installed"
-    exit 1
-fi
-```
+Current core version: **1.2.0** (from agentive-starter-kit v0.4.0)
 
-### Color Output
-```bash
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m'  # No Color
-echo -e "${GREEN}✅ Success${NC}"
-```
+Run `./scripts/core/check-sync.sh` to verify scripts match upstream.

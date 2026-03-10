@@ -159,7 +159,7 @@ def test_config_handles_non_dict_yaml(self, tmp_path):
 - [ ] Fix 2.2: `ref` field wired up OR dead code removed
 - [ ] All 374+ existing tests pass
 - [ ] New tests added and passing
-- [ ] `./scripts/ci-check.sh` passes
+- [ ] `./scripts/core/ci-check.sh` passes
 
 ---
 
@@ -181,7 +181,7 @@ Closes BugBot issues from PR #22.
 ## After Fixes
 
 1. Run full test suite: `pytest tests/ -v`
-2. Run CI check: `./scripts/ci-check.sh`
+2. Run CI check: `./scripts/core/ci-check.sh`
 3. Commit with message above
 4. Push and create PR targeting `main`
 5. After merge, tag as `v0.8.1`

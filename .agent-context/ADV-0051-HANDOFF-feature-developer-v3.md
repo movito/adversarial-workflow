@@ -31,7 +31,7 @@ Three things:
 
 ```bash
 git checkout -b feature/ADV-0051-evaluator-setup
-./scripts/project start ADV-0051
+./scripts/core/project start ADV-0051
 ```
 
 ### Step 2: Create the evaluators directory structure

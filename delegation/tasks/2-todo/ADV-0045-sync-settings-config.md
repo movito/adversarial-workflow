@@ -45,19 +45,19 @@ Final result should include:
 ```
 
 **Note**: The `Bash(pip install*)` deny rule blocks bare pip installs. This is
-intentional — agents should use `./scripts/project setup` or `.venv/bin/pip`.
+intentional — agents should use `./scripts/core/project setup` or `.venv/bin/pip`.
 
 ### 2. `.pre-commit-config.yaml` — Update
 
 - Bump black from 23.12.1 to 26.1.0
-- Add `pattern-lint` hook (`language: system`, runs `python3 scripts/pattern_lint.py`)
+- Add `pattern-lint` hook (`language: system`, runs `python3 scripts/core/pattern_lint.py`)
 - Add `validate-task-status` hook (`language: system`)
 - Both new hooks must use `language: system` (not `language: python`)
 
 ### Integration Notes
 
 - BugBot flagged the `pip install` deny vs documented venv workflow conflict.
-  Resolution: agent docs should reference `./scripts/project setup` and
+  Resolution: agent docs should reference `./scripts/core/project setup` and
   `.venv/bin/pip`, not bare `pip install`.
 - CodeRabbit flagged the Serena wildcard replacing an explicit allowlist.
   This is intentional — the wildcard is simpler and Serena tools are all safe.

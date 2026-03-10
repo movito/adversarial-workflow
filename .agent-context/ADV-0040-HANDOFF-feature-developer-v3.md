@@ -39,7 +39,7 @@ All 11 files:
 git checkout -b feature/ADV-0040-sync-slash-commands
 
 # 2. Start the task (moves to 3-in-progress/)
-./scripts/project start ADV-0040
+./scripts/core/project start ADV-0040
 
 # 3. Copy all 11 command files
 cp /Users/broadcaster_three/Github/dispatch-kit/.claude/commands/*.md .claude/commands/

@@ -1,7 +1,7 @@
-"""Tests for scripts/project functionality.
+"""Tests for scripts/core/project functionality.
 
 Tests the find_task_file function for boundary-aware task ID matching.
-This tests the algorithm from scripts/project to ensure ADV-1 doesn't match ADV-10.
+This tests the algorithm from scripts/core/project to ensure ADV-1 doesn't match ADV-10.
 """
 
 from pathlib import Path
@@ -12,7 +12,7 @@ import pytest
 def find_task_file(task_id: str, project_dir: Path) -> Path | None:
     """Find a task file by ID across all workflow folders.
 
-    Mirror of scripts/project:find_task_file for testing.
+    Mirror of scripts/core/project:find_task_file for testing.
     Uses boundary-aware matching to prevent ADV-1 from matching ADV-10, etc.
     """
     tasks_dir = project_dir / "delegation" / "tasks"
