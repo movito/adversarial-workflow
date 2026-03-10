@@ -1,6 +1,6 @@
 # ADV-0047: Upstream Sync — Upstream Scripts (As-Is)
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 15 minutes
