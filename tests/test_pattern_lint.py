@@ -137,6 +137,14 @@ class TestDK002:
 
 
 class TestDK003:
+    def test_catches_chained_in_comparisons(self):
+        """Chained in: a in b in c should flag both comparisons."""
+        tree, lines = _parse("if task_id in event_id in other_id: pass")
+        violations = check_dk003(tree, lines, "test.py")
+        assert len(violations) == 2
+        assert "task_id in event_id" in violations[0].message
+        assert "event_id in other_id" in violations[1].message
+
     def test_catches_id_in_id(self):
         """Both sides look like identifiers — likely string containment."""
         tree, lines = _parse("if task_id in event.task_id: pass")
@@ -182,12 +190,12 @@ class TestDK003:
         assert len(violations) == 0
 
     def test_substring_comment_suppresses(self):
-        tree, lines = _parse("if task_id in text:  # substring: search in body\n    pass")
+        tree, lines = _parse("if task_id in event_id:  # substring: search in body\n    pass")
         violations = check_dk003(tree, lines, "test.py")
         assert len(violations) == 0
 
     def test_noqa_suppresses(self):
-        tree, lines = _parse("if task_id in text:  # noqa: DK003\n    pass")
+        tree, lines = _parse("if task_id in event_id:  # noqa: DK003\n    pass")
         violations = check_dk003(tree, lines, "test.py")
         assert len(violations) == 0
 
