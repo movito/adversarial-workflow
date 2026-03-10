@@ -102,11 +102,13 @@ Your mission: [Clear, action-oriented statement of the agent's goal]
 - Starting point suggestions
 
 [If task was evaluated, mention it:]
-- This spec has been evaluated by GPT-4o and revised (cost: $X.XX)
+- This spec has been evaluated by Evaluator and revised (cost: $X.XX)
 - All [CRITICAL/HIGH/etc.] feedback addressed
 - See handoff file for detailed implementation guidance
 
-**⚠️ FIRST ACTION**: Run `./scripts/core/project start [TASK-ID]` to move task to `3-in-progress/`
+**⚠️ FIRST ACTIONS** (in order):
+1. `git checkout -b feature/[TASK-ID]-short-description` (create feature branch)
+2. `./scripts/core/project start [TASK-ID]` (move task to `3-in-progress/`)
 ```
 
 ### Footer
@@ -173,12 +175,14 @@ Your mission: Follow the RED-GREEN-REFACTOR TDD cycle to create a properly teste
 
 ### Notes
 
-- This spec has been evaluated by GPT-4o and revised (cost: $0.03)
+- This spec has been evaluated by Evaluator and revised (cost: $0.03)
 - All critical feedback addressed (rate limiting, dependencies, documentation)
 - See handoff file for starting point and implementation details
 - Follow `tests/test_linear_comments.py` as TDD example pattern
 
-**⚠️ FIRST ACTION**: Run `./scripts/core/project start TASK-0102` to move task to `3-in-progress/`
+**⚠️ FIRST ACTIONS** (in order):
+1. `git checkout -b feature/TASK-0102-linear-sync-tdd`
+2. `./scripts/core/project start TASK-0102`
 
 ---
 
@@ -203,6 +207,8 @@ See template structure below for creating handoff files.
 
 ```markdown
 # [TASK-ID]: [Task Title] - Implementation Handoff
+
+**You are the [agent-type]. Implement this task directly. Do not delegate or spawn other agents.**
 
 **Date**: YYYY-MM-DD
 **From**: [Coordinator Name]
@@ -328,12 +334,13 @@ After creating task specification and addressing evaluation feedback:
 ### For Implementation Agents
 
 When receiving task starter:
-1. **Run `./scripts/core/project start <TASK-ID>`** to move task to `3-in-progress/` and update status
-2. Read task file for full specification
-3. Read handoff file for implementation guidance
-4. Update `agent-handoffs.json` status to "in_progress"
-5. Begin work following acceptance criteria
-6. Report progress back through handoff updates
+1. **Create feature branch**: `git checkout -b feature/<TASK-ID>-short-description`
+2. **Start task**: `./scripts/core/project start <TASK-ID>` to move task to `3-in-progress/`
+3. Read task file for full specification
+4. Read handoff file for implementation guidance
+5. Update `agent-handoffs.json` status to "in_progress"
+6. Begin work following acceptance criteria
+7. Report progress back through handoff updates
 
 ---
 

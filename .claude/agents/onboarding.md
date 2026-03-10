@@ -178,7 +178,7 @@ These enable the full agentive workflow:
 | Service   | Purpose              | Required? | Cost        |
 |-----------|----------------------|-----------|-------------|
 | Anthropic | Claude Code agents   | Yes*      | Pay per use |
-| OpenAI    | GPT-4o Evaluator     | Optional  | ~$0.04/eval |
+| OpenAI    | AI Evaluator         | Optional  | Varies by evaluator |
 | Linear    | Task sync            | Optional  | Free tier   |
 
 * You're already authenticated via Claude Code!
@@ -188,8 +188,9 @@ These enable the full agentive workflow:
 ```
 **OpenAI API Key** (for adversarial evaluation)
 
-The evaluation system uses GPT-4o to review task specs before implementation.
-Cost: ~$0.04-0.08 per evaluation.
+The evaluation system uses AI to review task specs before implementation.
+Built-in evaluators require OpenAI. Custom evaluators can use other providers.
+Cost: Varies by evaluator (see `adversarial list-evaluators`).
 
 Do you have an OpenAI API key?
 1. Yes, I have a key
@@ -359,6 +360,59 @@ You can launch it with: agents/launch [agent-name]
 ---
 
 ## Phase 6: Configuration & Summary
+
+### Set Up Development Environment
+
+First, set up the virtual environment and install dependencies:
+
+```bash
+./scripts/core/project setup
+```
+
+This command:
+- Verifies Python 3.10+ is available (and <3.13 due to aider-chat constraint)
+- Creates `.venv/` if it doesn't exist
+- Installs project dependencies (`pip install -e ".[dev]"`)
+- Configures pre-commit hooks
+
+Tell the user:
+```
+**Setting up development environment...**
+
+Running: ./scripts/core/project setup
+
+[Show output from the command]
+
+✅ Setup complete!
+```
+
+**IMPORTANT**: After the setup command finishes, remind the user to activate the virtual environment:
+
+```text
+📋 **Next step** - activate the virtual environment:
+
+    source .venv/bin/activate
+
+    # Alternative commands for other shells:
+    # fish:  source .venv/bin/activate.fish
+    # csh:   source .venv/bin/activate.csh
+
+You'll need to activate this each time you open a new terminal.
+
+**How to verify activation:**
+- Your shell prompt shows `(.venv)` prefix
+- Running `which python` points to `.venv/bin/python`
+
+If you forget to activate, you'll see "command not found" errors for project tools like `pytest` or `adversarial`.
+```
+
+If the command fails, show the error and suggest:
+```
+Setup failed. Try running manually:
+  python3 -m venv .venv
+  source .venv/bin/activate
+  pip install -e ".[dev]"
+```
 
 Now create the configuration files:
 
@@ -541,12 +595,16 @@ First, check if `gh` CLI is authenticated:
 gh auth status
 ```
 
-**If authenticated**, create the repo:
+**If authenticated**, prepare and create the repo:
+
 ```bash
-# Remove the old origin pointing to starter kit
+# Step 1: Increase Git buffer for large pushes (prevents HTTP 400 errors)
+git config http.postBuffer 524288000
+
+# Step 2: Remove the old origin pointing to starter kit
 git remote remove origin
 
-# Create new repo (private by default) and push
+# Step 3: Create new repo (private by default) and push
 gh repo create [project-name] --private --source=. --push
 ```
 
@@ -567,6 +625,57 @@ Your project is now saved to your own GitHub repository!
 
 Note: I've set this repo as the default for `gh` commands.
 This ensures ci-checker and other tools work correctly.
+```
+
+### Handling Push Failures (HTTP 400 / RPC errors)
+
+If `gh repo create` succeeds but push fails with errors like:
+- `error: RPC failed; HTTP 400`
+- `send-pack: unexpected disconnect while reading sideband packet`
+- `fatal: the remote end hung up unexpectedly`
+
+**The repo was created but the push failed.** Try these steps:
+
+```bash
+# 1. Verify/increase the buffer (may not have taken effect)
+git config http.postBuffer 524288000
+
+# 2. Try pushing again
+git push -u origin main
+```
+
+**If HTTPS push continues to fail**, try SSH:
+
+```bash
+# Get the SSH URL for the repo
+gh repo view --json sshUrl -q .sshUrl
+
+# Change remote to SSH
+git remote set-url origin git@github.com:[username]/[project-name].git
+
+# Push via SSH (more reliable for large repos)
+git push -u origin main
+```
+
+**If SSH also fails** (rare), offer manual steps:
+```
+The push is having trouble. This can happen with larger repositories.
+
+Try these options:
+
+**Option A: Push in smaller chunks**
+  git push -u origin main --verbose
+
+**Option B: Use GitHub Desktop**
+  Download from https://desktop.github.com/
+  Open your project folder and push from there
+
+**Option C: Wait and retry**
+  Sometimes GitHub has temporary issues. Wait a few minutes and try:
+  git push -u origin main
+
+Your repo exists at: https://github.com/[username]/[project-name]
+The code just needs to be pushed to it.
 ```
 
 **If NOT authenticated**, guide them:
@@ -652,6 +761,62 @@ Then you can pull updates with:
 
 ---
 
+## Phase 7.5: Evaluator Setup (Optional)
+
+The adversarial workflow reviews task specifications before implementation.
+
+```
+**ONBOARDING** | Phase: Evaluators
+
+**Would you like to install additional evaluators?**
+
+The evaluation system can use different AI providers:
+
+1. **Built-in only** (default)
+   - Uses OpenAI (requires OPENAI_API_KEY)
+   - Evaluators: evaluate, proofread, review
+
+2. **Install evaluator library**
+   - Adds Google Gemini, Mistral, and more OpenAI evaluators
+   - Use providers you already have API keys for
+
+3. **Skip for now**
+   - Can add later with: ./scripts/core/project install-evaluators
+```
+
+### If user chooses option 2 (Install library):
+
+```bash
+./scripts/core/project install-evaluators
+```
+
+Tell the user:
+```
+**Evaluators installed!**
+
+Run `adversarial list-evaluators` to see all available evaluators.
+
+Each evaluator uses a different API key:
+- OPENAI_API_KEY  - OpenAI evaluators
+- GOOGLE_API_KEY  - Gemini evaluators
+- MISTRAL_API_KEY - Mistral evaluators
+
+Only set keys for providers you want to use.
+```
+
+### If user skips:
+
+```
+No problem! Built-in evaluators work with OPENAI_API_KEY.
+
+To install additional evaluators later:
+  ./scripts/core/project install-evaluators
+
+Custom evaluators can be added to .adversarial/evaluators/
+```
+
+---
+
 ## Phase 8: Complete
 
 ### Display Summary
@@ -667,7 +832,7 @@ Configuration Summary:
 - README: [Updated with project description / Placeholder added]
 - GitHub Repo: [URL if created, or "Not set up yet"]
 - Upstream Tracking: [Enabled / Not configured]
-- OpenAI Evaluator: [Enabled / Not configured]
+- Evaluator Library: [Installed / Built-in only]
 - Linear Sync: [Enabled / Not configured]
 - Pre-commit Hooks: [Enabled / Not configured]
 
