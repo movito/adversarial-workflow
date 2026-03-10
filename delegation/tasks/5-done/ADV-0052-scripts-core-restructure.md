@@ -1,6 +1,6 @@
 # ADV-0052: Restructure scripts/ to core/ + local/
 
-**Status**: In Progress
+**Status**: Done
 **Priority**: High
 **Type**: Infrastructure
 **Estimated Effort**: 2–3 hours (including reference updates across ~25 files and verification)
