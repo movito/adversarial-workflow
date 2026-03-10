@@ -207,7 +207,7 @@ model_requirement:
   family: gemini
   tier: flash
   min_version: "2.5"
-output_suffix: -my-evaluator.md
+output_suffix: my-evaluator.md
 timeout: 180
 
 prompt: |
