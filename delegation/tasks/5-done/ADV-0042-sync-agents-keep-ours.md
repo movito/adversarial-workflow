@@ -1,6 +1,6 @@
 # ADV-0042: Upstream Sync — Agents (Keep Ours)
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 10 minutes
