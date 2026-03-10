@@ -35,12 +35,20 @@ def validate_evaluation_output(
             f"Log file too small ({len(content)} bytes) - evaluation likely failed",
         )
 
-    # Extract verdict
+    # Extract verdict — supports built-in and custom evaluator verdict names
     verdict = None
+    # All recognized verdicts across built-in and custom evaluators
+    all_verdicts = (
+        "APPROVED|NEEDS_REVISION|REJECTED"  # built-in
+        "|PROCEED|RETHINK"  # architecture-planner
+        "|REVISION_SUGGESTED|RESTRUCTURE_NEEDED"  # architecture-reviewer
+        "|COMPLIANT|MOSTLY_COMPLIANT|NON_COMPLIANT"  # spec-compliance
+        "|PASS|CONCERNS|FAIL"  # code-reviewer
+    )
     verdict_patterns = [
-        r"Verdict:\s*(APPROVED|NEEDS_REVISION|REJECTED)",
-        r"\*\*Verdict\*\*:\s*(APPROVED|NEEDS_REVISION|REJECTED)",
-        r"^(APPROVED|NEEDS_REVISION|REJECTED)\s*$",
+        rf"Verdict:\s*({all_verdicts})",
+        rf"\*\*Verdict\*\*:\s*({all_verdicts})",
+        rf"^({all_verdicts})\s*$",
     ]
 
     for pattern in verdict_patterns:
