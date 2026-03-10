@@ -1,6 +1,6 @@
 # ADV-0043: Upstream Sync — Agents (Take Upstream)
 
-**Status**: In Progress
+**Status**: Done
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 15 minutes
