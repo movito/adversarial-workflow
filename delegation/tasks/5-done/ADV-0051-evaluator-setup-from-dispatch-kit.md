@@ -1,6 +1,6 @@
 # ADV-0051: Install Evaluator Library + Custom Evaluators
 
-**Status**: In Progress
+**Status**: Done
 **Priority**: High
 **Type**: Enhancement
 **Estimated Effort**: 20 minutes
