@@ -1,6 +1,6 @@
 # ADV-0041: Upstream Sync — Skills
 
-**Status**: Todo
+**Status**: In Progress
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 20 minutes
