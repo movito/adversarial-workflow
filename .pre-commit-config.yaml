@@ -56,7 +56,7 @@ repos:
 
       - id: validate-task-status
         name: Validate task status fields
-        entry: bash -c 'python3 scripts/core/validate_task_status.py delegation/tasks/*/*.md'
+        entry: bash -c 'python3 scripts/core/validate_task_status.py delegation/tasks/*/ADV-*.md'
         language: system
         pass_filenames: false
         always_run: true

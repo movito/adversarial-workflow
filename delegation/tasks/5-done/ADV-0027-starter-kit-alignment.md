@@ -1,6 +1,6 @@
 # ADV-0027: Agentive Starter Kit Alignment
 
-**Status**: Todo
+**Status**: Done
 **Priority**: Medium
 **Type**: Infrastructure
 **Created**: 2025-01-25

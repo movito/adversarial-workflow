@@ -1,6 +1,6 @@
 # ADV-0016: YAML Parsing and Evaluator Discovery
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Estimated Effort**: 3-4 hours
 **Target Version**: v0.6.0
