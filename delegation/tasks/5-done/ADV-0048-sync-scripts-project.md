@@ -1,6 +1,6 @@
 # ADV-0048: Fix find_task_file Boundary Matching
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Type**: Bug Fix
 **Estimated Effort**: 10 minutes
