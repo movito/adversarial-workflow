@@ -1,6 +1,6 @@
 # ADV-0049: Upstream Sync — pattern_lint + Tests
 
-**Status**: In Progress
+**Status**: In Review
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 20 minutes
