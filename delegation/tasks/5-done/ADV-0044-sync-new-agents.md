@@ -1,6 +1,6 @@
 # ADV-0044: Upstream Sync — New Agents
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 15 minutes
