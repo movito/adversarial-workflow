@@ -49,14 +49,14 @@ repos:
 
       - id: pattern-lint
         name: Defensive coding patterns (DK001-DK004)
-        entry: python3 scripts/core/pattern_lint.py adversarial_workflow/ tests/
+        entry: python3 scripts/core/pattern_lint.py
         language: system
-        pass_filenames: false
         types: [python]
+        files: ^adversarial_workflow/
 
       - id: validate-task-status
         name: Validate task status fields
-        entry: python3 scripts/core/validate_task_status.py
+        entry: bash -c 'python3 scripts/core/validate_task_status.py delegation/tasks/*/*.md'
         language: system
         pass_filenames: false
         always_run: true

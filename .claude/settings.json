@@ -31,7 +31,8 @@
       "Bash(gh repo delete*)",
       "Bash(pip install*)",
       "Bash(uv add*)",
-      "Bash(curl*|*curl*)",
+      "Bash(curl*)",
+      "Bash(*curl*)",
       "Bash(wget*)"
     ]
   }
