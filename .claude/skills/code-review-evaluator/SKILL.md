@@ -91,11 +91,15 @@ adversarial code-reviewer-fast .adversarial/inputs/<TASK-ID>-code-review-input.m
 Output lands in `.adversarial/logs/`:
 
 ```bash
-# First run:
+# If you ran `adversarial code-reviewer`:
 cat .adversarial/logs/<TASK-ID>-code-review-input--code-reviewer.md.md
 
-# Follow-up:
+# If you ran `adversarial code-reviewer-fast`:
+cat .adversarial/logs/<TASK-ID>-code-review-input--code-reviewer-fast.md.md
+
+# Follow-up examples:
 cat .adversarial/logs/<TASK-ID>-code-review-input-r2--code-reviewer.md.md
+cat .adversarial/logs/<TASK-ID>-code-review-input-r2--code-reviewer-fast.md.md
 ```
 
 | Verdict | Action |
@@ -109,8 +113,12 @@ cat .adversarial/logs/<TASK-ID>-code-review-input-r2--code-reviewer.md.md
 Copy to `.agent-context/reviews/` so it's tracked in git:
 
 ```bash
-# First run:
+# First run (adjust source filename to the evaluator you used):
 cp .adversarial/logs/<TASK-ID>-code-review-input--code-reviewer.md.md \
+   .agent-context/reviews/<TASK-ID>-evaluator-review.md
+
+# Example for fast evaluator:
+cp .adversarial/logs/<TASK-ID>-code-review-input--code-reviewer-fast.md.md \
    .agent-context/reviews/<TASK-ID>-evaluator-review.md
 
 # Follow-up:

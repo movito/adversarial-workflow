@@ -115,6 +115,7 @@ When the spec calls for `subprocess.run()`, verify the full exception surface is
 | Exception | Cause | Caught by `except OSError`? |
 |-----------|-------|---------------------------|
 | `FileNotFoundError` | CLI not on PATH | Yes (subclass) |
+| `subprocess.CalledProcessError` | Non-zero exit when `check=True` | No |
 | `subprocess.TimeoutExpired` | Timed out | No |
 | `OSError` | Permission denied, etc. | Yes |
 | `UnicodeDecodeError` | Non-UTF-8 output with `text=True` | **No** (subclass of ValueError) |

@@ -96,7 +96,7 @@ Every research document must pass these gates before being considered complete:
 **How to Request**:
 ```bash
 # Run external evaluator
-adversarial evaluate <document-path>
+adversarial evaluate --evaluator <name> <document-path>
 
 # Read results
 cat .adversarial/logs/<document>-EVALUATION.md
