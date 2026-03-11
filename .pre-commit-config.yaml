@@ -46,3 +46,17 @@ repos:
         always_run: true
         stages: [pre-commit]
         verbose: true
+
+      - id: pattern-lint
+        name: Defensive coding patterns (DK001-DK004)
+        entry: python3 scripts/core/pattern_lint.py adversarial_workflow/ tests/
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: validate-task-status
+        name: Validate task status fields
+        entry: python3 scripts/core/validate_task_status.py
+        language: system
+        pass_filenames: false
+        always_run: true
