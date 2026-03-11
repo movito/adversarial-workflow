@@ -1,6 +1,6 @@
 # ADV-0050: Upstream Sync — Workflows & Patterns
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 15 minutes
