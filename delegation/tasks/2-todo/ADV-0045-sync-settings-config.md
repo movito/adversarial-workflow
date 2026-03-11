@@ -3,32 +3,34 @@
 **Status**: Todo
 **Priority**: High
 **Type**: Upstream Sync
-**Estimated Effort**: 20 minutes
+**Estimated Effort**: 15 minutes
 **Created**: 2026-03-07
+**Updated**: 2026-03-11 (revised after ADV-0053 Ruff migration)
 **Parent**: ADV-0039
 **Upstream Commit**: agentive-starter-kit@0c68f0f
 
 ## Summary
 
-Merge upstream permission settings and pre-commit configuration with our
-existing setup. This is one of the more integration-heavy PRs — it requires
-careful merging, not just copying.
+Merge upstream permission settings with our existing setup and add two
+pre-commit hooks. Scope reduced after review — Black/isort/flake8 are gone
+(replaced by Ruff in ADV-0053).
 
 ## Scope
 
 ### 1. `.claude/settings.json` — Merge
 
-**Strategy**: Merge both permission sets. Our Serena wildcard + upstream's
-expanded Bash permissions and deny list.
+**Current state**: Explicit Serena tool list (17 individual tools), no Bash
+permissions, no deny list.
 
-Final result should include:
+**Target state**: Consolidate Serena to wildcard, add Bash permissions and deny
+list from upstream.
 
 **Allow list** (merged):
 ```json
 [
   "Bash(git *)", "Bash(gh *)", "Bash(pytest *)", "Bash(./scripts/*)",
-  "Bash(python* scripts/*.py*)", "Bash(black *)", "Bash(isort *)",
-  "Bash(flake8 *)", "Bash(adversarial *)", "Bash(ruff *)", "Bash(pre-commit *)",
+  "Bash(python* scripts/*.py*)", "Bash(adversarial *)", "Bash(ruff *)",
+  "Bash(pre-commit *)",
   "Read", "Write", "Edit", "MultiEdit", "Glob", "Grep", "Skill", "WebFetch", "Task",
   "mcp__serena__*"
 ]
@@ -44,34 +46,43 @@ Final result should include:
 ]
 ```
 
-**Note**: The `Bash(pip install*)` deny rule blocks bare pip installs. This is
-intentional — agents should use `./scripts/core/project setup` or `.venv/bin/pip`.
+**Changes from original spec**:
+- Removed `Bash(black *)`, `Bash(isort *)`, `Bash(flake8 *)` — these tools
+  were replaced by Ruff in ADV-0053
+- Serena wildcard (`mcp__serena__*`) replaces 17 explicit entries — intentional
+  simplification, all Serena tools are safe read/navigation operations
 
-### 2. `.pre-commit-config.yaml` — Update
+**Note**: The `Bash(pip install*)` deny rule blocks bare pip installs. Agents
+should use `./scripts/core/project setup` or `.venv/bin/pip`.
 
-- Bump black from 23.12.1 to 26.1.0
-- Add `pattern-lint` hook (`language: system`, runs `python3 scripts/core/pattern_lint.py`)
-- Add `validate-task-status` hook (`language: system`)
-- Both new hooks must use `language: system` (not `language: python`)
+### 2. `.pre-commit-config.yaml` — Add Hooks
 
-### Integration Notes
+**Do NOT change existing hooks** — Ruff config is already correct from ADV-0053.
 
-- BugBot flagged the `pip install` deny vs documented venv workflow conflict.
-  Resolution: agent docs should reference `./scripts/core/project setup` and
-  `.venv/bin/pip`, not bare `pip install`.
-- CodeRabbit flagged the Serena wildcard replacing an explicit allowlist.
-  This is intentional — the wildcard is simpler and Serena tools are all safe.
+Add two new local hooks:
+- `pattern-lint` hook (`language: system`, runs
+  `python3 scripts/core/pattern_lint.py adversarial/ tests/`)
+- `validate-task-status` hook (`language: system`, runs
+  `python3 scripts/core/validate_task_status.py`)
+
+Both must use `language: system` (not `language: python`).
+
+### What NOT to Do
+
+- Do NOT bump Black — we use Ruff now (ADV-0053)
+- Do NOT add Black/isort/flake8 hooks — already removed
+- Do NOT change existing Ruff pre-commit hooks
 
 ## PR Template
 
 ```
-Title: sync: Merge settings.json and update pre-commit config (ADV-0045)
+Title: sync: Merge settings.json permissions and add pre-commit hooks (ADV-0045)
 
 Body:
 ## Summary
-Merges upstream Bash permissions/deny list with our Serena wildcard.
-Updates pre-commit: bumps black, adds pattern-lint and
-validate-task-status hooks.
+Merges upstream Bash permissions and deny list into settings.json.
+Consolidates 17 explicit Serena tool entries to wildcard.
+Adds pattern-lint and validate-task-status pre-commit hooks.
 
 Part of ADV-0039 (upstream sync).
 ```
@@ -79,9 +90,11 @@ Part of ADV-0039 (upstream sync).
 ## Acceptance Criteria
 
 - [ ] settings.json has merged allow/deny lists
-- [ ] Serena wildcard preserved in allow list
-- [ ] pre-commit-config.yaml has bumped black version
-- [ ] pattern-lint hook added with `language: system`
-- [ ] validate-task-status hook added with `language: system`
+- [ ] Serena wildcard replaces explicit tool list
+- [ ] No references to Black/isort/flake8 in settings
+- [ ] pattern-lint pre-commit hook added with `language: system`
+- [ ] validate-task-status pre-commit hook added with `language: system`
+- [ ] Existing Ruff hooks unchanged
+- [ ] `pre-commit run --all-files` passes
 - [ ] CI passes
 - [ ] PR created and merged
