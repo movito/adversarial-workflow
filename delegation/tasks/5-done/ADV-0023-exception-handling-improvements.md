@@ -1,6 +1,6 @@
 # ADV-0023: Exception Handling Improvements for .env Loading
 
-## Status: Done
+**Status**: Done
 
 ## Summary
 

@@ -1,6 +1,6 @@
 # ADV-0017: Generic Evaluator Runner
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Estimated Effort**: 4-5 hours
 **Target Version**: v0.6.0

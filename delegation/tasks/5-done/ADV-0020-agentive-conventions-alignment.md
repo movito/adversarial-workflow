@@ -1,6 +1,6 @@
 # ADV-0020: Align with Agentive Starter Kit Conventions
 
-**Status**: Todo
+**Status**: Done
 **Priority**: High
 **Estimated Effort**: 2-3 hours
 **Created**: 2026-01-22
