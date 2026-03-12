@@ -36,7 +36,7 @@
       "Bash(pip install*)",
       "Bash(uv add*)",
       "Bash(*curl*)",
-      "Bash(wget*)"
+      "Bash(*wget*)"
     ]
   }
 }
