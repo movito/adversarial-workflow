@@ -28,6 +28,7 @@
       "Bash(git clean*)",
       "Bash(git branch -D*)",
       "Bash(rm -rf*)",
+      "Bash(rm -fr*)",
       "Bash(rm -r *)",
       "Bash(gh repo delete*)",
       "Bash(pip install*)",
