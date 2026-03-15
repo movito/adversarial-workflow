@@ -127,6 +127,8 @@ fi
 if ! git diff --quiet; then
   echo -e "\n\n# === Uncommitted changes ===" >> "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
   git diff >> "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
+  echo -e "\n\n# === Uncommitted changes ===" >> "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
+  git diff --stat >> "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
 fi
 
 # Check if there are any changes

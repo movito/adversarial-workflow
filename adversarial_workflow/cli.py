@@ -494,7 +494,7 @@ def quickstart() -> int:
             "",
             "Try the full workflow:",
             "  1. Implement the fix (or let Claude do it via aider)",
-            "  2. Run: adversarial review (Phase 3: Code Review)",
+            "  2. Run: adversarial review <task_file> (Phase 3: Code Review)",
             "  3. Run: adversarial validate (Phase 4: Test Validation)",
             "",
             "Learn more:",
@@ -1704,7 +1704,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         if health_score > 70:
             print(f"{BOLD}Ready to:{RESET}")
             print("  • Evaluate task plans: adversarial evaluate <task-file>")
-            print("  • Review implementations: adversarial review")
+            print("  • Review implementations: adversarial review <task_file>")
             print("  • Validate tests: adversarial validate")
         else:
             print(f"{BOLD}Next steps:{RESET}")
@@ -3047,7 +3047,7 @@ Examples:
   adversarial agent onboard             # Set up agent coordination
   adversarial evaluate tasks/feat.md    # Evaluate plan
   adversarial proofread docs/guide.md   # Proofread teaching content
-  adversarial review                    # Review implementation
+  adversarial review <task_file>         # Review implementation
   adversarial validate "npm test"       # Validate with tests
   adversarial split large-task.md       # Split large files
   adversarial check-citations doc.md    # Verify URLs in document
