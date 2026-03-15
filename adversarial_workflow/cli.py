@@ -2108,7 +2108,7 @@ def evaluate(task_file: str) -> int:
         return 0
 
 
-def review() -> int:
+def review(task_file: str | None = None) -> int:
     """Run Phase 3: Code review."""
 
     print("🔍 Reviewing implementation...")
@@ -2145,7 +2145,10 @@ def review() -> int:
         return 1
 
     try:
-        result = subprocess.run([script], timeout=180)
+        cmd = [script]
+        if task_file:
+            cmd.append(task_file)
+        result = subprocess.run(cmd, timeout=180)
     except subprocess.TimeoutExpired:
         print(f"{RED}❌ ERROR: Review timed out (>3 minutes){RESET}")
         return 1
@@ -3178,8 +3181,9 @@ For more information: https://github.com/movito/adversarial-workflow
         "--no-cache", action="store_true", help="Bypass cache and fetch fresh data"
     )
 
-    # review command (static - reviews git changes, no file argument)
-    subparsers.add_parser("review", help="Run Phase 3: Code review")
+    # review command
+    review_parser = subparsers.add_parser("review", help="Run Phase 3: Code review")
+    review_parser.add_argument("task_file", nargs="?", help="Task file path")
 
     # validate command
     validate_parser = subparsers.add_parser("validate", help="Run Phase 4: Test validation")
@@ -3464,7 +3468,7 @@ For more information: https://github.com/movito/adversarial-workflow
             print("  adversarial library update <name>")
             return 1
     elif args.command == "review":
-        return review()
+        return review(args.task_file)
     elif args.command == "validate":
         return validate(args.test_command)
     elif args.command == "split":
