@@ -170,7 +170,7 @@ are now synced with upstream v0.4.0+ conventions.
 | #42 | ADV-0052 | Scripts restructure |
 | #41 | ADV-0053 | Ruff migration |
 | #48 | ADV-0054 | Fix review script bugs |
-| — | ADV-0046 | CLAUDE.md & docs (this PR) |
+| #49 | ADV-0046 | CLAUDE.md & docs (this PR) |
 | — | ADV-0040, 0042, 0044, 0047 | No-ops (already synced or skipped) |
 
 **Outcome**: Full alignment with upstream v0.4.0+ conventions. Monolithic PR #34

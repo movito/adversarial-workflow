@@ -49,6 +49,6 @@
       "scripts/sync_tasks_to_linear.py (Linear-specific)",
       ".claude/agents/tycho.md (upstream only)"
     ],
-    "check_for_updates": "cd ~/Github/agentive-starter-kit && git log --oneline --since='2026-03-07' -- .claude/ scripts/ .agent-context/"
+    "check_for_updates": "cd ~/Github/agentive-starter-kit && git log --oneline --since='2026-03-07' -- .claude/ scripts/ .agent-context/ CLAUDE.md"
   }
 }
