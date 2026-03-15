@@ -1,6 +1,6 @@
 # ADV-0046: Upstream Sync — CLAUDE.md & Documentation
 
-**Status**: Todo
+**Status**: In Progress
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 20 minutes
