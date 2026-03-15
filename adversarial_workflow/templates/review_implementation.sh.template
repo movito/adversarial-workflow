@@ -105,13 +105,23 @@ mkdir -p "$ARTIFACTS_DIR"
 mkdir -p "$LOG_DIR"
 
 # Detect default branch for comparison
-DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
+DEFAULT_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || true)
+DEFAULT_BRANCH=${DEFAULT_BRANCH#origin/}
+DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
 
 # Capture current implementation state
 echo "=== Capturing implementation artifacts ==="
 git diff "${DEFAULT_BRANCH}...HEAD" > "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
 git diff "${DEFAULT_BRANCH}...HEAD" --stat > "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
 git status --short > "${ARTIFACTS_DIR}${TASK_NUM}-file-status.txt"
+
+# Also capture staged but uncommitted work
+if ! git diff --cached --quiet; then
+  echo -e "\n\n# === Staged changes ===" >> "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
+  git diff --cached >> "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
+  echo -e "\n\n# === Staged changes ===" >> "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
+  git diff --cached --stat >> "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
+fi
 
 # Also capture any uncommitted work
 if ! git diff --quiet; then

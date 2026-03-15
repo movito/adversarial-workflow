@@ -2108,17 +2108,33 @@ def evaluate(task_file: str) -> int:
         return 0
 
 
-def review(task_file: str | None = None) -> int:
+def review(task_file: str) -> int:
     """Run Phase 3: Code review."""
 
     print("🔍 Reviewing implementation...")
     print()
 
-    # Check for git changes
-    result = subprocess.run(["git", "diff", "--quiet"], capture_output=True)
+    # Check for git changes (branch-aware: committed, staged, or unstaged)
+    default_branch = subprocess.run(
+        ["git", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    base = (
+        default_branch.stdout.strip().removeprefix("origin/")
+        if default_branch.returncode == 0
+        else "main"
+    )
+    branch_diff = subprocess.run(["git", "diff", "--quiet", f"{base}...HEAD"], capture_output=True)
+    staged_diff = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True)
+    unstaged_diff = subprocess.run(["git", "diff", "--quiet"], capture_output=True)
 
-    if result.returncode == 0:
-        # No changes
+    if (
+        branch_diff.returncode == 0
+        and staged_diff.returncode == 0
+        and unstaged_diff.returncode == 0
+    ):
+        # No changes at all
         print(f"{YELLOW}⚠️  WARNING: No git changes detected!{RESET}")
         print("   This might indicate PHANTOM WORK.")
         print("   Aborting review to save tokens.")
@@ -2145,10 +2161,7 @@ def review(task_file: str | None = None) -> int:
         return 1
 
     try:
-        cmd = [script]
-        if task_file:
-            cmd.append(task_file)
-        result = subprocess.run(cmd, timeout=180)
+        result = subprocess.run([script, task_file], timeout=180)
     except subprocess.TimeoutExpired:
         print(f"{RED}❌ ERROR: Review timed out (>3 minutes){RESET}")
         return 1
@@ -3183,7 +3196,7 @@ For more information: https://github.com/movito/adversarial-workflow
 
     # review command
     review_parser = subparsers.add_parser("review", help="Run Phase 3: Code review")
-    review_parser.add_argument("task_file", nargs="?", help="Task file path")
+    review_parser.add_argument("task_file", help="Task file path")
 
     # validate command
     validate_parser = subparsers.add_parser("validate", help="Run Phase 4: Test validation")
