@@ -2,7 +2,7 @@
 
 ## Status
 
-**In Progress** - Comprehensive comparison completed 2025-01-25
+**Accepted** - Initial comparison 2025-01-25, full sync completed 2026-03-15 (ADV-0039)
 
 ## Context
 
@@ -20,88 +20,88 @@ The `adversarial-workflow` project predates `agentive-starter-kit` and has been 
 | `.serena/` | ✅ | ✅ | Aligned |
 | `.github/` | ✅ | ✅ | Aligned |
 | `.pre-commit-config.yaml` | ✅ | ✅ | **Aligned** |
-| `agents/` (launch scripts) | ✅ | ❌ | **Missing** |
-| `scripts/` (utilities) | ✅ | ❌ | **Missing** |
+| `agents/` (launch scripts) | ✅ | ✅ | **Aligned** (ADV-0052) |
+| `scripts/` (utilities) | ✅ | ✅ | **Aligned** (ADV-0052) |
 | `delegation/` | ✅ | ✅ | Aligned |
 | `docs/` | ✅ | ✅ | Aligned |
 | `tests/` | ✅ | ✅ | Aligned |
-| `SETUP.md` | ✅ | ❌ | **Missing** |
+| `SETUP.md` | ✅ | ❌ | Skipped (not needed) |
 | `CHANGELOG.md` | ✅ | ✅ | Aligned |
-| `conftest.py` (root) | ✅ | ❌ | **Missing** |
+| `conftest.py` (root) | ✅ | ✅ | **Aligned** |
 
 ### .agent-context/ Structure
 
 | Component | Starter Kit | adversarial-workflow | Status |
 |-----------|-------------|---------------------|--------|
 | `agent-handoffs.json` | ✅ | ✅ | Aligned |
-| `current-state.json` | ✅ | ❌ | **Missing** |
-| `README.md` | ✅ | ❌ | **Missing** |
+| `current-state.json` | ✅ | ✅ | **Aligned** |
+| `README.md` | ✅ | ❌ | Skipped (not needed) |
 | `REVIEW-INSIGHTS.md` | ✅ | ❌ | Optional |
 | `archive/` | ✅ | ✅ | Aligned |
 | `reviews/` | ✅ | ✅ | Aligned |
-| `templates/` | ✅ | ❌ | **Missing** |
-| `workflows/` | ✅ | ❌ | **Missing** |
+| `templates/` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `workflows/` | ✅ | ✅ | **Aligned** (ADV-0041/0050) |
 
 ### .agent-context/templates/
 
 | Template | Starter Kit | adversarial-workflow | Status |
 |----------|-------------|---------------------|--------|
-| `review-starter-template.md` | ✅ | ❌ | **Missing** |
-| `review-template.md` | ✅ | ❌ | **Missing** |
+| `review-starter-template.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `review-template.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
 
 ### .agent-context/workflows/
 
 | Workflow | Starter Kit | adversarial-workflow | Status |
 |----------|-------------|---------------------|--------|
-| `ADR-CREATION-WORKFLOW.md` | ✅ | ❌ | **Missing** |
-| `AGENT-CREATION-WORKFLOW.md` | ✅ | ❌ | **Missing** |
-| `COMMIT-PROTOCOL.md` | ✅ | ❌ | **Missing** |
-| `COVERAGE-WORKFLOW.md` | ✅ | ❌ | **Missing** |
-| `REVIEW-FIX-WORKFLOW.md` | ✅ | ❌ | **Missing** |
-| `TASK-COMPLETION-PROTOCOL.md` | ✅ | ❌ | **Missing** |
-| `TEST-SUITE-WORKFLOW.md` | ✅ | ❌ | **Missing** |
-| `TESTING-WORKFLOW.md` | ✅ | ❌ | **Missing** |
+| `ADR-CREATION-WORKFLOW.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `AGENT-CREATION-WORKFLOW.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `COMMIT-PROTOCOL.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `COVERAGE-WORKFLOW.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `REVIEW-FIX-WORKFLOW.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `TASK-COMPLETION-PROTOCOL.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `TEST-SUITE-WORKFLOW.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `TESTING-WORKFLOW.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
 
 ### agents/ (Root Launch Scripts)
 
 | Script | Starter Kit | adversarial-workflow | Status |
 |--------|-------------|---------------------|--------|
-| `launch` | ✅ | ❌ | **Missing** |
-| `onboarding` | ✅ | ❌ | **Missing** |
-| `preflight` | ✅ | ❌ | **Missing** |
+| `launch` | ✅ | ✅ | **Aligned** (ADV-0052) |
+| `onboarding` | ✅ | ✅ | **Aligned** (ADV-0052) |
+| `preflight` | ✅ | ✅ | **Aligned** (ADV-0052) |
 
 ### scripts/ (Utilities)
 
 | Script | Starter Kit | adversarial-workflow | Status |
 |--------|-------------|---------------------|--------|
-| `ci-check.sh` | ✅ | ❌ | **Missing** |
-| `project` | ✅ | ❌ | **Missing** |
-| `verify-ci.sh` | ✅ | ❌ | **Missing** |
-| `verify-setup.sh` | ✅ | ❌ | **Missing** |
-| `validate_task_status.py` | ✅ | ❌ | **Missing** (referenced in pre-commit) |
-| `linear_sync_utils.py` | ✅ | N/A | Optional (Linear integration) |
-| `sync_tasks_to_linear.py` | ✅ | N/A | Optional (Linear integration) |
-| `logging_config.py` | ✅ | ❌ | **Missing** |
+| `ci-check.sh` | ✅ | ✅ | **Aligned** (ADV-0052) |
+| `project` | ✅ | ✅ | **Aligned** (ADV-0048/0052) |
+| `verify-ci.sh` | ✅ | ✅ | **Aligned** (ADV-0052) |
+| `verify-setup.sh` | ✅ | ✅ | **Aligned** (ADV-0052) |
+| `validate_task_status.py` | ✅ | ✅ | **Aligned** (ADV-0052) |
+| `linear_sync_utils.py` | ✅ | N/A | Skipped (Linear integration) |
+| `sync_tasks_to_linear.py` | ✅ | N/A | Skipped (Linear integration) |
+| `logging_config.py` | ✅ | ✅ | **Aligned** (ADV-0052) |
 
 ### .claude/agents/ (Agent Definitions)
 
 | Agent | Starter Kit | adversarial-workflow | Status |
 |-------|-------------|---------------------|--------|
-| `AGENT-TEMPLATE.md` | ✅ (10.7KB) | ✅ (1.9KB) | **Outdated** |
-| `OPERATIONAL-RULES.md` | ✅ (3.3KB) | ✅ (2.9KB) | Similar |
-| `TASK-STARTER-TEMPLATE.md` | ✅ | ❌ | **Missing** |
-| `agent-creator.md` | ✅ (15.7KB) | ✅ (11.3KB) | **Outdated** |
-| `ci-checker.md` | ✅ (7.6KB) | ✅ (7.2KB) | Similar |
-| `code-reviewer.md` | ✅ (10.1KB) | ✅ (12.0KB) | **Ours larger** |
-| `document-reviewer.md` | ✅ | ❌ | **Missing** |
-| `feature-developer.md` | ✅ (16.6KB) | ✅ (5.5KB) | **Outdated** |
-| `onboarding.md` | ✅ | ❌ | **Missing** |
-| `planner.md` | ✅ (23.0KB) | ✅ (10.2KB) | **Outdated** |
-| `powertest-runner.md` | ✅ | ❌ | **Missing** |
-| `security-reviewer.md` | ✅ | ❌ | **Missing** |
-| `test-runner.md` | ✅ (7.0KB) | ✅ (3.6KB) | **Outdated** |
-| `tycho.md` | ✅ | ❌ | **Missing** |
-| `pypi-publisher.md` | ❌ | ✅ | **Ours only** |
+| `AGENT-TEMPLATE.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `OPERATIONAL-RULES.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `TASK-STARTER-TEMPLATE.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `agent-creator.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `ci-checker.md` | ✅ | ✅ | **Aligned** (preserved ours) |
+| `code-reviewer.md` | ✅ | ✅ | **Aligned** (preserved ours) |
+| `document-reviewer.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `feature-developer.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `onboarding.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `planner.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `powertest-runner.md` | ✅ | ✅ | **Aligned** (ADV-0041) |
+| `security-reviewer.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `test-runner.md` | ✅ | ✅ | **Aligned** (ADV-0043) |
+| `tycho.md` | ✅ | ❌ | Skipped (upstream only) |
+| `pypi-publisher.md` | ❌ | ✅ | **Ours only** (preserved) |
 
 ### delegation/tasks/ Structure
 
@@ -128,81 +128,53 @@ The `adversarial-workflow` project predates `agentive-starter-kit` and has been 
 | `docs/proposals/` | ❌ | ✅ | **Ours only** |
 | `docs/reference/` | ❌ | ✅ | **Ours only** |
 
-## Summary: What We're Missing
+## Summary: Current Alignment Status
 
-### High Priority (Infrastructure)
+After ADV-0039 (March 2026 upstream sync), alignment is essentially complete.
 
-1. **`agents/` launch scripts** - `launch`, `onboarding`, `preflight`
-2. **`scripts/` utilities** - `validate_task_status.py`, `verify-setup.sh`, `ci-check.sh`
-3. **`.agent-context/current-state.json`** - Project metrics tracking
-4. **`.agent-context/templates/`** - Standardized review templates
-5. **`.agent-context/workflows/`** - 8 workflow documentation files
-6. **`TASK-STARTER-TEMPLATE.md`** - Standardized handoff format
+### Fully Aligned
 
-### Medium Priority (Agent Updates)
+All infrastructure, agents, scripts, workflows, templates, and pre-commit hooks
+are now synced with upstream v0.4.0+ conventions.
 
-1. **Update `planner.md`** - Ours is 10KB, starter kit is 23KB
-2. **Update `feature-developer.md`** - Ours is 5.5KB, starter kit is 16.6KB
-3. **Update `AGENT-TEMPLATE.md`** - Ours is 1.9KB, starter kit is 10.7KB
-4. **Add `document-reviewer.md`**
-5. **Add `security-reviewer.md`**
-6. **Add `onboarding.md`**
+### Intentionally Skipped
 
-### Low Priority (Nice to Have)
-
-1. `SETUP.md` - Setup documentation
-2. `conftest.py` at root
-3. `powertest-runner.md`, `tycho.md` agents
-4. Linear sync integration
+- `tycho.md` — upstream-only agent
+- `SETUP.md` — not needed for this project
+- Linear sync scripts — Linear integration not enabled
 
 ### What We Have That's Unique
 
-1. **13 ADRs** - Comprehensive architectural documentation
-2. **`pypi-publisher.md`** - PyPI release automation agent
-3. **`docs/` structure** - guides, proposals, reference, internal
-4. **`.adversarial/`** - Custom CLI configuration
-5. **`evaluations/` folder** - GPT-4o evaluation integration
+1. **13 ADRs** — comprehensive architectural documentation
+2. **`pypi-publisher.md`** — PyPI release automation agent
+3. **`docs/` structure** — guides, proposals, reference, internal
+4. **`.adversarial/`** — custom CLI configuration and evaluator system
+5. **`evaluations/` folder** — evaluation tracking
 
-## Migration Options
+## Sync History
 
-### Option A: Copy Missing Files (Incremental)
+### ADV-0039: March 2026 Upstream Sync
 
-Copy missing infrastructure files from starter kit:
-- Preserves our unique content
-- Lower risk
-- Can be done incrementally
+**Date**: 2026-03-07 through 2026-03-15
+**Source**: agentive-starter-kit@0c68f0f (74 commits since last sync)
+**Approach**: Decomposed into 11 independent PRs by component category
 
-### Option B: Fresh Start from Starter Kit
+| PR | Task | Component |
+|----|------|-----------|
+| #45 | ADV-0041/0050 | Skills, workflows, patterns.yml |
+| #43 | ADV-0043 | Agent definitions (take upstream) |
+| #47 | ADV-0045 | Settings, pre-commit hooks |
+| #46 | ADV-0048 | scripts/core/project patch |
+| #44 | ADV-0049 | pattern_lint + tests |
+| #40 | ADV-0051 | Evaluator library install |
+| #42 | ADV-0052 | Scripts restructure |
+| #41 | ADV-0053 | Ruff migration |
+| #48 | ADV-0054 | Fix review script bugs |
+| — | ADV-0046 | CLAUDE.md & docs (this PR) |
+| — | ADV-0040, 0042, 0044, 0047 | No-ops (already synced or skipped) |
 
-Start new repo from starter kit, migrate code:
-- Cleaner structure
-- Loses git history
-- Higher effort
-
-### Option C: Hybrid - Selective Sync
-
-Create a sync script that:
-1. Pulls agent definitions from starter kit
-2. Preserves our unique files
-3. Merges where appropriate
-
-## Recommended Approach
-
-**Option A (Incremental)** with priority order:
-
-1. Copy `scripts/validate_task_status.py` (fixes pre-commit warning)
-2. Copy `.agent-context/templates/` folder
-3. Copy `.agent-context/workflows/` folder
-4. Add `.agent-context/current-state.json`
-5. Update agent definitions one by one
-6. Copy `agents/` launch scripts
-
-## Action Items
-
-- [ ] Create task to copy missing infrastructure files
-- [ ] Create task to update agent definitions
-- [ ] Decide on Linear integration (yes/no)
-- [ ] Add starter kit as git remote for easy comparison
+**Outcome**: Full alignment with upstream v0.4.0+ conventions. Monolithic PR #34
+(68 bot threads) was replaced with focused PRs averaging 8 threads each.
 
 ## References
 
