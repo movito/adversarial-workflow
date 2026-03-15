@@ -45,11 +45,36 @@ echo "Task: $TASK_NUM"
 echo "Model: $EVALUATOR_MODEL"
 echo ""
 
+# Ensure output directories exist before writing
+mkdir -p "$ARTIFACTS_DIR"
+mkdir -p "$LOG_DIR"
+
+# Detect default branch for comparison
+DEFAULT_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || true)
+DEFAULT_BRANCH=${DEFAULT_BRANCH#origin/}
+DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
+
 # Capture current implementation state
 echo "=== Capturing implementation artifacts ==="
-git diff > "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
-git diff --stat > "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
+git diff "${DEFAULT_BRANCH}...HEAD" > "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
+git diff "${DEFAULT_BRANCH}...HEAD" --stat > "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
 git status --short > "${ARTIFACTS_DIR}${TASK_NUM}-file-status.txt"
+
+# Also capture staged but uncommitted work
+if ! git diff --cached --quiet; then
+  echo -e "\n\n# === Staged changes ===" >> "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
+  git diff --cached >> "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
+  echo -e "\n\n# === Staged changes ===" >> "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
+  git diff --cached --stat >> "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
+fi
+
+# Also capture any uncommitted work
+if ! git diff --quiet; then
+  echo -e "\n\n# === Uncommitted changes ===" >> "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
+  git diff >> "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
+  echo -e "\n\n# === Uncommitted changes ===" >> "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
+  git diff --stat >> "${ARTIFACTS_DIR}${TASK_NUM}-change-summary.txt"
+fi
 
 # Check if there are any changes
 if [ ! -s "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff" ]; then
@@ -62,7 +87,7 @@ if [ ! -s "${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff" ]; then
 fi
 
 # Count lines changed
-LINES_CHANGED=$(git diff --stat | tail -1)
+LINES_CHANGED=$(git diff "${DEFAULT_BRANCH}...HEAD" --stat | tail -1)
 
 echo "✓ Changes captured:"
 echo "  - Git diff: ${ARTIFACTS_DIR}${TASK_NUM}-implementation.diff"
@@ -83,10 +108,6 @@ fi
 echo ""
 echo "=== REVIEWER ($EVALUATOR_MODEL) ANALYZING IMPLEMENTATION ==="
 echo ""
-
-# Ensure log and artifacts directories exist
-mkdir -p "$LOG_DIR"
-mkdir -p "$ARTIFACTS_DIR"
 
 # Create review output file
 REVIEW_OUTPUT="${LOG_DIR}${TASK_NUM}-IMPLEMENTATION-REVIEW.md"

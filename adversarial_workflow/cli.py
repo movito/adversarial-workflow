@@ -494,7 +494,7 @@ def quickstart() -> int:
             "",
             "Try the full workflow:",
             "  1. Implement the fix (or let Claude do it via aider)",
-            "  2. Run: adversarial review (Phase 3: Code Review)",
+            "  2. Run: adversarial review <task_file> (Phase 3: Code Review)",
             "  3. Run: adversarial validate (Phase 4: Test Validation)",
             "",
             "Learn more:",
@@ -1704,7 +1704,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         if health_score > 70:
             print(f"{BOLD}Ready to:{RESET}")
             print("  • Evaluate task plans: adversarial evaluate <task-file>")
-            print("  • Review implementations: adversarial review")
+            print("  • Review implementations: adversarial review <task_file>")
             print("  • Validate tests: adversarial validate")
         else:
             print(f"{BOLD}Next steps:{RESET}")
@@ -2108,17 +2108,33 @@ def evaluate(task_file: str) -> int:
         return 0
 
 
-def review() -> int:
+def review(task_file: str) -> int:
     """Run Phase 3: Code review."""
 
     print("🔍 Reviewing implementation...")
     print()
 
-    # Check for git changes
-    result = subprocess.run(["git", "diff", "--quiet"], capture_output=True)
+    # Check for git changes (branch-aware: committed, staged, or unstaged)
+    default_branch = subprocess.run(
+        ["git", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    base = (
+        default_branch.stdout.strip().removeprefix("origin/")
+        if default_branch.returncode == 0
+        else "main"
+    )
+    branch_diff = subprocess.run(["git", "diff", "--quiet", f"{base}...HEAD"], capture_output=True)
+    staged_diff = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True)
+    unstaged_diff = subprocess.run(["git", "diff", "--quiet"], capture_output=True)
 
-    if result.returncode == 0:
-        # No changes
+    if (
+        branch_diff.returncode == 0
+        and staged_diff.returncode == 0
+        and unstaged_diff.returncode == 0
+    ):
+        # No changes at all
         print(f"{YELLOW}⚠️  WARNING: No git changes detected!{RESET}")
         print("   This might indicate PHANTOM WORK.")
         print("   Aborting review to save tokens.")
@@ -2145,7 +2161,7 @@ def review() -> int:
         return 1
 
     try:
-        result = subprocess.run([script], timeout=180)
+        result = subprocess.run([script, task_file], timeout=180)
     except subprocess.TimeoutExpired:
         print(f"{RED}❌ ERROR: Review timed out (>3 minutes){RESET}")
         return 1
@@ -3031,7 +3047,7 @@ Examples:
   adversarial agent onboard             # Set up agent coordination
   adversarial evaluate tasks/feat.md    # Evaluate plan
   adversarial proofread docs/guide.md   # Proofread teaching content
-  adversarial review                    # Review implementation
+  adversarial review <task_file>         # Review implementation
   adversarial validate "npm test"       # Validate with tests
   adversarial split large-task.md       # Split large files
   adversarial check-citations doc.md    # Verify URLs in document
@@ -3178,8 +3194,9 @@ For more information: https://github.com/movito/adversarial-workflow
         "--no-cache", action="store_true", help="Bypass cache and fetch fresh data"
     )
 
-    # review command (static - reviews git changes, no file argument)
-    subparsers.add_parser("review", help="Run Phase 3: Code review")
+    # review command
+    review_parser = subparsers.add_parser("review", help="Run Phase 3: Code review")
+    review_parser.add_argument("task_file", help="Task file path")
 
     # validate command
     validate_parser = subparsers.add_parser("validate", help="Run Phase 4: Test validation")
@@ -3464,7 +3481,7 @@ For more information: https://github.com/movito/adversarial-workflow
             print("  adversarial library update <name>")
             return 1
     elif args.command == "review":
-        return review()
+        return review(args.task_file)
     elif args.command == "validate":
         return validate(args.test_command)
     elif args.command == "split":

@@ -31,7 +31,7 @@ Use the Bash tool to read files and assemble the input. Do NOT summarize or trun
 ## Step 3: Run the evaluator
 
 ```bash
-adversarial spec-compliance-fast .adversarial/inputs/<TASK-ID>-spec-compliance-input.md
+adversarial evaluate .adversarial/inputs/<TASK-ID>-spec-compliance-input.md --evaluator spec-compliance
 ```
 
 ## Step 4: Read and act on results
