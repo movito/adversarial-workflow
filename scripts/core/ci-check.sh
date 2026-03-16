@@ -4,11 +4,11 @@
 #
 # Usage: ./scripts/core/ci-check.sh
 #
-# This script runs the SAME checks as GitHub Actions:
+# This script runs a subset of GitHub Actions checks locally:
 #   1. Ruff format check
 #   2. Ruff lint check
-#   3. Pattern lint (project-specific DK rules)
-#   4. Full test suite with coverage (80% threshold)
+#   3. Pattern lint (DK rules, scoped to adversarial_workflow/ — advisory only)
+#   4. Full test suite with coverage report (no threshold — Codecov gates coverage)
 #
 # Run this before every push to prevent CI failures.
 
@@ -66,21 +66,21 @@ fi
 echo
 
 # 3. Pattern lint (project-specific DK rules)
+# NOTE: Advisory only — pre-commit gates this for changed files;
+#       GitHub Actions does not run pattern lint. Violations are
+#       reported but do not block the build.
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "3/4 Running pattern lint (DK rules)..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-PY_FILES=$(find scripts/ tests/ -name '*.py' 2>/dev/null)
-if [ -n "$PY_FILES" ]; then
+if [ ! -d "adversarial_workflow/" ]; then
+    echo "WARNING: adversarial_workflow/ directory not found — skipping pattern lint"
+else
     SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-    if python3 "$SCRIPT_DIR/pattern_lint.py" $PY_FILES 2>&1; then
+    if find adversarial_workflow/ -name '*.py' -print0 2>/dev/null | xargs -0 python3 "$SCRIPT_DIR/pattern_lint.py" 2>&1; then
         echo "OK: Pattern lint: No DK violations"
     else
-        echo "FAIL: Pattern lint: DK violations found"
-        echo "   Fix violations or add # noqa: DKxxx to suppress"
-        FAILED=1
+        echo "WARN: Pattern lint: DK violations found (advisory — pre-commit gates new code)"
     fi
-else
-    echo "WARNING: No Python files found in scripts/ or tests/"
 fi
 echo
 
@@ -88,10 +88,10 @@ echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "4/4 Running full test suite with coverage..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if pytest tests/ -v --cov=adversarial_workflow --cov-report=term-missing --cov-fail-under=80; then
-    echo "OK: Tests: All tests pass with coverage >=80%"
+if pytest tests/ -v --cov=adversarial_workflow --cov-report=term-missing; then
+    echo "OK: Tests: All tests pass"
 else
-    echo "FAIL: Tests: Test failures or coverage below 80%"
+    echo "FAIL: Tests: Test failures detected"
     FAILED=1
 fi
 echo
