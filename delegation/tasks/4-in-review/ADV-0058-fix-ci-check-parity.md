@@ -1,6 +1,6 @@
 # ADV-0058: Fix ci-check.sh / GitHub Actions Parity
 
-**Status**: In Progress
+**Status**: In Review
 **Priority**: High
 **Type**: Bug Fix
 **Estimated Effort**: 1 hour
