@@ -72,11 +72,15 @@ echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "3/4 Running pattern lint (DK rules)..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-if find adversarial_workflow/ -name '*.py' -print0 2>/dev/null | xargs -0 python3 "$SCRIPT_DIR/pattern_lint.py" 2>&1; then
-    echo "OK: Pattern lint: No DK violations"
+if [ ! -d "adversarial_workflow/" ]; then
+    echo "WARNING: adversarial_workflow/ directory not found — skipping pattern lint"
 else
-    echo "WARN: Pattern lint: DK violations found (advisory — pre-commit gates new code)"
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    if find adversarial_workflow/ -name '*.py' -print0 2>/dev/null | xargs -0 python3 "$SCRIPT_DIR/pattern_lint.py" 2>&1; then
+        echo "OK: Pattern lint: No DK violations"
+    else
+        echo "WARN: Pattern lint: DK violations found (advisory — pre-commit gates new code)"
+    fi
 fi
 echo
 

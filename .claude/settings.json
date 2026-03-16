@@ -8,7 +8,7 @@
       "Bash(python* scripts/*.py*)",
       "Bash(adversarial *)",
       "Bash(ruff *)",
-      "Bash(SKIP_TESTS=1 *)",
+      "Bash(SKIP_TESTS=1 git *)",
       "Bash(pre-commit *)",
       "Read",
       "Write",

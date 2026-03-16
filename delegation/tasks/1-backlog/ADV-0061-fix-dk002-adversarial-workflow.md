@@ -32,7 +32,7 @@ blocking.
 
 - [ ] All DK002 violations in `adversarial_workflow/` resolved (add `encoding="utf-8"`)
 - [ ] DK004 in `cli.py:1026` resolved (add logging or `# noqa: DK004` with justification)
-- [ ] `python3 scripts/core/pattern_lint.py $(find adversarial_workflow/ -name '*.py')` exits 0
+- [ ] `find adversarial_workflow/ -name '*.py' -print0 | xargs -0 python3 scripts/core/pattern_lint.py` exits 0
 - [ ] Pattern lint step in ci-check.sh promoted from advisory back to blocking
 - [ ] All tests still pass
 
