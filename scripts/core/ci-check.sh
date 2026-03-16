@@ -1,14 +1,16 @@
 #!/bin/bash
-# Local CI check - mirrors GitHub Actions test.yml
-# Run this BEFORE pushing to catch issues early
+# Local CI check — mirrors GitHub Actions test-package.yml (test-pytest job)
+# Run this BEFORE pushing to catch issues early.
 #
 # Usage: ./scripts/core/ci-check.sh
 #
-# This script runs a subset of GitHub Actions checks locally:
-#   1. Ruff format check
-#   2. Ruff lint check
-#   3. Pattern lint (DK rules, scoped to adversarial_workflow/ — advisory only)
-#   4. Full test suite with coverage report (no threshold — Codecov gates coverage)
+# Parity invariant: If this script passes, GitHub Actions will pass (barring
+# environment differences like Python version or OS). Both run the same checks
+# in the same order:
+#   1. Ruff format check          (blocking)
+#   2. Ruff lint check            (blocking)
+#   3. Pattern lint (DK rules)    (advisory — until ADV-0061 cleans up violations)
+#   4. Full test suite + coverage (blocking)
 #
 # Run this before every push to prevent CI failures.
 
@@ -66,9 +68,8 @@ fi
 echo
 
 # 3. Pattern lint (project-specific DK rules)
-# NOTE: Advisory only — pre-commit gates this for changed files;
-#       GitHub Actions does not run pattern lint. Violations are
-#       reported but do not block the build.
+# NOTE: Advisory only — both ci-check.sh and GitHub Actions report
+#       violations but do not block the build (until ADV-0061).
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "3/4 Running pattern lint (DK rules)..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
