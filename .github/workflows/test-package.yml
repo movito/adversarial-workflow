@@ -6,13 +6,19 @@ on:
     paths:
       - 'adversarial_workflow/**'
       - 'tests/**'
+      - 'scripts/**'
       - 'pyproject.toml'
+      - '.pre-commit-config.yaml'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main ]
     paths:
       - 'adversarial_workflow/**'
       - 'tests/**'
+      - 'scripts/**'
       - 'pyproject.toml'
+      - '.pre-commit-config.yaml'
+      - '.github/workflows/**'
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
@@ -215,6 +221,16 @@ jobs:
       - name: Install package with dev dependencies
         run: |
           pip install -e ".[dev]"
+
+      - name: Check formatting with Ruff
+        run: ruff format --check .
+
+      - name: Lint with Ruff
+        run: ruff check .
+
+      - name: Run pattern lint (advisory)
+        run: find adversarial_workflow/ -name '*.py' -print0 | xargs -0 python3 scripts/core/pattern_lint.py
+        continue-on-error: true
 
       - name: Run pytest with coverage
         run: |
