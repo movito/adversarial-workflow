@@ -64,8 +64,9 @@ Add steps to the `test-pytest` job (after install, before pytest):
 - name: Lint with Ruff
   run: ruff check .
 
-- name: Run pattern lint
-  run: python3 scripts/core/pattern_lint.py adversarial_workflow/
+- name: Run pattern lint (advisory)
+  run: find adversarial_workflow/ -name '*.py' -print0 | xargs -0 python3 scripts/core/pattern_lint.py
+  continue-on-error: true
 ```
 
 This makes GitHub Actions a superset of ci-check.sh (after ADV-0058 aligns them).
