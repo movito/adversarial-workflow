@@ -167,7 +167,7 @@ def load_cache(cache_path: Path) -> dict[str, dict]:
     if not cache_path.exists():
         return {}
     try:
-        with open(cache_path) as f:
+        with open(cache_path, encoding="utf-8") as f:
             return json.load(f)
     except (json.JSONDecodeError, OSError):
         return {}
@@ -175,7 +175,7 @@ def load_cache(cache_path: Path) -> dict[str, dict]:
 
 def save_cache(cache_path: Path, cache: dict[str, dict]) -> None:
     """Save URL cache to disk."""
-    with open(cache_path, "w") as f:
+    with open(cache_path, "w", encoding="utf-8") as f:
         json.dump(cache, f, indent=2)
 
 

@@ -228,9 +228,8 @@ jobs:
       - name: Lint with Ruff
         run: ruff check .
 
-      - name: Run pattern lint (advisory)
+      - name: Run pattern lint
         run: find adversarial_workflow/ -name '*.py' -print0 | xargs -0 python3 scripts/core/pattern_lint.py
-        continue-on-error: true
 
       - name: Run pytest with coverage
         run: |

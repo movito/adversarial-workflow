@@ -21,7 +21,7 @@ def load_config(config_path: str = ".adversarial/config.yml") -> dict[str, Any]:
 
     # Load from file if exists
     if os.path.exists(config_path):
-        with open(config_path) as f:
+        with open(config_path, encoding="utf-8") as f:
             file_config = yaml.safe_load(f) or {}
             if not isinstance(file_config, dict):
                 raise ValueError(f"Config file must be a mapping, got {type(file_config).__name__}")
