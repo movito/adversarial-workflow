@@ -94,16 +94,13 @@ Document this invariant in ci-check.sh's header comment.
 
 ## Error Handling for New Lint Steps
 
-The new ruff and pattern_lint steps should **fail CI on error** (same behavior as
-pytest). This is intentional: if an agent bypasses pre-commit, CI is the safety net.
+Ruff steps should **fail CI on error** — this is the safety net when pre-commit is
+bypassed. Pattern lint is **advisory** (`continue-on-error: true`) until ADV-0061
+cleans up the 34 existing DK002 violations.
 
 - `ruff format --check .` exits non-zero on formatting issues → CI fails
 - `ruff check .` exits non-zero on lint errors → CI fails
-- `python3 scripts/core/pattern_lint.py adversarial_workflow/` exits non-zero on
-  DK violations → CI fails
-
-No special error handling needed — these are deterministic checks that should block
-the build when they fail.
+- `find ... | xargs python3 scripts/core/pattern_lint.py` → advisory (matches ci-check.sh)
 
 ## Testing Strategy
 
