@@ -83,7 +83,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --type)
             if [ -z "${2:-}" ] || [[ "$2" == -* ]]; then
-                echo "ERROR: --type requires a value (code, docs, sync)"
+                echo "ERROR:--type requires a value (code, docs, sync)"
                 exit 1
             fi
             TASK_TYPE="$2"
@@ -189,7 +189,7 @@ if [ -n "$TASK_TYPE" ]; then
     case "$TASK_TYPE" in
         code|docs|sync) ;;
         *)
-            echo "ERROR: Invalid --type '$TASK_TYPE'. Must be: code, docs, or sync"
+            echo "ERROR:Invalid --type '$TASK_TYPE'. Must be: code, docs, or sync"
             exit 1
             ;;
     esac
