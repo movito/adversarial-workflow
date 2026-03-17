@@ -1,9 +1,9 @@
 #!/bin/bash
 # Run all 7 preflight gates for a PR
-# Usage: ./scripts/preflight-check.sh [--pr PR_NUMBER] [--task TASK_ID] [--help]
+# Usage: ./scripts/preflight-check.sh [--pr PR_NUMBER] [--task TASK_ID] [--type TYPE] [--help]
 #
 # Metadata:
-#   version: 1.0.0
+#   version: 1.1.0
 #   origin: dispatch-kit
 #   origin-version: 0.3.2
 #   last-updated: 2026-02-27
@@ -18,19 +18,28 @@
 
 PR_NUMBER=""
 TASK_ID=""
+TASK_TYPE=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         --help|-h)
-            echo "Usage: ./scripts/preflight-check.sh [--pr PR_NUMBER] [--task TASK_ID]"
+            echo "Usage: ./scripts/preflight-check.sh [--pr PR_NUMBER] [--task TASK_ID] [--type TYPE]"
             echo ""
             echo "Run all 7 preflight gates for a PR before human review."
             echo ""
             echo "Options:"
             echo "  --pr PR_NUMBER     PR number to check (default: auto-detect)"
             echo "  --task TASK_ID     Task ID, e.g. TASK-0001 (default: derived from branch)"
+            echo "  --type TYPE        Task type: code, docs, or sync (default: auto-detect)"
             echo "  --help, -h         Show this help message"
+            echo ""
+            echo "Task types:"
+            echo "  code    All 7 gates checked (feature/bug-fix tasks)"
+            echo "  docs    Gates 1, 5, 6 skipped (documentation-only tasks)"
+            echo "  sync    Gates 5, 6 skipped; gate 1 auto-skips if no code changes"
+            echo "  (auto)  If --type is omitted, auto-detects from changed files:"
+            echo "          no code changes = docs, otherwise = code"
             echo ""
             echo "Gates:"
             echo "  1. CI green                    GitHub Actions passing"
@@ -41,8 +50,18 @@ while [[ $# -gt 0 ]]; do
             echo "  6. Review starter exists         .agent-context/<TASK>-REVIEW-STARTER.md"
             echo "  7. Task in correct folder        delegation/tasks/3-in-progress or 4-in-review"
             echo ""
+            echo "Gate matrix by type:"
+            echo "          code    docs    sync"
+            echo "  Gate 1  Required  Skip    Auto (skip if no code changes)"
+            echo "  Gate 2  Required  Auto    Auto"
+            echo "  Gate 3  Required  Auto    Auto"
+            echo "  Gate 4  Required  Required  Required"
+            echo "  Gate 5  Required  Skip    Skip"
+            echo "  Gate 6  Required  Skip    Skip"
+            echo "  Gate 7  Required  Required  Required"
+            echo ""
             echo "Exit codes:"
-            echo "  0  All gates pass"
+            echo "  0  All non-skipped gates pass"
             echo "  1  One or more gates fail"
             exit 0
             ;;
@@ -60,6 +79,14 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             TASK_ID="$2"
+            shift 2
+            ;;
+        --type)
+            if [ -z "${2:-}" ] || [[ "$2" == -* ]]; then
+                echo "ERROR:--type requires a value (code, docs, sync)"
+                exit 1
+            fi
+            TASK_TYPE="$2"
             shift 2
             ;;
         -*)
@@ -156,9 +183,36 @@ if [ -z "$CODE_SHA" ]; then
     NO_CODE_CHANGES=true
 fi
 
+# ─── Task type validation and auto-detection ─────────────────────────
+
+if [ -n "$TASK_TYPE" ]; then
+    case "$TASK_TYPE" in
+        code|docs|sync) ;;
+        *)
+            echo "ERROR:Invalid --type '$TASK_TYPE'. Must be: code, docs, or sync"
+            exit 1
+            ;;
+    esac
+else
+    # Auto-detect: no code changes → docs, otherwise → code
+    if [ "$NO_CODE_CHANGES" = true ]; then
+        TASK_TYPE="docs"
+    else
+        TASK_TYPE="code"
+    fi
+fi
+
+echo "MODE:$TASK_TYPE"
+
 # ─── Gate 1: CI green ───────────────────────────────────────────────
 # Check all workflow runs for the latest commit (not just the first),
 # so a passing run from one workflow can't mask a failure in another.
+
+if [ "$TASK_TYPE" = "docs" ]; then
+    echo "GATE:1:CI:SKIP:docs mode — no CI required"
+elif [ "$TASK_TYPE" = "sync" ] && [ "$NO_CODE_CHANGES" = true ]; then
+    echo "GATE:1:CI:SKIP:sync mode — no code changes, CI not required"
+else
 
 CI_RUNS=$(gh run list --branch "$BRANCH" --limit 10 --json status,conclusion,workflowName,event,headSha \
     --jq '[.[] | select(.event == "push" or .event == "pull_request")]' 2>/dev/null || true)
@@ -212,6 +266,8 @@ else
 
     fi # RUN_COUNT guard
 fi
+
+fi # TASK_TYPE gate 1 skip
 
 # ─── Gate 2: CodeRabbit reviewed the PR ──────────────────────────────
 # Accepts review on CODE_SHA or LATEST_SHA (bots re-trigger on each push,
@@ -295,24 +351,32 @@ fi
 
 # ─── Gate 5: Evaluator review persisted ─────────────────────────────
 
-EVAL_FILE=$(find .agent-context/reviews -name "${TASK_ID}-evaluator-review*.md" 2>/dev/null | head -1 || true)
-
-if [ -n "$EVAL_FILE" ]; then
-    echo "GATE:5:Evaluator:PASS:$EVAL_FILE"
+if [ "$TASK_TYPE" = "docs" ] || [ "$TASK_TYPE" = "sync" ]; then
+    echo "GATE:5:Evaluator:SKIP:$TASK_TYPE mode — evaluator not required"
 else
-    echo "GATE:5:Evaluator:FAIL:No evaluator review found for $TASK_ID"
-    ANY_FAILED=true
+    EVAL_FILE=$(find .agent-context/reviews -name "${TASK_ID}-evaluator-review*.md" 2>/dev/null | head -1 || true)
+
+    if [ -n "$EVAL_FILE" ]; then
+        echo "GATE:5:Evaluator:PASS:$EVAL_FILE"
+    else
+        echo "GATE:5:Evaluator:FAIL:No evaluator review found for $TASK_ID"
+        ANY_FAILED=true
+    fi
 fi
 
 # ─── Gate 6: Review starter exists ──────────────────────────────────
 
-STARTER_FILE=$(find .agent-context -maxdepth 1 -name "${TASK_ID}-REVIEW-STARTER.md" 2>/dev/null | head -1 || true)
-
-if [ -n "$STARTER_FILE" ]; then
-    echo "GATE:6:ReviewStarter:PASS:$STARTER_FILE"
+if [ "$TASK_TYPE" = "docs" ] || [ "$TASK_TYPE" = "sync" ]; then
+    echo "GATE:6:ReviewStarter:SKIP:$TASK_TYPE mode — review starter not required"
 else
-    echo "GATE:6:ReviewStarter:FAIL:No review starter found for $TASK_ID"
-    ANY_FAILED=true
+    STARTER_FILE=$(find .agent-context -maxdepth 1 -name "${TASK_ID}-REVIEW-STARTER.md" 2>/dev/null | head -1 || true)
+
+    if [ -n "$STARTER_FILE" ]; then
+        echo "GATE:6:ReviewStarter:PASS:$STARTER_FILE"
+    else
+        echo "GATE:6:ReviewStarter:FAIL:No review starter found for $TASK_ID"
+        ANY_FAILED=true
+    fi
 fi
 
 # ─── Gate 7: Task in correct folder ─────────────────────────────────
@@ -331,9 +395,9 @@ fi
 # Emit progress event (optional, fire-and-forget — requires dispatch-kit)
 if command -v dispatch >/dev/null 2>&1; then
     if [ "$ANY_FAILED" = true ]; then
-        _PF_SUMMARY="FAIL ($TASK_ID, PR #$PR_NUMBER)"
+        _PF_SUMMARY="FAIL ($TASK_ID, PR #$PR_NUMBER, type=$TASK_TYPE)"
     else
-        _PF_SUMMARY="PASS — All 7 gates passed ($TASK_ID, PR #$PR_NUMBER)"
+        _PF_SUMMARY="PASS — All non-skipped gates passed ($TASK_ID, PR #$PR_NUMBER, type=$TASK_TYPE)"
     fi
     dispatch emit preflight_checked --agent preflight-check \
         --task "$TASK_ID" \
