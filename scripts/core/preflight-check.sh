@@ -397,7 +397,7 @@ if command -v dispatch >/dev/null 2>&1; then
     if [ "$ANY_FAILED" = true ]; then
         _PF_SUMMARY="FAIL ($TASK_ID, PR #$PR_NUMBER, type=$TASK_TYPE)"
     else
-        _PF_SUMMARY="PASS — All gates passed ($TASK_ID, PR #$PR_NUMBER, type=$TASK_TYPE)"
+        _PF_SUMMARY="PASS — All non-skipped gates passed ($TASK_ID, PR #$PR_NUMBER, type=$TASK_TYPE)"
     fi
     dispatch emit preflight_checked --agent preflight-check \
         --task "$TASK_ID" \
