@@ -193,7 +193,7 @@ def create_env_file_interactive(
         env_content += f"# OpenAI API Key (GPT-4o)\nOPENAI_API_KEY={openai_key}\n\n"
 
     try:
-        with open(env_path, "w") as f:
+        with open(env_path, "w", encoding="utf-8") as f:
             f.write(env_content)
         print(f"\n{GREEN}✅ Created .env with your API keys{RESET}")
         print(f"{GREEN}✅ Added .env to .gitignore{RESET}")
@@ -441,7 +441,7 @@ def quickstart() -> int:
     if show_task.lower() in ["y", "yes", ""]:
         print()
         print(f"{GRAY}{'─' * 70}{RESET}")
-        with open(example_task_path) as f:
+        with open(example_task_path, encoding="utf-8") as f:
             for line in f:
                 print(f"{GRAY}{line.rstrip()}{RESET}")
         print(f"{GRAY}{'─' * 70}{RESET}")
@@ -516,7 +516,7 @@ def create_example_task(task_path: str) -> None:
         shutil.copy(str(template_path), task_path)
     else:
         # Fallback: create basic example
-        with open(task_path, "w") as f:
+        with open(task_path, "w", encoding="utf-8") as f:
             f.write(
                 """# Task: Fix Off-By-One Error in List Processing
 
@@ -555,7 +555,7 @@ def load_config(config_path: str = ".adversarial/config.yml") -> dict:
 
     # Load from file if exists
     if os.path.exists(config_path):
-        with open(config_path) as f:
+        with open(config_path, encoding="utf-8") as f:
             file_config = yaml.safe_load(f) or {}
             config.update(file_config)
 
@@ -576,7 +576,7 @@ def load_config(config_path: str = ".adversarial/config.yml") -> dict:
 
 def render_template(template_path: str, output_path: str, variables: dict) -> None:
     """Render a template file with variable substitution."""
-    with open(template_path) as f:
+    with open(template_path, encoding="utf-8") as f:
         content = f.read()
 
     # Replace {{variable}} with values
@@ -594,7 +594,7 @@ def render_template(template_path: str, output_path: str, variables: dict) -> No
 
     # Write output
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(content)
 
     # Make scripts executable
@@ -773,10 +773,10 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
         ]
 
         if os.path.exists(gitignore_path):
-            with open(gitignore_path) as f:
+            with open(gitignore_path, encoding="utf-8") as f:
                 existing = f.read()
 
-            with open(gitignore_path, "a") as f:
+            with open(gitignore_path, "a", encoding="utf-8") as f:
                 f.write("\n# Adversarial Workflow\n")
                 for entry in gitignore_entries:
                     if entry not in existing:
@@ -1011,7 +1011,7 @@ def check() -> int:
                 path = f".adversarial/scripts/{script}"
                 if os.path.exists(path):
                     try:
-                        with open(path) as f:
+                        with open(path, encoding="utf-8") as f:
                             # Read first 5 lines to find SCRIPT_VERSION
                             for _ in range(5):
                                 line = f.readline()
@@ -1023,7 +1023,7 @@ def check() -> int:
                             else:
                                 # No version found - script is pre-versioning
                                 outdated_scripts.append(f"{script} (no version)")
-                    except Exception:
+                    except Exception:  # noqa: DK004 — fire-and-forget: script version check is best-effort
                         pass
 
             if outdated_scripts:
@@ -1180,7 +1180,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
 
     if config_file.exists():
         try:
-            with open(config_file) as f:
+            with open(config_file, encoding="utf-8") as f:
                 config = yaml.safe_load(f)
             check_pass("configuration", ".adversarial/config.yml - Valid YAML")
 
@@ -1439,7 +1439,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         handoffs_file = agent_context / "agent-handoffs.json"
         if handoffs_file.exists():
             try:
-                with open(handoffs_file) as f:
+                with open(handoffs_file, encoding="utf-8") as f:
                     handoffs = json.load(f)
                 agent_count = len([k for k in handoffs.keys() if k != "meta"])
                 check_pass(
@@ -1473,7 +1473,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
         state_file = agent_context / "current-state.json"
         if state_file.exists():
             try:
-                with open(state_file) as f:
+                with open(state_file, encoding="utf-8") as f:
                     json.load(f)
                 check_pass("agent_coordination", "current-state.json - Valid JSON")
             except json.JSONDecodeError as e:
@@ -1518,7 +1518,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
             if os.access(script_path, os.X_OK):
                 # Check syntax (basic - just try to read it)
                 try:
-                    with open(script_path) as f:
+                    with open(script_path, encoding="utf-8") as f:
                         content = f.read()
                     if "#!/bin/bash" in content or "#!/usr/bin/env bash" in content:
                         check_pass("workflow_scripts", f"{script_name} - Executable, valid")
@@ -1729,7 +1729,7 @@ def estimate_file_tokens(file_path: str) -> int:
     Returns:
         Estimated token count (integer)
     """
-    with open(file_path) as f:
+    with open(file_path, encoding="utf-8") as f:
         char_count = len(f.read())
 
     return char_count // 4  # Rough estimate
@@ -1751,7 +1751,7 @@ def extract_token_count_from_log(log_file_path: str) -> int | None:
     if not os.path.exists(log_file_path):
         return None
 
-    with open(log_file_path) as f:
+    with open(log_file_path, encoding="utf-8") as f:
         content = f.read()
 
     # Pattern: "Tokens: 12k sent" or "Tokens: 12000 sent"
@@ -1823,7 +1823,7 @@ def validate_evaluation_output(
     if not os.path.exists(log_file_path):
         return False, None, f"Log file not found: {log_file_path}"
 
-    with open(log_file_path) as f:
+    with open(log_file_path, encoding="utf-8") as f:
         content = f.read()
 
     # Check minimum content size (working evaluations are >1000 bytes)
@@ -1925,7 +1925,7 @@ def evaluate(task_file: str) -> int:
         return 1
 
     # Pre-flight check for file size
-    with open(task_file) as f:
+    with open(task_file, encoding="utf-8") as f:
         line_count = len(f.readlines())
         f.seek(0)
         file_size = len(f.read())
@@ -1980,7 +1980,7 @@ def evaluate(task_file: str) -> int:
             print()
 
             # Extract file size for helpful message
-            with open(task_file) as f:
+            with open(task_file, encoding="utf-8") as f:
                 line_count = len(f.readlines())
 
             print(f"{BOLD}FILE SIZE:{RESET}")
@@ -2300,7 +2300,7 @@ def fetch_agent_template(url: str, template_type: str = "standard") -> str | Non
 
         if template_path.exists():
             try:
-                with open(template_path) as f:
+                with open(template_path, encoding="utf-8") as f:
                     return f.read()
             except Exception as e:
                 print(f"{RED}❌ ERROR: Could not read {template_type} template: {e}{RESET}")
@@ -2559,7 +2559,7 @@ def agent_onboard(project_path: str = ".") -> int:
                     template_content = template_content.replace(placeholder, str(value))
 
                 # Write to file
-                with open(".agent-context/agent-handoffs.json", "w") as f:
+                with open(".agent-context/agent-handoffs.json", "w", encoding="utf-8") as f:
                     f.write(template_content)
 
                 template_name = {
@@ -2613,14 +2613,14 @@ def agent_onboard(project_path: str = ".") -> int:
 
         try:
             config_path = ".adversarial/config.yml"
-            with open(config_path) as f:
+            with open(config_path, encoding="utf-8") as f:
                 config = yaml.safe_load(f)
 
             # Update task_directory
             old_task_dir = config.get("task_directory", "tasks/")
             config["task_directory"] = "delegation/tasks/"
 
-            with open(config_path, "w") as f:
+            with open(config_path, "w", encoding="utf-8") as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
             print(f"  {GREEN}✅{RESET} Updated .adversarial/config.yml")
@@ -2643,10 +2643,10 @@ def agent_onboard(project_path: str = ".") -> int:
 
         existing_content = ""
         if os.path.exists(gitignore_path):
-            with open(gitignore_path) as f:
+            with open(gitignore_path, encoding="utf-8") as f:
                 existing_content = f.read()
 
-        with open(gitignore_path, "a") as f:
+        with open(gitignore_path, "a", encoding="utf-8") as f:
             if existing_content and not existing_content.endswith("\n"):
                 f.write("\n")
 
@@ -2668,14 +2668,14 @@ def agent_onboard(project_path: str = ".") -> int:
 
     # Check JSON files are valid
     try:
-        with open(".agent-context/agent-handoffs.json") as f:
+        with open(".agent-context/agent-handoffs.json", encoding="utf-8") as f:
             json.load(f)
         verification_checks.append(("agent-handoffs.json valid", True))
     except Exception as e:
         verification_checks.append((f"agent-handoffs.json invalid: {e}", False))
 
     try:
-        with open(".agent-context/current-state.json") as f:
+        with open(".agent-context/current-state.json", encoding="utf-8") as f:
             json.load(f)
         verification_checks.append(("current-state.json valid", True))
     except Exception as e:

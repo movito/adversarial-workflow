@@ -139,7 +139,7 @@ def _run_custom_evaluator(
     output_file = logs_dir / f"{file_basename}-{suffix}.md"
 
     # Read input file
-    file_content = Path(file_path).read_text()
+    file_content = Path(file_path).read_text(encoding="utf-8")
 
     # Build full prompt
     full_prompt = f"""{config.prompt}
@@ -205,7 +205,7 @@ def _run_custom_evaluator(
 ---
 
 """
-        output_file.write_text(header + result.stdout)
+        output_file.write_text(header + result.stdout, encoding="utf-8")
 
         print(f"{prefix}: Output written to {output_file}")
 
@@ -300,7 +300,7 @@ def _report_verdict(verdict: str | None, log_file: Path, config: EvaluatorConfig
 # Helper functions
 def _check_file_size(file_path: str) -> tuple[int, int]:
     """Return (line_count, estimated_tokens)."""
-    with open(file_path) as f:
+    with open(file_path, encoding="utf-8") as f:
         lines = f.readlines()
         f.seek(0)
         content = f.read()

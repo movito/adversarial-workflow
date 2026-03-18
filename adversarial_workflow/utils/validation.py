@@ -24,7 +24,7 @@ def validate_evaluation_output(
     if not os.path.exists(log_file_path):
         return False, None, f"Log file not found: {log_file_path}"
 
-    with open(log_file_path) as f:
+    with open(log_file_path, encoding="utf-8") as f:
         content = f.read()
 
     # Check minimum content size

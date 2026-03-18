@@ -9,7 +9,7 @@
 # in the same order:
 #   1. Ruff format check          (blocking)
 #   2. Ruff lint check            (blocking)
-#   3. Pattern lint (DK rules)    (advisory — until ADV-0061 cleans up violations)
+#   3. Pattern lint (DK rules)    (blocking)
 #   4. Full test suite + coverage (blocking)
 #
 # Run this before every push to prevent CI failures.
@@ -68,8 +68,6 @@ fi
 echo
 
 # 3. Pattern lint (project-specific DK rules)
-# NOTE: Advisory only — both ci-check.sh and GitHub Actions report
-#       violations but do not block the build (until ADV-0061).
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "3/4 Running pattern lint (DK rules)..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -80,7 +78,8 @@ else
     if find adversarial_workflow/ -name '*.py' -print0 2>/dev/null | xargs -0 python3 "$SCRIPT_DIR/pattern_lint.py" 2>&1; then
         echo "OK: Pattern lint: No DK violations"
     else
-        echo "WARN: Pattern lint: DK violations found (advisory — pre-commit gates new code)"
+        echo "ERROR: Pattern lint: DK violations found"
+        FAILED=1
     fi
 fi
 echo
