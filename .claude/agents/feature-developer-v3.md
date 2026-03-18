@@ -70,7 +70,7 @@ until it passes.
 | 5. Spec check | Cross-model spec compliance | `/check-spec` | **GATE** |
 | 6. Ship | Stage, commit, push, open PR | `/commit-push-pr` | — |
 | 7. CI | Verify GitHub Actions pass | `/check-ci` | **GATE** |
-| 8. Bot review | Wait, triage, fix, resolve ALL threads | `/check-bots` → `/triage-threads` | **GATE** |
+| 8. Bot review | Wait, triage, fix, resolve ALL threads | `/wait-for-bots` → `/triage-threads` | **GATE** |
 | 9. Evaluator | Adversarial code review | code-review-evaluator skill | **GATE** |
 | 10. Preflight | Verify all completion gates | `/preflight` | **GATE** |
 | 11. Handoff | Create review starter, notify user | review-handoff skill | — |
@@ -86,10 +86,9 @@ compound commands with `&&`, `$()` subshells, or pipes.
 run `git log --oneline -3` to verify no unexpected commits appeared. If
 unrelated commits are present, alert the user before continuing.
 
-**No sleep in Bash**: Never use `sleep` to wait for bots or CI. The blocked
-terminal session allows branch switching from other tabs, causing commits on
-wrong branches. Use iterative `/check-bots` or `/check-ci` invocations with
-manual pacing instead.
+**No raw `sleep` in Bash**: Never use bare `sleep` to wait for bots or CI.
+Use `/wait-for-bots` (runs `wait-for-bots.sh` which polls safely) or
+`./scripts/core/verify-ci.sh --wait` instead.
 
 ---
 
@@ -258,16 +257,16 @@ If CI fails:
 After CI passes and PR is open, both BugBot and CodeRabbit will post reviews.
 You MUST address **every** thread before proceeding.
 
-1. **Wait for bots**: Run `/check-bots` — repeat every 2-3 minutes until both bots show CURRENT
-2. **Triage ALL threads**: Run `/triage-threads` — categorize every finding as Fix or Won't-fix (see bot-triage skill for severity criteria)
+1. **Wait for bots**: Run `/wait-for-bots` — this polls automatically (30s intervals, 10min timeout) until both bots show CURRENT. Do NOT wait for user input — run this autonomously after push.
+2. **Check CI**: Run `/check-ci` while waiting or after bots arrive. If CI fails, fix before triaging.
+3. **Triage ALL threads**: Run `/triage-threads` — categorize every finding as Fix or Won't-fix (see bot-triage skill for severity criteria)
    - **Zero threads?** If `/triage-threads` returns 0 unresolved threads and both bots show CURRENT, skip straight to Phase 9. No confirmation needed.
-3. **Batch fix**: Implement all fixes together, run tests, commit once, push once
-4. **Comment on EVERY thread** — no thread may be left without a response:
+4. **Batch fix**: Implement all fixes together, run tests, commit once, push once
+5. **Comment on EVERY thread** — no thread may be left without a response:
    - **Fixed**: Reply with commit SHA and brief description
    - **Won't fix**: Reply with clear technical justification
-5. **Mark EVERY thread as resolved** after commenting — use the GraphQL `resolveReviewThread` mutation (see bot-triage skill)
-6. **Verify zero unresolved**: Re-run `/check-bots` — target: `Unresolved: 0`
-7. **Next round** (if bots re-scan after push): Repeat steps 2-6. Continue triaging until the user decides to stop. Always fix Major/Critical findings regardless of round number.
+6. **Mark EVERY thread as resolved** after commenting — use the GraphQL `resolveReviewThread` mutation (see bot-triage skill)
+7. **Next round** (if bots re-scan after push): Run `/wait-for-bots` again, then repeat steps 3-6. Continue triaging until the user decides to stop. Always fix Major/Critical findings regardless of round number.
 
 **Every thread gets a comment. Every thread gets resolved. No exceptions.**
 
@@ -325,7 +324,7 @@ When to use: Python code in source and test directories. When NOT to use: Markdo
 
 - **Pre-commit**: pattern lint + fast tests (blocking)
 - **Pre-push**: `./scripts/core/ci-check.sh` (full suite)
-- **Post-push**: `/check-ci`
+- **Post-push**: `/check-ci`, then `/wait-for-bots` → `/triage-threads`
 - **Coverage**: maintain or improve existing baseline
 - **Property tests**: required for new pure functions
 

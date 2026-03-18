@@ -196,9 +196,6 @@ launch_agent() {
     local name=$(get_agent_name "$agent_file")
     local model=$(get_agent_model "$agent_file")
 
-    # Read full markdown content (including frontmatter and documentation)
-    local full_agent_content=$(cat "$agent_file")
-
     echo -e "${GREEN}Launching agent: ${YELLOW}$name${NC}"
     echo -e "${BLUE}Model: ${NC}$model"
 
@@ -227,13 +224,13 @@ launch_agent() {
     # Change to project directory
     cd "$PROJECT_ROOT"
 
-    # Launch Claude with model and full agent markdown as system prompt
+    # Launch Claude with native --agent flag (provides agent label + model from frontmatter)
     # For code-focused agents, send initial Serena activation prompt
     if needs_serena_activation "$name"; then
-        exec claude --model "$model" --append-system-prompt "$full_agent_content" \
+        exec claude --agent "$name" \
             "Please activate Serena for semantic code navigation in this project before we begin. Use: mcp__serena__activate_project(\"$PROJECT_NAME\")"
     else
-        exec claude --model "$model" --append-system-prompt "$full_agent_content"
+        exec claude --agent "$name"
     fi
 }
 

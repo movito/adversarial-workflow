@@ -4,10 +4,11 @@
   "last_updated": "2026-03-18",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0061 complete. Backlog: ADV-0062, 0055/0056, 0057, test coverage.",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADV-0062",
+      "brief_note": "COMPLETE: ADV-0062 task starter + handoff ready for feature-developer-v3",
+      "details_link": ".agent-context/ADV-0062-HANDOFF-feature-developer.md",
+      "handoff_file": ".agent-context/ADV-0062-HANDOFF-feature-developer.md"
     },
     "feature-developer-v3": {
       "status": "idle",
