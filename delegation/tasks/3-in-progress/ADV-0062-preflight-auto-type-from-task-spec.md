@@ -1,6 +1,6 @@
 # ADV-0062: Preflight Auto-Detection from Task Spec Type Field
 
-**Status**: Backlog
+**Status**: In Progress
 **Priority**: Low
 **Type**: Enhancement
 **Estimated Effort**: 30 minutes

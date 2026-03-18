@@ -38,8 +38,8 @@ while [[ $# -gt 0 ]]; do
             echo "  code    All 7 gates checked (feature/bug-fix tasks)"
             echo "  docs    Gates 1, 5, 6 skipped (documentation-only tasks)"
             echo "  sync    Gates 5, 6 skipped; gate 1 auto-skips if no code changes"
-            echo "  (auto)  If --type is omitted, auto-detects from changed files:"
-            echo "          no code changes = docs, otherwise = code"
+            echo "  (auto)  If --type is omitted, auto-detects from task spec **Type** field,"
+            echo "          then falls back to changed files: no code changes = docs, otherwise = code"
             echo ""
             echo "Gates:"
             echo "  1. CI green                    GitHub Actions passing"
@@ -141,6 +141,21 @@ if [ -z "$TASK_ID" ]; then
         echo "ERROR:Could not derive task ID from branch '$BRANCH'"
         echo "Use --task TASK_ID to specify manually."
         exit 1
+    fi
+fi
+
+# ─── Auto-detect task type from task spec ────────────────────────────
+# Priority: explicit --type > task spec **Type** field > code-changes heuristic
+if [ -z "$TASK_TYPE" ]; then
+    TASK_FILE_FOR_TYPE=$(find delegation/tasks -name "${TASK_ID}-*" -o -name "${TASK_ID}.*" 2>/dev/null | head -1 || true)
+    if [ -n "$TASK_FILE_FOR_TYPE" ]; then
+        SPEC_TYPE=$(grep '^\*\*Type\*\*:' "$TASK_FILE_FOR_TYPE" | sed 's/.*: *//')
+        case "$SPEC_TYPE" in
+            "Upstream Sync") TASK_TYPE="sync" ;;
+            "Documentation") TASK_TYPE="docs" ;;
+            # All other values (Enhancement, Bug Fix, etc.) fall through
+            # to the code-changes heuristic below
+        esac
     fi
 fi
 
