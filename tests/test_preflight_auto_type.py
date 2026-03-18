@@ -42,6 +42,7 @@ def _run_auto_type(task_type: str, task_file_content: str | None) -> str:
             text=True,
             timeout=5,
         )
+        assert result.returncode == 0, result.stderr
         return result.stdout.strip()
     finally:
         if tmp_path is not None:
