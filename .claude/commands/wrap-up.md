@@ -46,7 +46,17 @@ Then emit the event (substitute values from Steps 1-2):
 dispatch emit phase_complete --agent <AGENT-NAME> --task <TASK-ID> --summary "<brief summary of what was done>"
 ```
 
-## Step 4: Confirm completion
+## Step 4: Move task to done
+
+If the PR has been merged (check with `gh pr view --json state --jq .state`), move the task to `5-done`:
+
+```bash
+./scripts/core/project complete <TASK-ID>
+```
+
+If the PR is not yet merged, skip this step — the task stays in `4-in-review`.
+
+## Step 5: Confirm completion
 
 Print a summary for the user:
 

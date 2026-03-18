@@ -1,6 +1,6 @@
 # ADV-0034: CLI Library Commands Test Coverage
 
-**Status**: Todo
+**Status**: Backlog
 **Priority**: Medium
 **Created**: 2026-02-07
 **Type**: Testing

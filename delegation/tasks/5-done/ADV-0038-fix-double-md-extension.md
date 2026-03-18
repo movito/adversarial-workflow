@@ -1,6 +1,6 @@
 # ADV-0038: Fix Double `.md.md` Extension in Evaluator Output Filenames
 
-**Status**: Backlog
+**Status**: Done
 **Priority**: Medium
 **Type**: Bug Fix
 **Estimated Effort**: 30 minutes

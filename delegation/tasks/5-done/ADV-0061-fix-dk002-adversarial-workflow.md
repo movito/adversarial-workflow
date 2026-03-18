@@ -1,6 +1,6 @@
 # ADV-0061: Fix DK002 Violations in adversarial_workflow/
 
-**Status**: In Review
+**Status**: Done
 **Priority**: Medium
 **Type**: Chore
 **Estimated Effort**: 1 hour

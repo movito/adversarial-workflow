@@ -1,6 +1,6 @@
 # ADV-0035: Evaluator Runner Test Coverage
 
-**Status**: Todo
+**Status**: Backlog
 **Priority**: High
 **Created**: 2026-02-07
 **Type**: Testing

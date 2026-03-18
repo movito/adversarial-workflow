@@ -1,6 +1,6 @@
 # ADV-0060: Preflight Task-Type Modes
 
-**Status**: In Progress
+**Status**: Done
 **Priority**: Medium
 **Type**: Enhancement
 **Estimated Effort**: 1-2 hours

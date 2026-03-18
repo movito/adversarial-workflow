@@ -1,6 +1,6 @@
 # ADV-0045: Upstream Sync — Settings & Config
 
-**Status**: In Progress
+**Status**: Done
 **Priority**: High
 **Type**: Upstream Sync
 **Estimated Effort**: 15 minutes

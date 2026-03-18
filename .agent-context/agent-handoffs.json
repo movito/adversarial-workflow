@@ -1,20 +1,19 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-03-08",
+  "last_updated": "2026-03-18",
   "agents": {
     "planner": {
-      "status": "completed",
-      "current_task": "ADV-0051",
-      "brief_note": "COMPLETE: ADV-0051 task spec and handoff ready for feature-developer-v3",
-      "details_link": "delegation/tasks/2-todo/ADV-0051-evaluator-setup-from-dispatch-kit.md",
-      "handoff_file": ".agent-context/ADV-0051-HANDOFF-feature-developer-v3.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0061 complete. Backlog: ADV-0062, 0055/0056, 0057, test coverage.",
+      "details_link": null
     },
     "feature-developer-v3": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0040 delivered and merged. Awaiting ADV-0051.",
-      "details_link": null
+      "brief_note": "ADV-0061 delivered and merged (PR #53). 1 thread, 0 rounds. Agent stalled on zero-thread triage — needs fast-path fix.",
+      "details_link": ".agent-context/retros/ADV-0061-retro.md"
     },
     "code-reviewer": {
       "status": "idle",
@@ -30,13 +29,20 @@
     }
   },
   "recent_completions": [
-    "ADV-0040: Sync slash commands - PR merged (2026-03-08)",
-    "v0.9.9 Released (2026-03-07) - Double .md extension fix",
-    "v0.9.0 Released (2026-02-06) - Library Evaluator Execution"
+    "ADV-0061: Fix DK002 violations, promote pattern lint to blocking - PR #53 merged (2026-03-18)",
+    "ADV-0060: Preflight task-type modes - PR #52 merged (2026-03-17)",
+    "ADV-0059: GH Actions paths alignment - PR #51 merged (2026-03-17)",
+    "ADV-0058: ci-check.sh parity - PR #50 merged (2026-03-16)",
+    "ADV-0046: CLAUDE.md & docs sync - PR #49 merged (2026-03-15)"
   ],
   "pending_tasks": [
-    "ADV-0051: Install evaluator library + custom evaluators (ready for assignment)",
-    "ADV-0041–0050: Remaining upstream sync tasks (queued)"
+    "ADV-0062: Preflight auto-type from task spec (backlog)",
+    "ADV-0034: CLI library test coverage (backlog)",
+    "ADV-0035: Evaluator runner test coverage (backlog)",
+    "ADV-0036: Library module test coverage (backlog)",
+    "ADV-0055: Enhance health check (backlog, fold into ADV-0056)",
+    "ADV-0056: adversarial upgrade command (backlog)",
+    "ADV-0057: Review script robustness (backlog)"
   ],
   "blocked_items": [],
   "architecture_status": {
@@ -50,5 +56,5 @@
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "ADV-0040 merged. ADV-0051 ready — uses adversarial library install (v0.5.3 fixes included) + custom evaluators from dispatch-kit v0.4.2. PRs #36/#37 closed (old approach)."
+  "notes": "Quality gate alignment COMPLETE: all 4 layers aligned, pattern lint now blocking. Two FD3 process improvements from ADV-0061 retro: (1) bot-triage needs zero-thread fast-path, (2) wrap-up should move task to 5-done after merge. Upstream issue ASK #36 filed for ERROR format standardization."
 }

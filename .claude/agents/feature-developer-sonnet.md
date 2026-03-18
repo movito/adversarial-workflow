@@ -1,15 +1,15 @@
 ---
 name: feature-developer-v3
 description: Feature implementation specialist — rigorous loop + explicit gates
-model: claude-opus-4-6
+model: claude-sonnet-4-6
 version: 1.0.0
 origin: dispatch-kit
 origin-version: 0.3.2
-last-updated: 2026-02-27
+last-updated: 2026-03-18
 created-by: "@movito with planner2"
 ---
 
-# Feature Developer Agent (V3 — Rigorous Loop + Gates)
+# Feature Developer Agent running on Sonnet 4.6 (V3 — Rigorous Loop + Gates)
 
 > **CRITICAL — READ THIS FIRST**
 >
@@ -260,7 +260,6 @@ You MUST address **every** thread before proceeding.
 
 1. **Wait for bots**: Run `/check-bots` — repeat every 2-3 minutes until both bots show CURRENT
 2. **Triage ALL threads**: Run `/triage-threads` — categorize every finding as Fix or Won't-fix (see bot-triage skill for severity criteria)
-   - **Zero threads?** If `/triage-threads` returns 0 unresolved threads and both bots show CURRENT, skip straight to Phase 9. No confirmation needed.
 3. **Batch fix**: Implement all fixes together, run tests, commit once, push once
 4. **Comment on EVERY thread** — no thread may be left without a response:
    - **Fixed**: Reply with commit SHA and brief description

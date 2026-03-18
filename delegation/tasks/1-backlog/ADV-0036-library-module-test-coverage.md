@@ -1,6 +1,6 @@
 # ADV-0036: Library Module Test Coverage
 
-**Status**: Todo
+**Status**: Backlog
 **Priority**: Medium
 **Created**: 2026-02-07
 **Type**: Testing
