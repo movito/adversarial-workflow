@@ -4,17 +4,16 @@
   "last_updated": "2026-03-18",
   "agents": {
     "planner": {
-      "status": "completed",
-      "current_task": "ADV-0062",
-      "brief_note": "COMPLETE: ADV-0062 task starter + handoff ready for feature-developer-v3",
-      "details_link": ".agent-context/ADV-0062-HANDOFF-feature-developer.md",
-      "handoff_file": ".agent-context/ADV-0062-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0062 complete (PR #54 merged). Also shipped: launcher --agent upgrade, FD3 autonomous bot polling.",
+      "details_link": null
     },
     "feature-developer-v3": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0061 delivered and merged (PR #53). 1 thread, 0 rounds. Agent stalled on zero-thread triage — needs fast-path fix.",
-      "details_link": ".agent-context/retros/ADV-0061-retro.md"
+      "brief_note": "ADV-0062 delivered and merged (PR #54). 1 thread, 1 round, 2 commits. Clean run.",
+      "details_link": ".agent-context/retros/ADV-0062-retro.md"
     },
     "code-reviewer": {
       "status": "idle",
@@ -30,14 +29,13 @@
     }
   },
   "recent_completions": [
+    "ADV-0062: Preflight auto-type from task spec - PR #54 merged (2026-03-18)",
     "ADV-0061: Fix DK002 violations, promote pattern lint to blocking - PR #53 merged (2026-03-18)",
     "ADV-0060: Preflight task-type modes - PR #52 merged (2026-03-17)",
     "ADV-0059: GH Actions paths alignment - PR #51 merged (2026-03-17)",
-    "ADV-0058: ci-check.sh parity - PR #50 merged (2026-03-16)",
-    "ADV-0046: CLAUDE.md & docs sync - PR #49 merged (2026-03-15)"
+    "ADV-0058: ci-check.sh parity - PR #50 merged (2026-03-16)"
   ],
   "pending_tasks": [
-    "ADV-0062: Preflight auto-type from task spec (backlog)",
     "ADV-0034: CLI library test coverage (backlog)",
     "ADV-0035: Evaluator runner test coverage (backlog)",
     "ADV-0036: Library module test coverage (backlog)",
@@ -57,5 +55,5 @@
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "Quality gate alignment COMPLETE: all 4 layers aligned, pattern lint now blocking. Two FD3 process improvements from ADV-0061 retro: (1) bot-triage needs zero-thread fast-path, (2) wrap-up should move task to 5-done after merge. Upstream issue ASK #36 filed for ERROR format standardization."
+  "notes": "Quality gate alignment COMPLETE + ADV-0062 preflight auto-type. Process improvements shipped this session: (1) agents/launch uses --agent flag for status bar labels, (2) FD3 Phase 8 autonomous /wait-for-bots polling, (3) feedback memory on --agent flag for cross-project reuse."
 }
