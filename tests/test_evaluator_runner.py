@@ -1,6 +1,7 @@
 """Tests for the generic evaluator runner."""
 
 import shutil
+import subprocess
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,9 +9,16 @@ import pytest
 from adversarial_workflow.evaluators.config import EvaluatorConfig, ModelRequirement
 from adversarial_workflow.evaluators.runner import (
     _check_file_size,
+    _confirm_continue,
     _execute_script,
     _normalize_output_suffix,
+    _print_platform_error,
+    _print_rate_limit_error,
+    _print_timeout_error,
     _report_verdict,
+    _run_builtin_evaluator,
+    _run_custom_evaluator,
+    _warn_large_file,
     run_evaluator,
 )
 
@@ -632,3 +640,547 @@ class TestAiderCommandFlags:
             call_args = mock_run.call_args
             cmd = call_args[0][0]
             assert "--no-browser" in cmd, "aider command should include --no-browser flag"
+
+
+# ---------------------------------------------------------------------------
+# New tests for uncovered error paths (ADV-0035)
+# ---------------------------------------------------------------------------
+
+
+class TestRunEvaluatorLargeFile:
+    """Test large file handling paths in run_evaluator (lines 83-86)."""
+
+    def _setup_env(self, tmp_path, monkeypatch, config):
+        """Create the minimal filesystem+env for run_evaluator to reach the file-size check."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test", encoding="utf-8")
+
+        config_dir = tmp_path / ".adversarial"
+        config_dir.mkdir()
+        (config_dir / "config.yml").write_text(
+            "log_directory: .adversarial/logs/", encoding="utf-8"
+        )
+
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv(config.api_key_env, "test-key")
+        monkeypatch.setattr(shutil, "which", lambda _: "/usr/bin/aider")
+        return test_file
+
+    def test_large_file_user_declines_returns_zero(
+        self, sample_config, tmp_path, monkeypatch, capsys
+    ):
+        """Large file (>700 lines) + user declining cancels evaluation and returns 0."""
+        test_file = self._setup_env(tmp_path, monkeypatch, sample_config)
+
+        with (
+            patch(
+                "adversarial_workflow.evaluators.runner._check_file_size",
+                return_value=(800, 25000),
+            ),
+            patch(
+                "adversarial_workflow.evaluators.runner._confirm_continue",
+                return_value=False,
+            ),
+        ):
+            result = run_evaluator(sample_config, str(test_file))
+
+        assert result == 0
+        captured = capsys.readouterr()
+        assert "Evaluation cancelled" in captured.out
+
+    def test_large_file_warning_displayed(self, sample_config, tmp_path, monkeypatch, capsys):
+        """Large file triggers the large-file warning before prompting."""
+        test_file = self._setup_env(tmp_path, monkeypatch, sample_config)
+
+        with (
+            patch(
+                "adversarial_workflow.evaluators.runner._check_file_size",
+                return_value=(800, 25000),
+            ),
+            patch(
+                "adversarial_workflow.evaluators.runner._confirm_continue",
+                return_value=False,
+            ),
+        ):
+            run_evaluator(sample_config, str(test_file))
+
+        captured = capsys.readouterr()
+        assert "Large file detected" in captured.out
+
+    def test_large_file_user_accepts_continues(self, sample_config, tmp_path, monkeypatch):
+        """Large file + user accepting continues to evaluation (doesn't return 0 early)."""
+        test_file = self._setup_env(tmp_path, monkeypatch, sample_config)
+
+        mock_subprocess = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
+        with (
+            patch(
+                "adversarial_workflow.evaluators.runner._check_file_size",
+                return_value=(800, 25000),
+            ),
+            patch(
+                "adversarial_workflow.evaluators.runner._confirm_continue",
+                return_value=True,
+            ),
+            patch("subprocess.run", mock_subprocess),
+        ):
+            run_evaluator(sample_config, str(test_file))
+
+        # Aider was invoked — proves evaluation was not cancelled
+        assert mock_subprocess.called
+
+
+class TestWarnLargeFile:
+    """Direct tests for _warn_large_file helper (lines 312-315)."""
+
+    def test_prints_large_file_detected(self, capsys):
+        """Prints 'Large file detected' heading."""
+        _warn_large_file(600, 25000)
+        captured = capsys.readouterr()
+        assert "Large file detected" in captured.out
+
+    def test_prints_line_count(self, capsys):
+        """Prints formatted line count."""
+        _warn_large_file(600, 25000)
+        captured = capsys.readouterr()
+        assert "600" in captured.out
+
+    def test_prints_token_estimate(self, capsys):
+        """Prints formatted estimated token count."""
+        _warn_large_file(600, 25000)
+        captured = capsys.readouterr()
+        assert "25,000" in captured.out
+
+
+class TestConfirmContinue:
+    """Direct tests for _confirm_continue helper (lines 320-321)."""
+
+    def test_y_returns_true(self):
+        """User typing 'y' means continue."""
+        with patch("builtins.input", return_value="y"):
+            assert _confirm_continue() is True
+
+    def test_yes_returns_true(self):
+        """User typing 'yes' means continue."""
+        with patch("builtins.input", return_value="yes"):
+            assert _confirm_continue() is True
+
+    def test_uppercase_y_returns_true(self):
+        """User typing 'Y' (uppercase) is treated as yes after lower()."""
+        with patch("builtins.input", return_value="Y"):
+            assert _confirm_continue() is True
+
+    def test_n_returns_false(self):
+        """User typing 'n' means cancel."""
+        with patch("builtins.input", return_value="n"):
+            assert _confirm_continue() is False
+
+    def test_empty_returns_false(self):
+        """Empty input (pressing Enter) defaults to No."""
+        with patch("builtins.input", return_value=""):
+            assert _confirm_continue() is False
+
+    def test_arbitrary_text_returns_false(self):
+        """Any other input defaults to No."""
+        with patch("builtins.input", return_value="maybe"):
+            assert _confirm_continue() is False
+
+
+class TestRunBuiltinEvaluatorPath:
+    """Test the builtin evaluator path in run_evaluator and _run_builtin_evaluator."""
+
+    def test_builtin_path_taken_when_source_is_builtin(self, tmp_path, monkeypatch, capsys):
+        """run_evaluator routes to _run_builtin_evaluator when source='builtin' (line 90)."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test", encoding="utf-8")
+
+        config_dir = tmp_path / ".adversarial"
+        config_dir.mkdir()
+        (config_dir / "config.yml").write_text(
+            "log_directory: .adversarial/logs/", encoding="utf-8"
+        )
+
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+        monkeypatch.setattr(shutil, "which", lambda _: "/usr/bin/aider")
+
+        config = EvaluatorConfig(
+            name="evaluate",
+            description="Plan evaluation",
+            model="gpt-4o",
+            api_key_env="OPENAI_API_KEY",
+            prompt="",
+            output_suffix="PLAN-EVALUATION",
+            source="builtin",
+        )
+
+        # Script doesn't exist in tmp_path → script-not-found error from _run_builtin_evaluator
+        result = run_evaluator(config, str(test_file))
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Script not found" in captured.out
+
+    def test_script_not_found_for_unknown_name(self, tmp_path, capsys):
+        """Error when evaluator name is not in the script_map (lines 109-112)."""
+        config = EvaluatorConfig(
+            name="no-such-builtin",
+            description="Test",
+            model="gpt-4o",
+            api_key_env="OPENAI_API_KEY",
+            prompt="",
+            output_suffix="TEST",
+            source="builtin",
+        )
+
+        result = _run_builtin_evaluator(
+            config, "/some/file.md", {"log_directory": str(tmp_path)}, 30
+        )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Script not found" in captured.out
+
+    def test_script_not_found_for_known_name_missing_file(self, tmp_path, monkeypatch, capsys):
+        """Error when known name but script file doesn't exist on disk (lines 109-112)."""
+        monkeypatch.chdir(tmp_path)  # .adversarial/scripts/ doesn't exist here
+
+        config = EvaluatorConfig(
+            name="evaluate",
+            description="Plan evaluation",
+            model="gpt-4o",
+            api_key_env="OPENAI_API_KEY",
+            prompt="",
+            output_suffix="PLAN-EVALUATION",
+            source="builtin",
+        )
+
+        result = _run_builtin_evaluator(
+            config, "/some/file.md", {"log_directory": str(tmp_path)}, 30
+        )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Script not found" in captured.out
+
+    def test_execute_script_called_when_script_exists(self, tmp_path, monkeypatch):
+        """_execute_script is called when the script file is found (line 114)."""
+        # Create the expected builtin script path
+        scripts_dir = tmp_path / ".adversarial" / "scripts"
+        scripts_dir.mkdir(parents=True)
+        fake_script = scripts_dir / "evaluate_plan.sh"
+        fake_script.write_text("#!/bin/bash\necho done", encoding="utf-8")
+
+        # Pre-create the log file that validate_evaluation_output expects
+        logs_dir = tmp_path / ".adversarial" / "logs"
+        logs_dir.mkdir()
+        log_file = logs_dir / "test-PLAN-EVALUATION.md"
+        log_file.write_text(
+            "## Verdict: APPROVED\n\n" + "Evaluation details. " * 30, encoding="utf-8"
+        )
+
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test", encoding="utf-8")
+
+        monkeypatch.chdir(tmp_path)
+
+        config = EvaluatorConfig(
+            name="evaluate",
+            description="Plan evaluation",
+            model="gpt-4o",
+            api_key_env="OPENAI_API_KEY",
+            prompt="",
+            output_suffix="PLAN-EVALUATION",
+            source="builtin",
+        )
+
+        with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="", stderr="")):
+            result = _run_builtin_evaluator(
+                config, str(test_file), {"log_directory": str(logs_dir)}, 30
+            )
+
+        assert result == 0
+
+
+class TestRunCustomEvaluatorErrors:
+    """Test error paths in _run_custom_evaluator (lines 193-194, 219-226)."""
+
+    def _make_config(self):
+        return EvaluatorConfig(
+            name="test-eval",
+            description="Test",
+            model="gpt-4o",
+            api_key_env="OPENAI_API_KEY",
+            prompt="Test prompt",
+            output_suffix="TEST",
+            source="custom",
+        )
+
+    def test_rate_limit_error_in_stdout(self, tmp_path, capsys):
+        """RateLimitError in subprocess stdout triggers rate-limit handling (lines 193-194)."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test content", encoding="utf-8")
+        logs_dir = tmp_path / "logs"
+        logs_dir.mkdir()
+
+        mock_result = MagicMock(returncode=0, stdout="RateLimitError: exceeded quota", stderr="")
+        with patch("subprocess.run", return_value=mock_result):
+            result = _run_custom_evaluator(
+                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
+            )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "rate limit" in captured.out.lower()
+
+    def test_rate_limit_error_in_stderr(self, tmp_path, capsys):
+        """'tokens per min' in stderr also triggers rate-limit handling."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test content", encoding="utf-8")
+        logs_dir = tmp_path / "logs"
+        logs_dir.mkdir()
+
+        mock_result = MagicMock(returncode=0, stdout="", stderr="tokens per min limit reached")
+        with patch("subprocess.run", return_value=mock_result):
+            result = _run_custom_evaluator(
+                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
+            )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "rate limit" in captured.out.lower()
+
+    def test_timeout_expired_returns_one(self, tmp_path, capsys):
+        """TimeoutExpired from subprocess returns 1 with timeout message (lines 219-223)."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test content", encoding="utf-8")
+        logs_dir = tmp_path / "logs"
+        logs_dir.mkdir()
+
+        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("aider", 30)):
+            result = _run_custom_evaluator(
+                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
+            )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "timed out" in captured.out.lower()
+
+    def test_file_not_found_error_returns_one(self, tmp_path, capsys):
+        """FileNotFoundError from subprocess returns 1 with platform error (lines 224-226)."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test content", encoding="utf-8")
+        logs_dir = tmp_path / "logs"
+        logs_dir.mkdir()
+
+        with patch("subprocess.run", side_effect=FileNotFoundError()):
+            result = _run_custom_evaluator(
+                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
+            )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Error" in captured.out
+
+    def test_prompt_file_cleaned_up_after_timeout(self, tmp_path):
+        """finally block removes temp prompt file even on TimeoutExpired."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test content", encoding="utf-8")
+        logs_dir = tmp_path / "logs"
+        logs_dir.mkdir()
+
+        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("aider", 30)):
+            # Just verify the call completes without raising — the finally block runs
+            _run_custom_evaluator(
+                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
+            )
+
+    def test_successful_evaluation_calls_report_verdict(self, tmp_path, capsys):
+        """On valid output, calls _report_verdict and returns its result (line 219)."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test content", encoding="utf-8")
+        logs_dir = tmp_path / "logs"
+        logs_dir.mkdir()
+
+        # Produce enough stdout so header + stdout >= 500 bytes, with a clear verdict
+        large_stdout = "Verdict: APPROVED\n\n" + "Evaluation details. " * 30
+
+        mock_result = MagicMock(returncode=0, stdout=large_stdout, stderr="")
+        with patch("subprocess.run", return_value=mock_result):
+            result = _run_custom_evaluator(
+                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
+            )
+
+        assert result == 0
+        captured = capsys.readouterr()
+        assert "APPROVED" in captured.out
+
+
+class TestExecuteScriptErrors:
+    """Test error paths in _execute_script (lines 250-258, 268-269)."""
+
+    def _make_builtin_config(self):
+        return EvaluatorConfig(
+            name="evaluate",
+            description="Plan evaluation",
+            model="gpt-4o",
+            api_key_env="OPENAI_API_KEY",
+            prompt="",
+            output_suffix="PLAN-EVALUATION",
+            source="builtin",
+        )
+
+    def test_timeout_expired_returns_one(self, tmp_path, capsys):
+        """TimeoutExpired during script execution returns 1 (lines 253-255)."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test", encoding="utf-8")
+
+        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("script.sh", 30)):
+            result = _execute_script(
+                "/fake/script.sh",
+                str(test_file),
+                self._make_builtin_config(),
+                {"log_directory": str(tmp_path)},
+                30,
+            )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "timed out" in captured.out.lower()
+
+    def test_file_not_found_returns_one(self, tmp_path, capsys):
+        """FileNotFoundError during script execution returns 1 (lines 256-258)."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test", encoding="utf-8")
+
+        with patch("subprocess.run", side_effect=FileNotFoundError()):
+            result = _execute_script(
+                "/fake/script.sh",
+                str(test_file),
+                self._make_builtin_config(),
+                {"log_directory": str(tmp_path)},
+                30,
+            )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Error" in captured.out
+
+    def test_missing_output_file_fails_validation(self, tmp_path, capsys):
+        """Missing log file after script run triggers validation failure (lines 268-269)."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test", encoding="utf-8")
+
+        logs_dir = tmp_path / "logs"
+        logs_dir.mkdir()
+        # Deliberately do NOT create the expected log file
+
+        with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="", stderr="")):
+            result = _execute_script(
+                "/fake/script.sh",
+                str(test_file),
+                self._make_builtin_config(),
+                {"log_directory": str(logs_dir)},
+                30,
+            )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Evaluation failed" in captured.out
+
+    def test_rate_limit_in_script_output_returns_one(self, tmp_path, capsys):
+        """RateLimitError in script stdout triggers rate-limit handling (lines 250-251)."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test", encoding="utf-8")
+
+        mock_result = MagicMock(returncode=0, stdout="RateLimitError: quota exceeded", stderr="")
+        with patch("subprocess.run", return_value=mock_result):
+            result = _execute_script(
+                "/fake/script.sh",
+                str(test_file),
+                self._make_builtin_config(),
+                {"log_directory": str(tmp_path)},
+                30,
+            )
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "rate limit" in captured.out.lower()
+
+
+class TestHelperFunctions:
+    """Direct tests for standalone helper functions (lines 334-354)."""
+
+    def test_print_rate_limit_error_outputs_message(self, capsys):
+        """_print_rate_limit_error prints rate limit message (lines 334-339)."""
+        _print_rate_limit_error("test-file.md")
+        captured = capsys.readouterr()
+        assert "rate limit" in captured.out.lower()
+
+    def test_print_rate_limit_error_includes_solutions(self, capsys):
+        """_print_rate_limit_error prints the SOLUTIONS block."""
+        _print_rate_limit_error("test-file.md")
+        captured = capsys.readouterr()
+        assert "SOLUTIONS" in captured.out
+
+    def test_print_timeout_error_shows_duration(self, capsys):
+        """_print_timeout_error prints timeout message with the configured duration (line 344)."""
+        _print_timeout_error(300)
+        captured = capsys.readouterr()
+        assert "timed out" in captured.out.lower()
+        assert "300" in captured.out
+
+    def test_print_platform_error_non_windows(self, capsys):
+        """_print_platform_error on Linux prints 'adversarial init' hint (lines 349-354)."""
+        with patch("platform.system", return_value="Linux"):
+            _print_platform_error()
+        captured = capsys.readouterr()
+        assert "Error" in captured.out
+        # Non-Windows path mentions init hint
+        assert "adversarial init" in captured.out or "Script not found" in captured.out
+
+    def test_print_platform_error_windows(self, capsys):
+        """_print_platform_error on Windows mentions WSL (lines 349-354)."""
+        with patch("platform.system", return_value="Windows"):
+            _print_platform_error()
+        captured = capsys.readouterr()
+        assert "Windows" in captured.out
+        assert "WSL" in captured.out
+
+
+class TestReportVerdictAllTypes:
+    """Test _report_verdict with every verdict string in each set."""
+
+    @pytest.mark.parametrize("verdict", ["APPROVED", "PROCEED", "COMPLIANT", "PASS"])
+    def test_pass_verdicts_return_zero(self, verdict, sample_config, tmp_path, capsys):
+        """All PASS-set verdicts return 0."""
+        log_file = tmp_path / "out.md"
+        log_file.write_text("content", encoding="utf-8")
+        result = _report_verdict(verdict, log_file, sample_config)
+        assert result == 0
+        captured = capsys.readouterr()
+        assert verdict in captured.out
+
+    @pytest.mark.parametrize(
+        "verdict",
+        ["NEEDS_REVISION", "REVISION_SUGGESTED", "MOSTLY_COMPLIANT", "CONCERNS"],
+    )
+    def test_revise_verdicts_return_one(self, verdict, sample_config, tmp_path, capsys):
+        """All REVISE-set verdicts return 1."""
+        log_file = tmp_path / "out.md"
+        log_file.write_text("content", encoding="utf-8")
+        result = _report_verdict(verdict, log_file, sample_config)
+        assert result == 1
+        captured = capsys.readouterr()
+        assert verdict in captured.out
+
+    @pytest.mark.parametrize(
+        "verdict",
+        ["REJECTED", "RETHINK", "RESTRUCTURE_NEEDED", "NON_COMPLIANT", "FAIL"],
+    )
+    def test_reject_verdicts_return_one(self, verdict, sample_config, tmp_path, capsys):
+        """All REJECT-set verdicts return 1."""
+        log_file = tmp_path / "out.md"
+        log_file.write_text("content", encoding="utf-8")
+        result = _report_verdict(verdict, log_file, sample_config)
+        assert result == 1
+        captured = capsys.readouterr()
+        assert verdict in captured.out
