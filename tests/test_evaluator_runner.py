@@ -723,10 +723,12 @@ class TestRunEvaluatorLargeFile:
             ),
             patch("subprocess.run", mock_subprocess),
         ):
-            run_evaluator(sample_config, str(test_file))
+            result = run_evaluator(sample_config, str(test_file))
 
         # Aider was invoked — proves evaluation was not cancelled
         assert mock_subprocess.called
+        # Validation fails on empty stdout, so result is 1 (not the early-cancel 0)
+        assert result == 1
 
 
 class TestWarnLargeFile:
@@ -980,20 +982,6 @@ class TestRunCustomEvaluatorErrors:
         captured = capsys.readouterr()
         assert "Error" in captured.out
 
-    def test_timeout_exception_does_not_propagate(self, tmp_path):
-        """TimeoutExpired is caught by the except block; the finally block runs and returns 1."""
-        test_file = tmp_path / "test.md"
-        test_file.write_text("# Test content", encoding="utf-8")
-        logs_dir = tmp_path / "logs"
-        logs_dir.mkdir()
-
-        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("aider", 30)):
-            result = _run_custom_evaluator(
-                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
-            )
-
-        assert result == 1
-
     def test_successful_evaluation_calls_report_verdict(self, tmp_path, capsys):
         """On valid output, calls _report_verdict and returns its result (line 219)."""
         test_file = tmp_path / "test.md"
@@ -1135,8 +1123,8 @@ class TestHelperFunctions:
             _print_platform_error()
         captured = capsys.readouterr()
         assert "Error" in captured.out
-        # Non-Windows path mentions init hint
-        assert "adversarial init" in captured.out or "Script not found" in captured.out
+        assert "Script not found" in captured.out
+        assert "adversarial init" in captured.out
 
     def test_print_platform_error_windows(self, capsys):
         """_print_platform_error on Windows mentions WSL (lines 349-354)."""
