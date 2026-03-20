@@ -790,7 +790,7 @@ class TestConfirmContinue:
 class TestRunBuiltinEvaluatorPath:
     """Test the builtin evaluator path in run_evaluator and _run_builtin_evaluator."""
 
-    def test_builtin_path_taken_when_source_is_builtin(self, tmp_path, monkeypatch, capsys):
+    def test_builtin_path_taken_when_source_is_builtin(self, tmp_path, monkeypatch):
         """run_evaluator routes to _run_builtin_evaluator when source='builtin' (line 90)."""
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test", encoding="utf-8")
@@ -815,11 +815,14 @@ class TestRunBuiltinEvaluatorPath:
             source="builtin",
         )
 
-        # Script doesn't exist in tmp_path → script-not-found error from _run_builtin_evaluator
-        result = run_evaluator(config, str(test_file))
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "Script not found" in captured.out
+        # Mock _run_builtin_evaluator directly to verify routing (not just output text)
+        with patch(
+            "adversarial_workflow.evaluators.runner._run_builtin_evaluator",
+            return_value=0,
+        ) as mock_builtin:
+            result = run_evaluator(config, str(test_file))
+            assert result == 0
+        mock_builtin.assert_called_once()
 
     def test_script_not_found_for_unknown_name(self, tmp_path, capsys):
         """Error when evaluator name is not in the script_map (lines 109-112)."""
@@ -894,12 +897,16 @@ class TestRunBuiltinEvaluatorPath:
             source="builtin",
         )
 
-        with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="", stderr="")):
+        with patch(
+            "adversarial_workflow.evaluators.runner._execute_script",
+            return_value=0,
+        ) as mock_execute:
             result = _run_builtin_evaluator(
                 config, str(test_file), {"log_directory": str(logs_dir)}, 30
             )
 
         assert result == 0
+        mock_execute.assert_called_once()
 
 
 class TestRunCustomEvaluatorErrors:
