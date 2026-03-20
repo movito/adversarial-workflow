@@ -1421,3 +1421,43 @@ class TestInitTemplateErrors:
         assert result == 1
         captured = capsys.readouterr()
         assert "ERROR" in captured.out or "failed" in captured.out.lower()
+
+
+class TestReviewFunction:
+    """Test the review() function error handling (ADV-0057)."""
+
+    def test_review_git_error_returns_clear_message(self, capsys):
+        """review() should report a clear error when git diff fails with invalid refs."""
+        from adversarial_workflow.cli import review
+
+        # Simulate: git symbolic-ref fails (returncode=1), then git diff fails
+        # with returncode 128 (git error, e.g. invalid ref)
+        symbolic_ref_result = Mock(returncode=1, stdout="", stderr="")
+        branch_diff_result = Mock(
+            returncode=128, stdout="", stderr="fatal: Not a valid object name 'main'"
+        )
+
+        with patch("adversarial_workflow.cli.subprocess.run") as mock_run:
+            mock_run.side_effect = [symbolic_ref_result, branch_diff_result]
+            result = review("some_task.md")
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Cannot compare against base branch" in captured.out
+        assert "main" in captured.out
+
+    def test_review_git_error_high_returncode(self, capsys):
+        """review() should catch any git returncode >= 128 as an error."""
+        from adversarial_workflow.cli import review
+
+        symbolic_ref_result = Mock(returncode=1, stdout="", stderr="")
+        # returncode 129 is also a git error (e.g. bad flag)
+        branch_diff_result = Mock(returncode=129, stdout="", stderr="fatal: unrecognized argument")
+
+        with patch("adversarial_workflow.cli.subprocess.run") as mock_run:
+            mock_run.side_effect = [symbolic_ref_result, branch_diff_result]
+            result = review("some_task.md")
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Cannot compare against base branch" in captured.out
