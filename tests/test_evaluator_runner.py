@@ -906,7 +906,14 @@ class TestRunBuiltinEvaluatorPath:
             )
 
         assert result == 0
-        mock_execute.assert_called_once()
+        # Runner resolves script relative to cwd (monkeypatched to tmp_path)
+        mock_execute.assert_called_once_with(
+            ".adversarial/scripts/evaluate_plan.sh",
+            str(test_file),
+            config,
+            {"log_directory": str(logs_dir)},
+            30,
+        )
 
 
 class TestRunCustomEvaluatorErrors:
