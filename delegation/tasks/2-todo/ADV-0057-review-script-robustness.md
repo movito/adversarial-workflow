@@ -1,10 +1,11 @@
 # ADV-0057: Review Script Robustness Improvements
 
-**Status**: Backlog
+**Status**: Todo
 **Priority**: Medium
 **Type**: Enhancement
 **Estimated Effort**: 1-2 hours
 **Created**: 2026-03-15
+**Updated**: 2026-03-19
 **Origin**: ADV-0054 code-reviewer-fast evaluator findings
 
 ## Summary

@@ -1,18 +1,19 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-03-18",
+  "last_updated": "2026-03-19",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0062 complete (PR #54 merged). Also shipped: launcher --agent upgrade, FD3 autonomous bot polling.",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADV-0035, ADV-0057",
+      "brief_note": "COMPLETE: Backlog review, promoted ADV-0035 + ADV-0057 to todo, created handoffs",
+      "details_link": null,
+      "handoff_file": ".agent-context/ADV-0035-HANDOFF-feature-developer.md"
     },
     "feature-developer-v3": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0062 delivered and merged (PR #54). 1 thread, 1 round, 2 commits. Clean run.",
+      "brief_note": "ADV-0062 delivered and merged (PR #54). ADV-0035 and ADV-0057 ready for assignment.",
       "details_link": ".agent-context/retros/ADV-0062-retro.md"
     },
     "code-reviewer": {
@@ -36,12 +37,12 @@
     "ADV-0058: ci-check.sh parity - PR #50 merged (2026-03-16)"
   ],
   "pending_tasks": [
+    "ADV-0035: Evaluator runner test coverage (todo, ready)",
+    "ADV-0057: Review script robustness (todo, ready)",
     "ADV-0034: CLI library test coverage (backlog)",
-    "ADV-0035: Evaluator runner test coverage (backlog)",
     "ADV-0036: Library module test coverage (backlog)",
     "ADV-0055: Enhance health check (backlog, fold into ADV-0056)",
-    "ADV-0056: adversarial upgrade command (backlog)",
-    "ADV-0057: Review script robustness (backlog)"
+    "ADV-0056: adversarial upgrade command (backlog)"
   ],
   "blocked_items": [],
   "architecture_status": {
@@ -55,5 +56,5 @@
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "Quality gate alignment COMPLETE + ADV-0062 preflight auto-type. Process improvements shipped this session: (1) agents/launch uses --agent flag for status bar labels, (2) FD3 Phase 8 autonomous /wait-for-bots polling, (3) feedback memory on --agent flag for cross-project reuse."
+  "notes": "Backlog review completed 2026-03-19. Coverage at 64% overall (500 tests). ADV-0035 targets runner.py 72->85%. ADV-0057 fixes 4 review script edge cases. Recommended order: ADV-0035 first (higher impact), then ADV-0057."
 }

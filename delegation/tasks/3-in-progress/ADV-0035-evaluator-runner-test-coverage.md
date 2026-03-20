@@ -1,8 +1,9 @@
 # ADV-0035: Evaluator Runner Test Coverage
 
-**Status**: Backlog
+**Status**: In Progress
 **Priority**: High
 **Created**: 2026-02-07
+**Updated**: 2026-03-19
 **Type**: Testing
 **Estimated Effort**: 3-4 hours
 
@@ -10,17 +11,18 @@
 
 ## Problem Statement
 
-`evaluators/runner.py` has 64% test coverage. This module handles the core evaluation execution logic and should have comprehensive testing.
+`evaluators/runner.py` has 72% test coverage (172 stmts, 49 missing). This module handles the core evaluation execution logic and should have comprehensive testing.
 
-## Current State
+## Current State (as of 2026-03-19)
 
 ```
-adversarial_workflow/evaluators/runner.py   164     59    64%
+adversarial_workflow/evaluators/runner.py   172     49    72%
 
-Missing lines: 76-80, 84, 96-108, 185-186, 211-218, 231-262,
-               298-301, 306-307, 320-325, 330, 335-340
+Missing lines: 83-86, 90, 102-114, 193-194, 219-226, 250-258,
+               268-269, 312-315, 320-321, 334-339, 344, 349-354
 ```
 
+**Existing tests**: 30 tests in `tests/test_evaluator_runner.py` (4 classes: TestRunEvaluator, TestValidateEvaluationOutput, TestOutputFilenameExtension, TestAiderCommandFlags)
 **Target**: Increase runner.py coverage to 85%+
 
 ## Scope
@@ -47,10 +49,10 @@ Missing lines: 76-80, 84, 96-108, 185-186, 211-218, 231-262,
 - [ ] `_report_verdict()` has tests for:
   - [ ] All verdict types (APPROVED, NEEDS_REVISION, etc.)
 - [ ] Error paths covered:
-  - [ ] Lines 76-80: Aider not found
-  - [ ] Lines 96-108: Subprocess errors
-  - [ ] Lines 231-262: Output validation failures
-  - [ ] Lines 320-340: Timeout/cleanup
+  - [ ] Lines 83-86, 90: Aider not found
+  - [ ] Lines 102-114: Subprocess errors
+  - [ ] Lines 250-258, 268-269: Output validation failures
+  - [ ] Lines 334-354: Timeout/cleanup
 - [ ] Overall runner.py coverage reaches 85%+
 
 ## Implementation Notes
@@ -106,11 +108,11 @@ def mock_which(mocker):
 
 | Lines | Description | Priority |
 |-------|-------------|----------|
-| 76-80 | Aider not found error | High |
-| 96-108 | Subprocess error handling | High |
-| 231-262 | Output validation | Medium |
-| 320-340 | Timeout/cleanup | Medium |
-| 185-186, 211-218 | Edge cases | Low |
+| 83-86, 90 | Aider not found error | High |
+| 102-114 | Subprocess error handling | High |
+| 250-258, 268-269 | Output validation | Medium |
+| 334-354 | Timeout/cleanup | Medium |
+| 193-194, 219-226 | Edge cases | Low |
 
 ## Related
 
