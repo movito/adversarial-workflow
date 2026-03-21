@@ -2125,7 +2125,21 @@ def review(task_file: str) -> int:
         if default_branch.returncode == 0
         else "main"
     )
-    branch_diff = subprocess.run(["git", "diff", "--quiet", f"{base}...HEAD"], capture_output=True)
+    branch_diff = subprocess.run(
+        ["git", "diff", "--quiet", f"{base}...HEAD"], capture_output=True, text=True
+    )
+
+    # Fix 3 (ADV-0057): git diff returns 1 for "has changes", but values >= 128
+    # indicate a git error (e.g. invalid ref). Catch and report before proceeding.
+    if branch_diff.returncode >= 128:
+        print(f"{RED}❌ ERROR: Cannot compare against base branch '{base}'{RESET}")
+        stderr_msg = branch_diff.stderr.strip() if branch_diff.stderr else ""
+        if stderr_msg:
+            print(f"   Git error: {stderr_msg}")
+        print("   Fix: Ensure origin/HEAD is set, or that 'main' branch exists.")
+        print("   Run: git remote set-head origin --auto")
+        return 1
+
     staged_diff = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True)
     unstaged_diff = subprocess.run(["git", "diff", "--quiet"], capture_output=True)
 

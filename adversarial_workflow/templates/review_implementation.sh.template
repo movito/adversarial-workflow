@@ -75,17 +75,21 @@ TASK_DIR=$(grep 'task_directory:' .adversarial/config.yml | awk '{print $2}')
 LOG_DIR=$(grep 'log_directory:' .adversarial/config.yml | awk '{print $2}')
 ARTIFACTS_DIR=$(grep 'artifacts_directory:' .adversarial/config.yml | awk '{print $2}')
 
+# Provide sensible defaults when config values are missing (Fix 1: ADV-0057)
+ARTIFACTS_DIR=${ARTIFACTS_DIR:-.adversarial/artifacts/}
+LOG_DIR=${LOG_DIR:-.adversarial/logs/}
+
 TASK_FILE="$1"
 
-if [ -z "$TASK_FILE" ]; then
-  echo "Usage: ./.adversarial/scripts/review_implementation.sh <task_file_path>"
-  echo ""
-  echo "Example: ./.adversarial/scripts/review_implementation.sh ${TASK_DIR}TASK-2025-001.md"
-  exit 1
-fi
-
-if [ ! -f "$TASK_FILE" ]; then
-  echo "Error: Task file not found: $TASK_FILE"
+# Validate task file: handle both empty and missing cases (Fix 4: ADV-0057)
+if [ -z "$TASK_FILE" ] || [ ! -f "$TASK_FILE" ]; then
+  if [ -z "$TASK_FILE" ]; then
+    echo "Usage: ./.adversarial/scripts/review_implementation.sh <task_file_path>"
+    echo ""
+    echo "Example: ./.adversarial/scripts/review_implementation.sh ${TASK_DIR}TASK-2025-001.md"
+  else
+    echo "Error: Task file not found: $TASK_FILE"
+  fi
   exit 1
 fi
 
@@ -108,6 +112,12 @@ mkdir -p "$LOG_DIR"
 DEFAULT_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || true)
 DEFAULT_BRANCH=${DEFAULT_BRANCH#origin/}
 DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
+
+# Validate the resolved branch ref actually exists (Fix 2: ADV-0057)
+if ! git rev-parse --verify "$DEFAULT_BRANCH" >/dev/null 2>&1; then
+  echo "Error: Cannot find base branch '$DEFAULT_BRANCH'. Set origin/HEAD or pass branch explicitly."
+  exit 1
+fi
 
 # Capture current implementation state
 echo "=== Capturing implementation artifacts ==="
