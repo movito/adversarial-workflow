@@ -1,9 +1,10 @@
 # Adversarial Eval MCP Server — Project Specification
 
-**Status**: Draft
+**Status**: Draft (rev 2 — incorporates Dispatch feedback)
 **Date**: 2026-04-04
 **Author**: planner2 (with user input)
 **Origin**: Dispatch agent proposal for content evaluation tooling
+**Reviewed by**: Dispatch agent (2026-04-04)
 
 ---
 
@@ -124,6 +125,7 @@ category: reasoning  # reasoning | style | accuracy | structure | domain
 model: claude-sonnet-4-6
 api_key_env: ANTHROPIC_API_KEY
 timeout: 120  # seconds
+max_content_tokens: 30000  # warn if content exceeds this (model-dependent)
 
 # Verdict configuration
 verdicts:
@@ -189,6 +191,7 @@ adversarial-eval-mcp/
 │       ├── server.py          # MCP server setup, tool registration
 │       ├── evaluator.py       # Load YAML, substitute placeholders, parse verdicts
 │       ├── api_client.py      # Unified API dispatch (Anthropic, OpenAI, Google)
+│       ├── logger.py          # Append-only JSONL evaluation audit log
 │       └── types.py           # Pydantic models: EvaluatorConfig, Verdict, etc.
 ├── evaluators/                # Content evaluator YAMLs
 │   ├── argument-strength/
@@ -215,14 +218,23 @@ Uses `mcp` Python SDK. Loads evaluators on startup.
 
 **`evaluator.py`** — Reads evaluator YAML configs, substitutes `{content}` and
 `{context}` placeholders into the prompt, parses the model response for verdict
-keywords. Stateless — no side effects, no file writes.
+keywords. Before calling the API, estimates token count and warns if content
+exceeds the evaluator model's practical context limit.
 
 **`api_client.py`** — Thin wrapper over API clients. Takes a model ID and prompt,
 routes to the correct API (Anthropic, OpenAI, Google) based on model prefix or
-`api_key_env`. Returns raw text response. Handles timeouts.
+`api_key_env`. Returns raw text response and token usage. Handles timeouts.
+Uses a provider registry pattern so adding OpenAI (or any other provider) is a
+single new class implementing a `complete(model, prompt) -> (text, usage)` interface.
 
 **`types.py`** — Pydantic models for config and responses. Provides validation
 and serialization.
+
+**`logger.py`** — Append-only JSONL evaluation log. Every evaluation writes one
+line to `~/.adversarial-eval-mcp/evaluations.jsonl` containing: timestamp,
+evaluator name, model, verdict, content hash (SHA-256, not the content itself),
+and token usage. This gives a persistent audit trail that survives ephemeral
+Dispatch sessions. The log path is configurable via environment variable.
 
 ### Dependency budget
 
@@ -236,54 +248,25 @@ google-genai           # Google Generative AI client
 ```
 
 No aider. No adversarial-workflow. No LiteLLM (direct client calls are simpler
-for 3 providers).
+for 3 providers). Token estimation uses a simple heuristic (chars / 4) rather
+than a tokenizer dependency — good enough for limit warnings.
 
-## 6. Consumption Patterns
+## 6. Usage Pattern
 
-### Pattern A: Dispatch agent calls MCP directly
-
-```
-User writes content → Dispatch agent → MCP evaluate tool → verdict
-                                     ↓ (if NEEDS_REVISION)
-                              Dispatch revises in-context → re-evaluate
-                                     ↓ (if APPROVED)
-                              Dispatch sends to reMarkable
-```
-
-**Pros**: Simple, single agent, fast iteration.
-**Risks**: Dispatch may not reliably loop on NEEDS_REVISION. Revision quality
-depends on the agent maintaining full context.
-
-### Pattern B: Claude Code orchestrates
+Dispatch calls MCP directly. No intermediary, no skill definition needed — just
+a convention the agent follows.
 
 ```
-User writes content → Claude Code skill → read file
-                                        → call MCP evaluate
-                                        → parse verdict
-                                        → if NEEDS_REVISION: edit file, re-evaluate
-                                        → if APPROVED: notify user / send
+Dispatch drafts/receives content
+  → calls evaluate tool with markdown content
+  → if APPROVED: proceed (convert to PDF, send to reMarkable, etc.)
+  → if NEEDS_REVISION: present findings to user, ask whether to revise or override
+  → if user says revise: Dispatch revises in-context, re-evaluates
 ```
 
-**Pros**: Deterministic loop, can edit files on disk, better error handling.
-**Risks**: Heavier — requires Claude Code session, not just Dispatch.
-
-### Pattern C: Hybrid (recommended starting point)
-
-```
-Dispatch calls evaluate for single-shot assessment
-  → If APPROVED: proceed (Dispatch handles)
-  → If NEEDS_REVISION: hand off to Claude Code for revision loop
-```
-
-**Pros**: Fast path for content that passes. Robust path for content that needs work.
-**Cons**: Requires coordination between Dispatch and Claude Code.
-
-### Recommendation
-
-**Start with Pattern A.** Build the MCP server, register it, and have Dispatch
-call it directly. If we find that Dispatch can't reliably handle revision loops,
-we add a Claude Code skill (Pattern C). The MCP server design is identical in
-all patterns — only the caller changes.
+This is the only pattern for V1. If we find that Dispatch can't reliably handle
+revision loops, we'll add a Claude Code orchestration layer — but the MCP server
+design doesn't change either way.
 
 ## 7. Sample Evaluators (V1)
 
@@ -322,34 +305,37 @@ to auto-act or ask the user.
 ### In scope
 - MCP server with `evaluate`, `evaluate_file`, `list_evaluators`
 - Direct API calls to Anthropic and Google (2 providers)
+- Provider registry pattern (adding OpenAI is one new class)
 - 4 content evaluators (argument, clarity, accuracy, structure)
-- Structured verdict response
+- Structured verdict response with token usage
+- Content token estimation and limit warnings
+- Append-only JSONL evaluation log (`~/.adversarial-eval-mcp/evaluations.jsonl`)
 - Registration in `~/.claude/mcp_settings.json`
 - Basic tests
 
 ### Deferred to V2
 - `batch_evaluate` (parallel multi-evaluator)
-- OpenAI/Mistral providers
-- Evaluation history/persistence
-- Cost estimation / token tracking
-- Claude Code skill for revision loops
+- OpenAI/Mistral providers (registry makes this trivial)
+- Cost estimation from token usage data
+- Claude Code orchestration skill (only if Dispatch can't handle revision loops)
 - Evaluator prompt iteration based on real usage
 
 ## 10. Open Questions
 
-1. **Persistence**: Should the MCP server write evaluation logs to disk, or is
-   the caller responsible? Leaning toward caller-responsible (stateless server)
-   but this means Dispatch needs to handle it.
+1. ~~**Persistence**~~ — **Resolved**: Server logs to JSONL. Dispatch sessions
+   are ephemeral; the server owns the audit trail.
 
-2. **Max content length**: Should evaluators declare a max token budget? Large
-   documents (10k+ words) may hit context limits on some models.
+2. ~~**Max content length**~~ — **Resolved**: Evaluator YAML declares
+   `max_content_tokens`. Server estimates token count and warns in the response
+   if content exceeds the limit (does not block — the caller decides).
 
 3. **reMarkable integration**: The proposal mentions send-to-remarkable as the
    downstream action. Is that an existing MCP tool, a Dispatch skill, or something
-   to build?
+   to build? (Out of scope for this project, but affects the end-to-end workflow.)
 
-4. **Evaluator prompt tuning**: How do we iterate on evaluator prompts? Manual
-   YAML editing, or do we want a "meta-evaluator" that scores evaluator quality?
+4. **Evaluator prompt tuning**: How do we iterate on evaluator prompts? For V1,
+   manual YAML editing. The JSONL log provides data to assess evaluator quality
+   over time (verdict distribution, revision rates).
 
 ---
 
