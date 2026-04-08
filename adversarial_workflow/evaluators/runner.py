@@ -10,7 +10,6 @@ Transport: Uses litellm.completion() for LLM calls (ADV-0065).
 from __future__ import annotations
 
 import os
-import platform
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -83,7 +82,9 @@ def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -
             return 0
 
     # 6. Run evaluator via LiteLLM (all evaluators use the same path)
-    return _run_custom_evaluator(config, file_path, project_config, timeout, resolved_model)
+    return _run_custom_evaluator(
+        config, file_path, project_config, timeout, resolved_model, resolved_api_key_env
+    )
 
 
 def _run_custom_evaluator(
@@ -92,6 +93,7 @@ def _run_custom_evaluator(
     project_config: dict,
     timeout: int,
     resolved_model: str,
+    resolved_api_key_env: str = "",
 ) -> int:
     """Run an evaluator via litellm.completion().
 
@@ -101,6 +103,7 @@ def _run_custom_evaluator(
         project_config: Project configuration dict
         timeout: Timeout in seconds
         resolved_model: Resolved model ID from ModelResolver
+        resolved_api_key_env: Resolved API key env var name (for error messages)
     """
     # Prepare output path
     logs_dir = Path(project_config["log_directory"])
@@ -172,8 +175,9 @@ def _run_custom_evaluator(
         _print_rate_limit_error(file_path)
         return 1
     except litellm.AuthenticationError:
-        print(f"{RED}Error: Invalid API key for {config.api_key_env}{RESET}")
-        print(f"   Check your {config.api_key_env} environment variable")
+        api_key_name = resolved_api_key_env or config.api_key_env or "API key"
+        print(f"{RED}Error: Invalid API key for {api_key_name}{RESET}")
+        print(f"   Check your {api_key_name} environment variable")
         return 1
     except litellm.Timeout:
         _print_timeout_error(timeout)
@@ -248,11 +252,3 @@ def _print_timeout_error(timeout: int) -> None:
     print(f"{RED}Error: Evaluation timed out (>{timeout}s){RESET}")
 
 
-def _print_platform_error() -> None:
-    """Print platform compatibility error."""
-    if platform.system() == "Windows":
-        print(f"{RED}Error: Windows not supported{RESET}")
-        print("   Use WSL (Windows Subsystem for Linux)")
-    else:
-        print(f"{RED}Error: Script not found{RESET}")
-        print("   Run: adversarial init")

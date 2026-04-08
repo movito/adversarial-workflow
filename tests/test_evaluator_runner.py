@@ -9,7 +9,6 @@ from adversarial_workflow.evaluators.runner import (
     _check_file_size,
     _confirm_continue,
     _normalize_output_suffix,
-    _print_platform_error,
     _print_rate_limit_error,
     _print_timeout_error,
     _report_verdict,
@@ -1054,22 +1053,6 @@ class TestHelperFunctions:
         assert "timed out" in captured.out.lower()
         assert "300" in captured.out
 
-    def test_print_platform_error_non_windows(self, capsys):
-        """_print_platform_error on Linux prints 'adversarial init' hint (lines 349-354)."""
-        with patch("platform.system", return_value="Linux"):
-            _print_platform_error()
-        captured = capsys.readouterr()
-        assert "Error" in captured.out
-        assert "Script not found" in captured.out
-        assert "adversarial init" in captured.out
-
-    def test_print_platform_error_windows(self, capsys):
-        """_print_platform_error on Windows mentions WSL (lines 349-354)."""
-        with patch("platform.system", return_value="Windows"):
-            _print_platform_error()
-        captured = capsys.readouterr()
-        assert "Windows" in captured.out
-        assert "WSL" in captured.out
 
 
 class TestReportVerdictAllTypes:

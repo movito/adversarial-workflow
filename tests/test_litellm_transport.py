@@ -218,7 +218,7 @@ class TestLiteLLMErrorHandling:
             assert "rate limit" in captured.out.lower()
 
     def test_authentication_error(self, custom_config, project_env, capsys):
-        """AuthenticationError returns 1 with auth error message."""
+        """AuthenticationError returns 1 with auth error message including resolved key name."""
         import litellm
 
         with patch(
@@ -236,11 +236,49 @@ class TestLiteLLMErrorHandling:
                 project_config,
                 180,
                 "gpt-4o",
+                resolved_api_key_env="OPENAI_API_KEY",
             )
 
             assert result == 1
             captured = capsys.readouterr()
-            assert "api key" in captured.out.lower() or "auth" in captured.out.lower()
+            assert "OPENAI_API_KEY" in captured.out
+
+    def test_authentication_error_with_model_requirement(self, project_env, capsys):
+        """AuthenticationError uses resolved_api_key_env, not empty config.api_key_env."""
+        import litellm
+
+        config = EvaluatorConfig(
+            name="test-eval",
+            description="Test evaluator",
+            model="",
+            api_key_env="",
+            prompt="Test prompt",
+            output_suffix="TEST-EVAL",
+            source="local",
+        )
+
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            side_effect=litellm.AuthenticationError(
+                message="Invalid API key",
+                model="anthropic/claude-4-opus-20260115",
+                llm_provider="anthropic",
+            ),
+        ):
+            project_config = {"log_directory": str(project_env["logs_dir"]) + "/"}
+            result = _run_custom_evaluator(
+                config,
+                str(project_env["test_file"]),
+                project_config,
+                180,
+                "anthropic/claude-4-opus-20260115",
+                resolved_api_key_env="ANTHROPIC_API_KEY",
+            )
+
+            assert result == 1
+            captured = capsys.readouterr()
+            # Should show the resolved key name, not empty string
+            assert "ANTHROPIC_API_KEY" in captured.out
 
     def test_timeout_error(self, custom_config, project_env, capsys):
         """Timeout returns 1 with timeout message."""
