@@ -21,15 +21,16 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
 ]
-keywords = ["code-review", "ai", "llm", "quality", "testing", "aider"]
+keywords = ["code-review", "ai", "llm", "quality", "testing", "litellm"]
 requires-python = ">=3.10"
 dependencies = [
     "pyyaml>=6.0",
     "python-dotenv>=0.19.0",
-    "aider-chat>=0.86.0",
+    "litellm>=1.40.0",
     "aiohttp>=3.8.0",
 ]
 
@@ -86,7 +87,7 @@ ignore = [
 "tests/**" = ["ARG", "S", "F841", "SIM103", "SIM105", "SIM117", "RUF059"]
 "scripts/**" = ["S603", "S607", "S110"]
 "adversarial_workflow/cli.py" = ["E501", "E722", "E741", "SIM108", "SIM102", "SIM103", "SIM118", "N806", "S103", "S110", "S310", "S603", "S607", "ARG001", "F841", "RUF001", "RUF013"]
-"adversarial_workflow/evaluators/runner.py" = ["S603", "ARG001"]
+"adversarial_workflow/evaluators/runner.py" = ["ARG001"]
 "adversarial_workflow/library/client.py" = ["S310"]
 "adversarial_workflow/library/cache.py" = ["SIM105"]
 
