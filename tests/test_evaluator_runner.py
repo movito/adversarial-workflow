@@ -540,8 +540,8 @@ class TestOutputFilenameExtension:
             assert written_files[0].name == "task-spec--arch-review.md"
             assert not written_files[0].name.endswith(".md.md")
 
-    def test_builtin_suffix_with_md_extension_no_double(self, tmp_path, monkeypatch):
-        """Built-in evaluator path also normalizes suffix (no double .md)."""
+    def test_suffix_with_md_extension_no_double_via_litellm(self, tmp_path, monkeypatch):
+        """Evaluator path normalizes suffix (no double .md) via LiteLLM."""
         test_file = tmp_path / "task-spec.md"
         test_file.write_text("# Test")
 
@@ -1027,8 +1027,11 @@ class TestNoneResponseContent:
                 self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
             )
 
+        # Should print empty response warning
         captured = capsys.readouterr()
-        assert "empty response" in captured.out.lower() or result in (0, 1)
+        assert "empty response" in captured.out.lower()
+        # Should still complete (validation may fail on empty output)
+        assert result in (0, 1)
 
 
 class TestHelperFunctions:

@@ -51,7 +51,7 @@ constructive, thorough critique to improve the plan BEFORE implementation begins
 Please provide your evaluation in this EXACT format:
 
 ## Evaluation Summary
-**Verdict:** [APPROVED / NEEDS_REVISION / REJECT]
+**Verdict:** [APPROVED / NEEDS_REVISION / REJECTED]
 **Confidence:** [HIGH / MEDIUM / LOW]
 **Estimated Implementation Time:** [X hours/days]
 
