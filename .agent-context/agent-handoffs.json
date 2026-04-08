@@ -1,13 +1,14 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-03-21",
+  "last_updated": "2026-04-08",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0035 + ADV-0057 complete. Retro items addressed (patterns.yml). Backlog ready for next pick.",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADV-0065",
+      "brief_note": "COMPLETE: ADV-0065 task spec created, arch-review APPROVED, handoff ready for feature-developer.",
+      "details_link": "delegation/tasks/2-todo/ADV-0065-replace-aider-with-litellm.md",
+      "handoff_file": ".agent-context/ADV-0065-HANDOFF-feature-developer.md"
     },
     "feature-developer-v3": {
       "status": "idle",
@@ -36,6 +37,7 @@
     "ADV-0060: Preflight task-type modes - PR #52 merged (2026-03-17)"
   ],
   "pending_tasks": [
+    "ADV-0065: Replace Aider with LiteLLM (todo, ready for assignment)",
     "ADV-0034: CLI library test coverage (backlog)",
     "ADV-0036: Library module test coverage (backlog)",
     "ADV-0055: Enhance health check (backlog, fold into ADV-0056)",
