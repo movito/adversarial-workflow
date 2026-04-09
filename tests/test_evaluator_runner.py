@@ -1057,7 +1057,6 @@ class TestHelperFunctions:
         assert "300" in captured.out
 
 
-
 class TestReportVerdictAllTypes:
     """Test _report_verdict with every verdict string in each set."""
 

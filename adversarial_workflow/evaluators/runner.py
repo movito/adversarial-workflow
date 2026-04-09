@@ -250,5 +250,3 @@ def _print_rate_limit_error(file_path: str) -> None:
 def _print_timeout_error(timeout: int) -> None:
     """Print timeout error."""
     print(f"{RED}Error: Evaluation timed out (>{timeout}s){RESET}")
-
-
