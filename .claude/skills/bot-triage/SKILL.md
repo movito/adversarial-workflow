@@ -94,7 +94,17 @@ Use `./scripts/core/gh-review-helper.sh` for all reply and resolve operations.
 The wrapper validates inputs and bypasses Claude Code's permission heuristic
 on complex `gh api` arguments.
 
-### Reply to a thread
+### Reply to a thread (preferred — uses thread ID)
+
+```bash
+./scripts/core/gh-review-helper.sh thread-reply {PRRT_thread_id} \
+  'Fixed in {commit_sha}: {1-2 sentence description of what changed and where}.'
+```
+
+- `{PRRT_thread_id}` is the GraphQL node ID (e.g., `PRRT_kwDOQDTPNc55sqkt`) — from the `threads` output
+- Works on all threads including outdated diffs (unlike the REST `reply` command)
+
+### Reply to a thread (alternative — uses numeric comment ID)
 
 ```bash
 ./scripts/core/gh-review-helper.sh reply {pr_number} {comment_id} \
@@ -102,14 +112,14 @@ on complex `gh api` arguments.
 ```
 
 - `{comment_id}` is **numeric** (e.g., `2861292837`) — from REST `.id` or GraphQL `.databaseId`
-- If the reply returns a 404 error, the comment is on an outdated diff — use `resolve` with the GraphQL thread ID instead
+- If the reply returns a 404 error, the comment is on an outdated diff — use `thread-reply` instead
 
 ### Declining to fix
 
-Same command, different body:
+Same commands, different body:
 
 ```bash
-./scripts/core/gh-review-helper.sh reply {pr_number} {comment_id} \
+./scripts/core/gh-review-helper.sh thread-reply {PRRT_thread_id} \
   'Acknowledged, but won'\''t fix: {clear technical justification}.'
 ```
 

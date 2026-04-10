@@ -3,19 +3,20 @@
 # Usage: ./scripts/gh-review-helper.sh <subcommand> [args...]
 #
 # Metadata:
-#   version: 1.0.0
+#   version: 1.1.0
 #   origin: dispatch-kit
 #   origin-version: 0.3.2
-#   last-updated: 2026-02-27
+#   last-updated: 2026-04-10
 #   created-by: "@movito with planner2"
 #
 # Subcommands:
-#   reply    <PR> <COMMENT_ID> "<body>"   Reply to a review comment
-#   resolve  <THREAD_NODE_ID>             Resolve a review thread
-#   threads  <PR>                          List threads with IDs and status
-#   comments <PR>                          List review comments with IDs
-#   summary  <PR>                          Thread count summary
-#   help                                   Show this help
+#   reply        <PR> <COMMENT_ID> "<body>"       Reply to a review comment (REST, numeric ID)
+#   thread-reply <THREAD_NODE_ID> "<body>"       Reply to a review thread (GraphQL, PRRT_* ID)
+#   resolve      <THREAD_NODE_ID>                Resolve a review thread
+#   threads      <PR>                             List threads with IDs and status
+#   comments     <PR>                             List review comments with IDs
+#   summary      <PR>                             Thread count summary
+#   help                                          Show this help
 #
 # Exit codes:
 #   0 — Success
@@ -27,12 +28,13 @@ print_usage() {
     echo "Usage: ./scripts/gh-review-helper.sh <subcommand> [args...]"
     echo ""
     echo "Subcommands:"
-    echo "  reply    <PR> <COMMENT_ID> \"<body>\"   Reply to a review comment"
-    echo "  resolve  <THREAD_NODE_ID>             Resolve a review thread"
-    echo "  threads  <PR>                          List threads with IDs and status"
-    echo "  comments <PR>                          List review comments with IDs"
-    echo "  summary  <PR>                          Thread count summary"
-    echo "  help                                   Show this help"
+    echo "  reply        <PR> <COMMENT_ID> \"<body>\"       Reply to a review comment (REST)"
+    echo "  thread-reply <THREAD_NODE_ID> \"<body>\"       Reply to a review thread (GraphQL)"
+    echo "  resolve      <THREAD_NODE_ID>                Resolve a review thread"
+    echo "  threads      <PR>                             List threads with IDs and status"
+    echo "  comments     <PR>                             List review comments with IDs"
+    echo "  summary      <PR>                             Thread count summary"
+    echo "  help                                          Show this help"
     echo ""
     echo "Exit codes:"
     echo "  0 — Success"
@@ -43,6 +45,7 @@ print_usage() {
     echo "  ./scripts/gh-review-helper.sh summary 53"
     echo "  ./scripts/gh-review-helper.sh threads 53"
     echo "  ./scripts/gh-review-helper.sh reply 53 2861292837 'Fixed in abc1234: description.'"
+    echo "  ./scripts/gh-review-helper.sh thread-reply PRRT_kwDORNcO0s5wPovc 'Fixed in abc1234: description.'"
     echo "  ./scripts/gh-review-helper.sh resolve PRRT_kwDORNcO0s5wPovc"
 }
 
@@ -111,7 +114,26 @@ cmd_reply() {
     rc=$?
     if [ $rc -ne 0 ]; then
         echo "ERROR: Failed to post reply (API returned $rc)" >&2
-        echo "HINT: If 404, the comment may be on an outdated diff. Use 'resolve' with the GraphQL thread ID instead." >&2
+        echo "HINT: If 404, the comment may be on an outdated diff. Use 'thread-reply' with the GraphQL thread ID instead." >&2
+        exit 2
+    fi
+    echo "$output"
+}
+
+cmd_thread_reply() {
+    local thread_id="$1" body="$2"
+    local output rc
+    validate_thread_id "$thread_id"
+    if [ -z "$body" ]; then
+        echo "ERROR: Reply body cannot be empty" >&2
+        exit 1
+    fi
+    output=$(gh api graphql \
+        -f query="mutation { addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: \"$thread_id\", body: \"$body\"}) { comment { id } } }" \
+        --jq '.data.addPullRequestReviewThreadReply.comment.id' 2>/dev/null)
+    rc=$?
+    if [ $rc -ne 0 ]; then
+        echo "ERROR: Failed to reply to thread $thread_id" >&2
         exit 2
     fi
     echo "$output"
@@ -178,8 +200,9 @@ cmd_summary() {
 
 # ─── Dispatcher ────────────────────────────────────────────────────
 case "${1:-help}" in
-    reply)    shift; cmd_reply "$@" ;;
-    resolve)  shift; cmd_resolve "$@" ;;
+    reply)        shift; cmd_reply "$@" ;;
+    thread-reply) shift; cmd_thread_reply "$@" ;;
+    resolve)      shift; cmd_resolve "$@" ;;
     threads)  shift; cmd_threads "$@" ;;
     comments) shift; cmd_comments "$@" ;;
     summary)  shift; cmd_summary "$@" ;;

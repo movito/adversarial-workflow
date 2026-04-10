@@ -66,14 +66,23 @@ Ask for confirmation before proceeding with fixes.
 3. Reply to all threads using the **correct endpoint** (see below)
 4. Resolve all threads via GraphQL
 
-### Reply to threads
+### Reply to threads (preferred — uses thread ID)
+
+```bash
+./scripts/core/gh-review-helper.sh thread-reply PRRT_thread_id 'Fixed in {sha}: {description}.'
+```
+
+- `PRRT_thread_id` is the GraphQL node ID from the `threads` output (e.g., `PRRT_kwDOQDTPNc55sqkt`)
+- Works on all threads including outdated diffs
+
+### Reply to threads (alternative — uses numeric comment ID)
 
 ```bash
 ./scripts/core/gh-review-helper.sh reply PR_NUMBER COMMENT_ID 'Fixed in {sha}: {description}.'
 ```
 
 - `COMMENT_ID` is the numeric ID from the `threads` or `comments` output (e.g., `2861292837`)
-- Do NOT use node IDs (starting with `PRRC_`)
+- If this returns 404, use `thread-reply` instead
 
 ### Resolve threads
 
