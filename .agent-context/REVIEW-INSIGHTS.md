@@ -90,4 +90,40 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 - Allows `pytest -m "not network"` for offline CI runs
 - Pattern: `pytestmark = pytest.mark.network` at module level
 
-*Last updated: 2026-02-03*
+---
+
+## Evaluators (`adversarial_workflow/evaluators/`)
+
+### ADV-0065: Verdict tokens in prompts must match parser sets exactly
+- Built-in evaluator prompts instruct the LLM to output verdict tokens (e.g., `APPROVED`, `REJECTED`)
+- These tokens must match the `_PASS_VERDICTS`, `_REVISE_VERDICTS`, `_REJECT_VERDICTS` sets in `runner.py`
+- The evaluate prompt originally used `REJECT` but the parser expects `REJECTED` — caught by both TDD and CodeRabbit
+- Pattern: when adding/modifying verdict tokens, grep for all three sets and the prompt text
+
+### ADV-0065: LiteLLM exception hierarchy for error handling
+- `litellm.RateLimitError` — API rate limits (429)
+- `litellm.AuthenticationError` — invalid API key (401)
+- `litellm.Timeout` — request exceeded timeout
+- Catch these specifically rather than broad `Exception` — provides actionable error messages
+- Auth error should reference the `api_key_env` variable name so users know which key to check
+
+### ADV-0065: `resolved_api_key_env` should flow through to error handlers
+- When `ModelResolver` resolves a model, it also resolves the API key env var name
+- Pass this through to `_run_custom_evaluator()` so auth errors can say "check GEMINI_API_KEY" not just "auth failed"
+- Fallback chain: `resolved_api_key_env or config.api_key_env or "API key"`
+
+---
+
+## Process
+
+### ADV-0065: Transport-swap tasks have low evaluator signal
+- `code-reviewer-fast` returned FAIL with 5 findings, all triaged as false positive or out-of-scope
+- For mechanical dependency swaps where the API contract is preserved, evaluator review adds more noise than signal
+- Consider skipping evaluator review for mechanical refactors and relying on TDD + bot reviews instead
+
+### ADV-0065: Always `ruff format` before every commit
+- CI failed on formatting (trailing blank lines) despite passing tests
+- Pre-commit hooks don't always fire (e.g., when committing CodeRabbit fixes quickly)
+- Add explicit `ruff format <changed-files>` to the inner loop after every code edit
+
+*Last updated: 2026-04-10*
