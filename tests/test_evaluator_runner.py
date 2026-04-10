@@ -1,7 +1,5 @@
 """Tests for the generic evaluator runner."""
 
-import shutil
-import subprocess
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,13 +8,10 @@ from adversarial_workflow.evaluators.config import EvaluatorConfig, ModelRequire
 from adversarial_workflow.evaluators.runner import (
     _check_file_size,
     _confirm_continue,
-    _execute_script,
     _normalize_output_suffix,
-    _print_platform_error,
     _print_rate_limit_error,
     _print_timeout_error,
     _report_verdict,
-    _run_builtin_evaluator,
     _run_custom_evaluator,
     _warn_large_file,
     run_evaluator,
@@ -87,31 +82,11 @@ class TestRunEvaluatorErrors:
 
         monkeypatch.chdir(tmp_path)
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-        monkeypatch.setattr(shutil, "which", lambda _: "/usr/bin/aider")
 
         result = run_evaluator(sample_config, str(test_file))
         assert result == 1
         captured = capsys.readouterr()
         assert "OPENAI_API_KEY" in captured.out
-
-    def test_no_aider(self, sample_config, tmp_path, monkeypatch, capsys):
-        """Error when aider not installed."""
-        # Create test file and config
-        test_file = tmp_path / "test.md"
-        test_file.write_text("# Test")
-
-        config_dir = tmp_path / ".adversarial"
-        config_dir.mkdir()
-        (config_dir / "config.yml").write_text("log_directory: .adversarial/logs/")
-
-        monkeypatch.chdir(tmp_path)
-        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-        monkeypatch.setattr(shutil, "which", lambda _: None)
-
-        result = run_evaluator(sample_config, str(test_file))
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "Aider not found" in captured.out
 
 
 class TestCheckFileSize:
@@ -195,6 +170,13 @@ class TestBuiltinEvaluators:
 
         for name, config in BUILTIN_EVALUATORS.items():
             assert config.source == "builtin", f"{name} should have source='builtin'"
+
+    def test_builtin_evaluators_have_prompts(self):
+        """Built-in evaluators have inline prompts (ADV-0065)."""
+        from adversarial_workflow.evaluators.builtins import BUILTIN_EVALUATORS
+
+        for name, config in BUILTIN_EVALUATORS.items():
+            assert len(config.prompt) > 100, f"{name} should have a non-trivial prompt"
 
 
 class TestGetAllEvaluators:
@@ -281,12 +263,16 @@ class TestModelResolutionInRunner:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        # Mock aider to capture the model argument
-        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
-        with (
-            patch("subprocess.run", mock_run),
-            patch("shutil.which", return_value="/usr/bin/aider"),
-        ):
+        # Mock litellm.completion
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
+        )
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ) as mock_completion:
             # Legacy config with only model field
             legacy_config = EvaluatorConfig(
                 name="legacy-eval",
@@ -301,12 +287,10 @@ class TestModelResolutionInRunner:
             # This should work without model_requirement
             run_evaluator(legacy_config, str(test_file))
 
-            # Verify aider was called with the legacy model
-            assert mock_run.called, "aider should have been called"
-            call_args = mock_run.call_args
-            cmd = call_args[0][0]
-            model_idx = cmd.index("--model") + 1
-            assert cmd[model_idx] == "gpt-4o"
+            # Verify litellm was called with the legacy model
+            assert mock_completion.called, "litellm.completion should have been called"
+            call_kwargs = mock_completion.call_args.kwargs
+            assert call_kwargs["model"] == "gpt-4o"
 
     def test_model_requirement_resolves_correctly(self, tmp_path, monkeypatch):
         """Evaluator with model_requirement gets resolved to actual model ID."""
@@ -321,12 +305,16 @@ class TestModelResolutionInRunner:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
 
-        # Mock aider to capture the model argument
-        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
-        with (
-            patch("subprocess.run", mock_run),
-            patch("shutil.which", return_value="/usr/bin/aider"),
-        ):
+        # Mock litellm.completion
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
+        )
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ) as mock_completion:
             # Config with model_requirement only
             config = EvaluatorConfig(
                 name="new-eval",
@@ -341,12 +329,10 @@ class TestModelResolutionInRunner:
 
             run_evaluator(config, str(test_file))
 
-            # Verify aider was called with a resolved claude model
-            assert mock_run.called, "aider should have been called"
-            call_args = mock_run.call_args
-            cmd = call_args[0][0]
-            model_idx = cmd.index("--model") + 1
-            resolved_model = cmd[model_idx]
+            # Verify litellm was called with a resolved claude model
+            assert mock_completion.called, "litellm.completion should have been called"
+            call_kwargs = mock_completion.call_args.kwargs
+            resolved_model = call_kwargs["model"]
             assert "claude" in resolved_model.lower()
             assert "opus" in resolved_model.lower()
 
@@ -363,12 +349,16 @@ class TestModelResolutionInRunner:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")  # For explicit model
 
-        # Mock aider to capture the model argument
-        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
-        with (
-            patch("subprocess.run", mock_run),
-            patch("shutil.which", return_value="/usr/bin/aider"),
-        ):
+        # Mock litellm.completion
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
+        )
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ) as mock_completion:
             # Config with both fields - explicit model should win
             config = EvaluatorConfig(
                 name="priority-eval",
@@ -385,12 +375,10 @@ class TestModelResolutionInRunner:
 
             run_evaluator(config, str(test_file))
 
-            # Verify aider was called with explicit model, not resolved gemini
-            assert mock_run.called, "aider should have been called"
-            call_args = mock_run.call_args
-            cmd = call_args[0][0]
-            model_idx = cmd.index("--model") + 1
-            resolved_model = cmd[model_idx]
+            # Verify litellm was called with explicit model, not resolved gemini
+            assert mock_completion.called, "litellm.completion should have been called"
+            call_kwargs = mock_completion.call_args.kwargs
+            resolved_model = call_kwargs["model"]
             assert resolved_model == "gpt-4o"
             assert "gemini" not in resolved_model.lower()
 
@@ -407,12 +395,16 @@ class TestModelResolutionInRunner:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        # Mock aider to capture the model argument
-        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
-        with (
-            patch("subprocess.run", mock_run),
-            patch("shutil.which", return_value="/usr/bin/aider"),
-        ):
+        # Mock litellm.completion
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
+        )
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ) as mock_completion:
             # Config with invalid model_requirement but valid model field
             config = EvaluatorConfig(
                 name="direct-model-eval",
@@ -428,12 +420,10 @@ class TestModelResolutionInRunner:
             # No warning - model field takes priority, requirement ignored
             run_evaluator(config, str(test_file))
 
-            # Verify aider was called with explicit model
-            assert mock_run.called, "aider should have been called"
-            call_args = mock_run.call_args
-            cmd = call_args[0][0]
-            model_idx = cmd.index("--model") + 1
-            assert cmd[model_idx] == "gpt-4o"
+            # Verify litellm was called with explicit model
+            assert mock_completion.called, "litellm.completion should have been called"
+            call_kwargs = mock_completion.call_args.kwargs
+            assert call_kwargs["model"] == "gpt-4o"
 
     def test_resolution_error_when_no_fallback(self, tmp_path, monkeypatch, capsys):
         """ResolutionError when model_requirement fails and no legacy fallback."""
@@ -448,30 +438,24 @@ class TestModelResolutionInRunner:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("SOME_API_KEY", "test-key")
 
-        # Mock aider
-        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
-        with (
-            patch("subprocess.run", mock_run),
-            patch("shutil.which", return_value="/usr/bin/aider"),
-        ):
-            # Config with invalid model_requirement and no legacy fallback
-            config = EvaluatorConfig(
-                name="error-eval",
-                description="Error evaluator",
-                model="",  # No fallback
-                api_key_env="",
-                prompt="Test prompt",
-                output_suffix="TEST",
-                model_requirement=ModelRequirement(family="unknown", tier="unknown"),
-                source="local",
-            )
+        # Config with invalid model_requirement and no legacy fallback
+        config = EvaluatorConfig(
+            name="error-eval",
+            description="Error evaluator",
+            model="",  # No fallback
+            api_key_env="",
+            prompt="Test prompt",
+            output_suffix="TEST",
+            model_requirement=ModelRequirement(family="unknown", tier="unknown"),
+            source="local",
+        )
 
-            result = run_evaluator(config, str(test_file))
+        result = run_evaluator(config, str(test_file))
 
-            # Should return error code 1
-            assert result == 1
-            captured = capsys.readouterr()
-            assert "Unknown model family" in captured.out or "resolution" in captured.out.lower()
+        # Should return error code 1
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Unknown model family" in captured.out or "resolution" in captured.out.lower()
 
 
 class TestOutputFilenameExtension:
@@ -490,10 +474,14 @@ class TestOutputFilenameExtension:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="APPROVED", stderr=""))
-        with (
-            patch("subprocess.run", mock_run),
-            patch("shutil.which", return_value="/usr/bin/aider"),
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
+        )
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
         ):
             config = EvaluatorConfig(
                 name="test-eval",
@@ -525,10 +513,14 @@ class TestOutputFilenameExtension:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="APPROVED", stderr=""))
-        with (
-            patch("subprocess.run", mock_run),
-            patch("shutil.which", return_value="/usr/bin/aider"),
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
+        )
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
         ):
             config = EvaluatorConfig(
                 name="arch-review",
@@ -548,41 +540,44 @@ class TestOutputFilenameExtension:
             assert written_files[0].name == "task-spec--arch-review.md"
             assert not written_files[0].name.endswith(".md.md")
 
-    def test_builtin_suffix_with_md_extension_no_double(self, tmp_path):
-        """Built-in _execute_script path also normalizes suffix."""
+    def test_suffix_with_md_extension_no_double_via_litellm(self, tmp_path, monkeypatch):
+        """Evaluator path normalizes suffix (no double .md) via LiteLLM."""
         test_file = tmp_path / "task-spec.md"
         test_file.write_text("# Test")
 
-        logs_dir = tmp_path / ".adversarial" / "logs"
-        logs_dir.mkdir(parents=True)
+        config_dir = tmp_path / ".adversarial"
+        config_dir.mkdir()
+        logs_dir = config_dir / "logs"
+        (config_dir / "config.yml").write_text(f"log_directory: {logs_dir}")
 
-        # Pre-create the expected log file (script would normally write it)
-        # Validator requires 500+ bytes
-        expected_log = logs_dir / "task-spec-PLAN-EVAL.md"
-        expected_log.write_text("## Verdict: APPROVED\n\n" + "Evaluation details. " * 30)
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        config = EvaluatorConfig(
-            name="evaluate",
-            description="Plan evaluation",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="",
-            output_suffix="PLAN-EVAL.md",
-            source="builtin",
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
         )
-
-        with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="", stderr="")):
-            result = _execute_script(
-                "/fake/script.sh",
-                str(test_file),
-                config,
-                {"log_directory": str(logs_dir)},
-                30,
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ):
+            config = EvaluatorConfig(
+                name="evaluate",
+                description="Plan evaluation",
+                model="gpt-4o",
+                api_key_env="OPENAI_API_KEY",
+                prompt="Test prompt",
+                output_suffix="PLAN-EVAL.md",
+                source="custom",
             )
 
-        assert result == 0
-        assert expected_log.exists()
-        assert not (logs_dir / "task-spec-PLAN-EVAL.md.md").exists()
+            run_evaluator(config, str(test_file))
+
+            written_files = list(logs_dir.glob("*"))
+            assert len(written_files) == 1
+            assert written_files[0].name == "task-spec-PLAN-EVAL.md"
+            assert not (logs_dir / "task-spec-PLAN-EVAL.md.md").exists()
 
     def test_normalize_output_suffix_lowercase(self):
         """Helper strips lowercase .md."""
@@ -601,12 +596,11 @@ class TestOutputFilenameExtension:
         assert _normalize_output_suffix("TEST-EVAL") == "TEST-EVAL"
 
 
-class TestAiderCommandFlags:
-    """Test aider command construction flags (ADV-0037)."""
+class TestLiteLLMCompletionFlags:
+    """Test litellm.completion() call parameters (ADV-0065, replaces ADV-0037)."""
 
-    def test_no_browser_flag_included(self, tmp_path, monkeypatch):
-        """Verify --no-browser flag is included to suppress browser opening."""
-        # Create test file and config
+    def test_litellm_called_with_correct_params(self, tmp_path, monkeypatch):
+        """Verify litellm.completion() is called with model, messages, and timeout."""
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test")
 
@@ -617,12 +611,15 @@ class TestAiderCommandFlags:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        # Mock aider to capture the command
-        mock_run = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
-        with (
-            patch("subprocess.run", mock_run),
-            patch("shutil.which", return_value="/usr/bin/aider"),
-        ):
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
+        )
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ) as mock_completion:
             config = EvaluatorConfig(
                 name="test-eval",
                 description="Test evaluator",
@@ -635,11 +632,11 @@ class TestAiderCommandFlags:
 
             run_evaluator(config, str(test_file))
 
-            # Verify --no-browser is in the command
-            assert mock_run.called, "aider should have been called"
-            call_args = mock_run.call_args
-            cmd = call_args[0][0]
-            assert "--no-browser" in cmd, "aider command should include --no-browser flag"
+            assert mock_completion.called, "litellm.completion should have been called"
+            call_kwargs = mock_completion.call_args.kwargs
+            assert call_kwargs["model"] == "gpt-4o"
+            assert "messages" in call_kwargs
+            assert "timeout" in call_kwargs
 
 
 # ---------------------------------------------------------------------------
@@ -663,7 +660,6 @@ class TestRunEvaluatorLargeFile:
 
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv(config.api_key_env, "test-key")
-        monkeypatch.setattr(shutil, "which", lambda _: "/usr/bin/aider")
         return test_file
 
     def test_large_file_user_declines_returns_zero(
@@ -711,7 +707,11 @@ class TestRunEvaluatorLargeFile:
         """Large file + user accepting continues to evaluation (doesn't return 0 early)."""
         test_file = self._setup_env(tmp_path, monkeypatch, sample_config)
 
-        mock_subprocess = MagicMock(return_value=MagicMock(returncode=0, stdout="", stderr=""))
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
+        )
         with (
             patch(
                 "adversarial_workflow.evaluators.runner._check_file_size",
@@ -721,14 +721,17 @@ class TestRunEvaluatorLargeFile:
                 "adversarial_workflow.evaluators.runner._confirm_continue",
                 return_value=True,
             ),
-            patch("subprocess.run", mock_subprocess),
+            patch(
+                "adversarial_workflow.evaluators.runner.litellm.completion",
+                return_value=mock_response,
+            ) as mock_completion,
         ):
             result = run_evaluator(sample_config, str(test_file))
 
-        # Aider was invoked — proves evaluation was not cancelled
-        assert mock_subprocess.called
-        # Validation fails on empty stdout, so result is 1 (not the early-cancel 0)
-        assert result == 1
+        # litellm was invoked — proves evaluation was not cancelled
+        assert mock_completion.called
+        # Evaluation succeeds with APPROVED verdict
+        assert result == 0
 
 
 class TestWarnLargeFile:
@@ -787,11 +790,11 @@ class TestConfirmContinue:
             assert _confirm_continue() is False
 
 
-class TestRunBuiltinEvaluatorPath:
-    """Test the builtin evaluator path in run_evaluator and _run_builtin_evaluator."""
+class TestBuiltinEvaluatorPath:
+    """Test built-in evaluators use the LiteLLM path (ADV-0065)."""
 
-    def test_builtin_path_taken_when_source_is_builtin(self, tmp_path, monkeypatch):
-        """run_evaluator routes to _run_builtin_evaluator when source='builtin' (line 90)."""
+    def test_builtin_uses_litellm_not_scripts(self, tmp_path, monkeypatch):
+        """run_evaluator routes builtin evaluators through litellm.completion()."""
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test", encoding="utf-8")
 
@@ -803,121 +806,62 @@ class TestRunBuiltinEvaluatorPath:
 
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-        monkeypatch.setattr(shutil, "which", lambda _: "/usr/bin/aider")
 
-        config = EvaluatorConfig(
-            name="evaluate",
-            description="Plan evaluation",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="",
-            output_suffix="PLAN-EVALUATION",
-            source="builtin",
+        from adversarial_workflow.evaluators.builtins import BUILTIN_EVALUATORS
+
+        config = BUILTIN_EVALUATORS["evaluate"]
+
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
         )
-
-        # Mock _run_builtin_evaluator directly to verify routing (not just output text)
         with patch(
-            "adversarial_workflow.evaluators.runner._run_builtin_evaluator",
-            return_value=0,
-        ) as mock_builtin:
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ) as mock_completion:
             result = run_evaluator(config, str(test_file))
             assert result == 0
-        mock_builtin.assert_called_once()
+        mock_completion.assert_called_once()
 
-    def test_script_not_found_for_unknown_name(self, tmp_path, capsys):
-        """Error when evaluator name is not in the script_map (lines 109-112)."""
-        config = EvaluatorConfig(
-            name="no-such-builtin",
-            description="Test",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="",
-            output_suffix="TEST",
-            source="builtin",
-        )
-
-        result = _run_builtin_evaluator(
-            config, "/some/file.md", {"log_directory": str(tmp_path)}, 30
-        )
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "Script not found" in captured.out
-
-    def test_script_not_found_for_known_name_missing_file(self, tmp_path, monkeypatch, capsys):
-        """Error when known name but script file doesn't exist on disk (lines 109-112)."""
-        monkeypatch.chdir(tmp_path)  # .adversarial/scripts/ doesn't exist here
-
-        config = EvaluatorConfig(
-            name="evaluate",
-            description="Plan evaluation",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="",
-            output_suffix="PLAN-EVALUATION",
-            source="builtin",
-        )
-
-        result = _run_builtin_evaluator(
-            config, "/some/file.md", {"log_directory": str(tmp_path)}, 30
-        )
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "Script not found" in captured.out
-
-    def test_execute_script_called_when_script_exists(self, tmp_path, monkeypatch):
-        """_execute_script is called when the script file is found (line 114)."""
-        # Create the expected builtin script path
-        scripts_dir = tmp_path / ".adversarial" / "scripts"
-        scripts_dir.mkdir(parents=True)
-        fake_script = scripts_dir / "evaluate_plan.sh"
-        fake_script.write_text("#!/bin/bash\necho done", encoding="utf-8")
-
-        # Pre-create the log file that validate_evaluation_output expects
-        logs_dir = tmp_path / ".adversarial" / "logs"
-        logs_dir.mkdir()
-        log_file = logs_dir / "test-PLAN-EVALUATION.md"
-        log_file.write_text(
-            "## Verdict: APPROVED\n\n" + "Evaluation details. " * 30, encoding="utf-8"
-        )
-
+    def test_builtin_prompt_included_in_messages(self, tmp_path, monkeypatch):
+        """Built-in evaluator prompt is passed in the litellm messages."""
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test", encoding="utf-8")
 
+        config_dir = tmp_path / ".adversarial"
+        config_dir.mkdir()
+        (config_dir / "config.yml").write_text(
+            "log_directory: .adversarial/logs/", encoding="utf-8"
+        )
+
         monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        config = EvaluatorConfig(
-            name="evaluate",
-            description="Plan evaluation",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="",
-            output_suffix="PLAN-EVALUATION",
-            source="builtin",
+        from adversarial_workflow.evaluators.builtins import BUILTIN_EVALUATORS
+
+        config = BUILTIN_EVALUATORS["evaluate"]
+
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = (
+            "Evaluation details. " * 30 + "\nVerdict: APPROVED"
         )
-
         with patch(
-            "adversarial_workflow.evaluators.runner._execute_script",
-            return_value=0,
-        ) as mock_execute:
-            result = _run_builtin_evaluator(
-                config, str(test_file), {"log_directory": str(logs_dir)}, 30
-            )
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ) as mock_completion:
+            run_evaluator(config, str(test_file))
 
-        assert result == 0
-        # Runner resolves script relative to cwd (monkeypatched to tmp_path)
-        mock_execute.assert_called_once_with(
-            ".adversarial/scripts/evaluate_plan.sh",
-            str(test_file),
-            config,
-            {"log_directory": str(logs_dir)},
-            30,
-        )
+        call_kwargs = mock_completion.call_args.kwargs
+        messages = call_kwargs["messages"]
+        content = messages[0]["content"]
+        assert "REVIEWER" in content
+        assert "design review" in content.lower()
 
 
 class TestRunCustomEvaluatorErrors:
-    """Test error paths in _run_custom_evaluator (lines 193-194, 219-226)."""
+    """Test error paths in _run_custom_evaluator with LiteLLM (ADV-0065)."""
 
     def _make_config(self):
         return EvaluatorConfig(
@@ -930,15 +874,23 @@ class TestRunCustomEvaluatorErrors:
             source="custom",
         )
 
-    def test_rate_limit_error_in_stdout(self, tmp_path, capsys):
-        """RateLimitError in subprocess stdout triggers rate-limit handling (lines 193-194)."""
+    def test_rate_limit_error(self, tmp_path, capsys):
+        """litellm.RateLimitError returns 1 with rate-limit message."""
+        import litellm
+
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test content", encoding="utf-8")
         logs_dir = tmp_path / "logs"
         logs_dir.mkdir()
 
-        mock_result = MagicMock(returncode=0, stdout="RateLimitError: exceeded quota", stderr="")
-        with patch("subprocess.run", return_value=mock_result):
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            side_effect=litellm.RateLimitError(
+                message="Rate limit exceeded",
+                model="gpt-4o",
+                llm_provider="openai",
+            ),
+        ):
             result = _run_custom_evaluator(
                 self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
             )
@@ -947,31 +899,23 @@ class TestRunCustomEvaluatorErrors:
         captured = capsys.readouterr()
         assert "rate limit" in captured.out.lower()
 
-    def test_rate_limit_error_in_stderr(self, tmp_path, capsys):
-        """'tokens per min' in stderr also triggers rate-limit handling."""
+    def test_timeout_error_returns_one(self, tmp_path, capsys):
+        """litellm.Timeout returns 1 with timeout message."""
+        import litellm
+
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test content", encoding="utf-8")
         logs_dir = tmp_path / "logs"
         logs_dir.mkdir()
 
-        mock_result = MagicMock(returncode=0, stdout="", stderr="tokens per min limit reached")
-        with patch("subprocess.run", return_value=mock_result):
-            result = _run_custom_evaluator(
-                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
-            )
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "rate limit" in captured.out.lower()
-
-    def test_timeout_expired_returns_one(self, tmp_path, capsys):
-        """TimeoutExpired from subprocess returns 1 with timeout message (lines 219-223)."""
-        test_file = tmp_path / "test.md"
-        test_file.write_text("# Test content", encoding="utf-8")
-        logs_dir = tmp_path / "logs"
-        logs_dir.mkdir()
-
-        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("aider", 30)):
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            side_effect=litellm.Timeout(
+                message="Request timed out",
+                model="gpt-4o",
+                llm_provider="openai",
+            ),
+        ):
             result = _run_custom_evaluator(
                 self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
             )
@@ -980,34 +924,67 @@ class TestRunCustomEvaluatorErrors:
         captured = capsys.readouterr()
         assert "timed out" in captured.out.lower()
 
-    def test_file_not_found_error_returns_one(self, tmp_path, capsys):
-        """FileNotFoundError from subprocess returns 1 with platform error (lines 224-226)."""
+    def test_auth_error_returns_one(self, tmp_path, capsys):
+        """litellm.AuthenticationError returns 1 with auth error message."""
+        import litellm
+
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test content", encoding="utf-8")
         logs_dir = tmp_path / "logs"
         logs_dir.mkdir()
 
-        with patch("subprocess.run", side_effect=FileNotFoundError()):
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            side_effect=litellm.AuthenticationError(
+                message="Invalid API key",
+                model="gpt-4o",
+                llm_provider="openai",
+            ),
+        ):
             result = _run_custom_evaluator(
                 self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
             )
 
         assert result == 1
         captured = capsys.readouterr()
-        assert "Error" in captured.out
+        assert "api key" in captured.out.lower() or "auth" in captured.out.lower()
 
-    def test_successful_evaluation_calls_report_verdict(self, tmp_path, capsys):
-        """On valid output, calls _report_verdict and returns its result (line 219)."""
+    def test_generic_exception_returns_one(self, tmp_path, capsys):
+        """Generic exception from litellm returns 1."""
         test_file = tmp_path / "test.md"
         test_file.write_text("# Test content", encoding="utf-8")
         logs_dir = tmp_path / "logs"
         logs_dir.mkdir()
 
-        # Produce enough stdout so header + stdout >= 500 bytes, with a clear verdict
-        large_stdout = "Verdict: APPROVED\n\n" + "Evaluation details. " * 30
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            side_effect=Exception("Unexpected error"),
+        ):
+            result = _run_custom_evaluator(
+                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
+            )
 
-        mock_result = MagicMock(returncode=0, stdout=large_stdout, stderr="")
-        with patch("subprocess.run", return_value=mock_result):
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "error" in captured.out.lower()
+
+    def test_successful_evaluation_calls_report_verdict(self, tmp_path, capsys):
+        """On valid output, calls _report_verdict and returns its result."""
+        test_file = tmp_path / "test.md"
+        test_file.write_text("# Test content", encoding="utf-8")
+        logs_dir = tmp_path / "logs"
+        logs_dir.mkdir()
+
+        # Produce enough content so header + response >= 500 bytes, with a clear verdict
+        large_content = "Verdict: APPROVED\n\n" + "Evaluation details. " * 30
+
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = large_content
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ):
             result = _run_custom_evaluator(
                 self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
             )
@@ -1017,96 +994,44 @@ class TestRunCustomEvaluatorErrors:
         assert "APPROVED" in captured.out
 
 
-class TestExecuteScriptErrors:
-    """Test error paths in _execute_script (lines 250-258, 268-269)."""
+class TestNoneResponseContent:
+    """Test None response content handling (ADV-0065)."""
 
-    def _make_builtin_config(self):
+    def _make_config(self):
         return EvaluatorConfig(
-            name="evaluate",
-            description="Plan evaluation",
+            name="test-eval",
+            description="Test",
             model="gpt-4o",
             api_key_env="OPENAI_API_KEY",
-            prompt="",
-            output_suffix="PLAN-EVALUATION",
-            source="builtin",
+            prompt="Test prompt",
+            output_suffix="TEST",
+            source="custom",
         )
 
-    def test_timeout_expired_returns_one(self, tmp_path, capsys):
-        """TimeoutExpired during script execution returns 1 (lines 253-255)."""
+    def test_none_content_writes_empty_output(self, tmp_path, capsys):
+        """None response content produces empty output with warning."""
         test_file = tmp_path / "test.md"
-        test_file.write_text("# Test", encoding="utf-8")
-
-        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("script.sh", 30)):
-            result = _execute_script(
-                "/fake/script.sh",
-                str(test_file),
-                self._make_builtin_config(),
-                {"log_directory": str(tmp_path)},
-                30,
-            )
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "timed out" in captured.out.lower()
-
-    def test_file_not_found_returns_one(self, tmp_path, capsys):
-        """FileNotFoundError during script execution returns 1 (lines 256-258)."""
-        test_file = tmp_path / "test.md"
-        test_file.write_text("# Test", encoding="utf-8")
-
-        with patch("subprocess.run", side_effect=FileNotFoundError()):
-            result = _execute_script(
-                "/fake/script.sh",
-                str(test_file),
-                self._make_builtin_config(),
-                {"log_directory": str(tmp_path)},
-                30,
-            )
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "Error" in captured.out
-
-    def test_missing_output_file_fails_validation(self, tmp_path, capsys):
-        """Missing log file after script run triggers validation failure (lines 268-269)."""
-        test_file = tmp_path / "test.md"
-        test_file.write_text("# Test", encoding="utf-8")
-
+        test_file.write_text("# Test content", encoding="utf-8")
         logs_dir = tmp_path / "logs"
         logs_dir.mkdir()
-        # Deliberately do NOT create the expected log file
 
-        with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="", stderr="")):
-            result = _execute_script(
-                "/fake/script.sh",
-                str(test_file),
-                self._make_builtin_config(),
-                {"log_directory": str(logs_dir)},
-                30,
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = None
+
+        with patch(
+            "adversarial_workflow.evaluators.runner.litellm.completion",
+            return_value=mock_response,
+        ):
+            result = _run_custom_evaluator(
+                self._make_config(), str(test_file), {"log_directory": str(logs_dir)}, 30, "gpt-4o"
             )
 
-        assert result == 1
+        # Should print empty response warning
         captured = capsys.readouterr()
-        assert "Evaluation failed" in captured.out
-
-    def test_rate_limit_in_script_output_returns_one(self, tmp_path, capsys):
-        """RateLimitError in script stdout triggers rate-limit handling (lines 250-251)."""
-        test_file = tmp_path / "test.md"
-        test_file.write_text("# Test", encoding="utf-8")
-
-        mock_result = MagicMock(returncode=0, stdout="RateLimitError: quota exceeded", stderr="")
-        with patch("subprocess.run", return_value=mock_result):
-            result = _execute_script(
-                "/fake/script.sh",
-                str(test_file),
-                self._make_builtin_config(),
-                {"log_directory": str(tmp_path)},
-                30,
-            )
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "rate limit" in captured.out.lower()
+        assert "empty response" in captured.out.lower()
+        # Should still complete (validation may fail on empty output)
+        assert result in (0, 1)
 
 
 class TestHelperFunctions:
@@ -1130,23 +1055,6 @@ class TestHelperFunctions:
         captured = capsys.readouterr()
         assert "timed out" in captured.out.lower()
         assert "300" in captured.out
-
-    def test_print_platform_error_non_windows(self, capsys):
-        """_print_platform_error on Linux prints 'adversarial init' hint (lines 349-354)."""
-        with patch("platform.system", return_value="Linux"):
-            _print_platform_error()
-        captured = capsys.readouterr()
-        assert "Error" in captured.out
-        assert "Script not found" in captured.out
-        assert "adversarial init" in captured.out
-
-    def test_print_platform_error_windows(self, capsys):
-        """_print_platform_error on Windows mentions WSL (lines 349-354)."""
-        with patch("platform.system", return_value="Windows"):
-            _print_platform_error()
-        captured = capsys.readouterr()
-        assert "Windows" in captured.out
-        assert "WSL" in captured.out
 
 
 class TestReportVerdictAllTypes:

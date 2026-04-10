@@ -1,20 +1,20 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-03-20",
+  "last_updated": "2026-04-08",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0035 complete (PR #55 merged, 100% coverage). ADV-0057 ready for assignment.",
-      "details_link": null,
-      "handoff_file": ".agent-context/ADV-0057-HANDOFF-feature-developer.md"
+      "status": "completed",
+      "current_task": "ADV-0065",
+      "brief_note": "COMPLETE: ADV-0065 task spec created, arch-review APPROVED, handoff ready for feature-developer.",
+      "details_link": "delegation/tasks/2-todo/ADV-0065-replace-aider-with-litellm.md",
+      "handoff_file": ".agent-context/ADV-0065-HANDOFF-feature-developer.md"
     },
     "feature-developer-v3": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0035 delivered and merged (PR #55). runner.py 72%→100%. 8 threads, 3 fix rounds, 7 commits.",
-      "details_link": ".agent-context/retros/ADV-0035-retro.md"
+      "brief_note": "ADV-0057 delivered and merged (PR #56). Clean run: 0 bot rounds, 545 tests. ADV-0064 follow-up created.",
+      "details_link": ".agent-context/retros/ADV-0057-retro.md"
     },
     "code-reviewer": {
       "status": "idle",
@@ -30,18 +30,20 @@
     }
   },
   "recent_completions": [
+    "ADV-0057: Review script robustness - PR #56 merged, 0 bot rounds (2026-03-21)",
     "ADV-0035: Evaluator runner test coverage - PR #55 merged, 100% coverage (2026-03-20)",
     "ADV-0062: Preflight auto-type from task spec - PR #54 merged (2026-03-18)",
     "ADV-0061: Fix DK002 violations, promote pattern lint to blocking - PR #53 merged (2026-03-18)",
-    "ADV-0060: Preflight task-type modes - PR #52 merged (2026-03-17)",
-    "ADV-0059: GH Actions paths alignment - PR #51 merged (2026-03-17)"
+    "ADV-0060: Preflight task-type modes - PR #52 merged (2026-03-17)"
   ],
   "pending_tasks": [
-    "ADV-0057: Review script robustness (todo, ready)",
+    "ADV-0065: Replace Aider with LiteLLM (todo, ready for assignment)",
     "ADV-0034: CLI library test coverage (backlog)",
     "ADV-0036: Library module test coverage (backlog)",
     "ADV-0055: Enhance health check (backlog, fold into ADV-0056)",
-    "ADV-0056: adversarial upgrade command (backlog)"
+    "ADV-0056: adversarial upgrade command (backlog)",
+    "ADV-0063: Fix triage-threads jq quoting (backlog, workflow freeze)",
+    "ADV-0064: Review script deep hardening (backlog, 8 latent items)"
   ],
   "blocked_items": [],
   "architecture_status": {
@@ -55,5 +57,5 @@
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "ADV-0035 exceeded target: runner.py at 100% (was 72%, target was 85%). Retro noted ADV-0063 (consecutive-quote heuristic) as blocker for autonomous triage. ADV-0057 is next in queue (1-2h, 4 fixes)."
+  "notes": "Both quality tasks from backlog review complete. Tests: 545 passing. Coverage improved (runner.py 100%). ADV-0057 retro: branch confusion during session — always verify branch before editing. ADV-0064 tracks 8 latent evaluator findings from ADV-0057 review."
 }

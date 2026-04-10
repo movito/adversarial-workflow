@@ -1,6 +1,6 @@
 # ADV-0035: Evaluator Runner Test Coverage
 
-**Status**: In Progress
+**Status**: Done
 **Priority**: High
 **Created**: 2026-02-07
 **Updated**: 2026-03-19

@@ -396,6 +396,26 @@ error_strategies:
     style: log_and_continue
     description: "Emit events, log warnings, never block (bus writes, event emission)"
 
+# Testing gotchas — learned from test coverage efforts
+testing:
+  evaluator_output_minimum_content:
+    rule: >
+      validate_evaluation_output() in utils/validation.py silently returns
+      (True, None, None) when the output content is < 500 bytes. This means
+      _report_verdict() is never called and verdict-related code paths are
+      not exercised. When writing tests for the evaluator pipeline, ensure
+      test output content is >= 500 bytes for verdict extraction to proceed.
+    pattern: |
+      # Bad: test output too short — validator short-circuits
+      mock_stdout = "APPROVED: Looks good."  # 22 bytes
+      # validate_evaluation_output() returns (True, None, None)
+
+      # Good: test output crosses the 500-byte threshold
+      mock_stdout = "Evaluation details. " * 30 + "\nVerdict: APPROVED"
+      # validate_evaluation_output() proceeds to verdict extraction
+    caught_by: "ADV-0035 retro"
+    source: "adversarial_workflow/utils/validation.py line 31"
+
 # String comparison defaults
 string_matching:
   default: exact  # ==

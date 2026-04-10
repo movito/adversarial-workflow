@@ -3,17 +3,17 @@
 Supports dual-field model specification (ADV-0015):
 - Legacy: model + api_key_env fields (backwards compatible)
 - New: model_requirement field (resolved via ModelResolver)
+
+Transport: Uses litellm.completion() for LLM calls (ADV-0065).
 """
 
 from __future__ import annotations
 
 import os
-import platform
-import shutil
-import subprocess
-import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+
+import litellm
 
 from ..utils.colors import BOLD, GREEN, RED, RESET, YELLOW
 from ..utils.config import load_config
@@ -31,6 +31,8 @@ def _normalize_output_suffix(output_suffix: str) -> str:
 
 def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -> int:
     """Run an evaluator on a file.
+
+    All evaluators (built-in and custom) use the same LiteLLM transport path.
 
     Args:
         config: Evaluator configuration
@@ -64,20 +66,14 @@ def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -
         print(f"{RED}Error: {e}{RESET}")
         return 1
 
-    # 4. Check aider available
-    if not shutil.which("aider"):
-        print(f"{RED}Error: Aider not found{RESET}")
-        _print_aider_help()
-        return 1
-
-    # 5. Check API key (using resolved api_key_env)
+    # 4. Check API key (using resolved api_key_env)
     api_key = os.environ.get(resolved_api_key_env)
     if not api_key:
         print(f"{RED}Error: {resolved_api_key_env} not set{RESET}")
         print(f"   Set in .env or export {resolved_api_key_env}=your-key")
         return 1
 
-    # 6. Pre-flight file size check
+    # 5. Pre-flight file size check
     line_count, estimated_tokens = _check_file_size(file_path)
     if line_count > 500 or estimated_tokens > 20000:
         _warn_large_file(line_count, estimated_tokens)
@@ -85,33 +81,10 @@ def run_evaluator(config: EvaluatorConfig, file_path: str, timeout: int = 180) -
             print("Evaluation cancelled.")
             return 0
 
-    # 7. Determine execution method
-    if config.source == "builtin":
-        return _run_builtin_evaluator(config, file_path, project_config, timeout)
-    else:
-        return _run_custom_evaluator(config, file_path, project_config, timeout, resolved_model)
-
-
-def _run_builtin_evaluator(
-    config: EvaluatorConfig,
-    file_path: str,
-    project_config: dict,
-    timeout: int,
-) -> int:
-    """Run a built-in evaluator using existing shell scripts."""
-    script_map = {
-        "evaluate": ".adversarial/scripts/evaluate_plan.sh",
-        "proofread": ".adversarial/scripts/proofread_content.sh",
-        "review": ".adversarial/scripts/code_review.sh",
-    }
-
-    script = script_map.get(config.name)
-    if not script or not os.path.exists(script):
-        print(f"{RED}Error: Script not found: {script}{RESET}")
-        print("   Fix: Run 'adversarial init' to reinstall scripts")
-        return 1
-
-    return _execute_script(script, file_path, config, project_config, timeout)
+    # 6. Run evaluator via LiteLLM (all evaluators use the same path)
+    return _run_custom_evaluator(
+        config, file_path, project_config, timeout, resolved_model, resolved_api_key_env
+    )
 
 
 def _run_custom_evaluator(
@@ -120,8 +93,9 @@ def _run_custom_evaluator(
     project_config: dict,
     timeout: int,
     resolved_model: str,
+    resolved_api_key_env: str = "",
 ) -> int:
-    """Run a custom evaluator by invoking aider directly.
+    """Run an evaluator via litellm.completion().
 
     Args:
         config: Evaluator configuration
@@ -129,6 +103,7 @@ def _run_custom_evaluator(
         project_config: Project configuration dict
         timeout: Timeout in seconds
         resolved_model: Resolved model ID from ModelResolver
+        resolved_api_key_env: Resolved API key env var name (for error messages)
     """
     # Prepare output path
     logs_dir = Path(project_config["log_directory"])
@@ -153,47 +128,25 @@ def _run_custom_evaluator(
 {file_content}
 """
 
-    # Create temp file for prompt
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
-        f.write(full_prompt)
-        prompt_file = f.name
-
     prefix = config.log_prefix or config.name.upper()
 
     try:
         print(f"{prefix}: Using model {resolved_model}")
 
-        # Build aider command
-        cmd = [
-            "aider",
-            "--no-browser",
-            "--model",
-            resolved_model,
-            "--yes",
-            "--no-detect-urls",
-            "--no-git",
-            "--no-auto-commits",
-            "--message-file",
-            prompt_file,
-            "--read",
-            file_path,
-        ]
-
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
+        # Call LiteLLM completion API (ADV-0065: replaces Aider subprocess)
+        response = litellm.completion(
+            model=resolved_model,
+            messages=[{"role": "user", "content": full_prompt}],
             timeout=timeout,
-            env=os.environ,
         )
 
-        # Check for errors
-        output = result.stdout + result.stderr
-        if "RateLimitError" in output or "tokens per min" in output:
-            _print_rate_limit_error(file_path)
-            return 1
+        # Extract response content
+        output = response.choices[0].message.content
+        if output is None:
+            output = ""
+            print(f"{YELLOW}Warning: Model returned empty response{RESET}")
 
-        # Write output
+        # Write output with metadata header
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         header = f"""# {suffix.replace("-", " ").replace("_", " ").title()}
 
@@ -205,7 +158,7 @@ def _run_custom_evaluator(
 ---
 
 """
-        output_file.write_text(header + result.stdout, encoding="utf-8")
+        output_file.write_text(header + output, encoding="utf-8")
 
         print(f"{prefix}: Output written to {output_file}")
 
@@ -218,57 +171,20 @@ def _run_custom_evaluator(
 
         return _report_verdict(verdict, output_file, config)
 
-    except subprocess.TimeoutExpired:
+    except litellm.RateLimitError:
+        _print_rate_limit_error(file_path)
+        return 1
+    except litellm.AuthenticationError:
+        api_key_name = resolved_api_key_env or config.api_key_env or "API key"
+        print(f"{RED}Error: Invalid API key for {api_key_name}{RESET}")
+        print(f"   Check your {api_key_name} environment variable")
+        return 1
+    except litellm.Timeout:
         _print_timeout_error(timeout)
         return 1
-    except FileNotFoundError:
-        _print_platform_error()
+    except Exception as e:
+        print(f"{RED}Error: LLM call failed: {e}{RESET}")
         return 1
-    finally:
-        Path(prompt_file).unlink(missing_ok=True)
-
-
-def _execute_script(
-    script: str,
-    file_path: str,
-    config: EvaluatorConfig,
-    project_config: dict,
-    timeout: int,
-) -> int:
-    """Execute a shell script evaluator."""
-    try:
-        result = subprocess.run(
-            [script, file_path],
-            text=True,
-            capture_output=True,
-            timeout=timeout,
-        )
-
-        # Check for rate limit errors
-        output = result.stdout + result.stderr
-        if "RateLimitError" in output or "tokens per min" in output:
-            _print_rate_limit_error(file_path)
-            return 1
-
-    except subprocess.TimeoutExpired:
-        _print_timeout_error(timeout)
-        return 1
-    except FileNotFoundError:
-        _print_platform_error()
-        return 1
-
-    # Validate output
-    file_basename = Path(file_path).stem
-    suffix = _normalize_output_suffix(config.output_suffix)
-    log_file = Path(project_config["log_directory"]) / f"{file_basename}-{suffix}.md"
-
-    is_valid, verdict, message = validate_evaluation_output(str(log_file))
-
-    if not is_valid:
-        print(f"{RED}Evaluation failed: {message}{RESET}")
-        return 1
-
-    return _report_verdict(verdict, log_file, config)
 
 
 _PASS_VERDICTS = {"APPROVED", "PROCEED", "COMPLIANT", "PASS"}
@@ -321,14 +237,6 @@ def _confirm_continue() -> bool:
     return response in ["y", "yes"]
 
 
-def _print_aider_help() -> None:
-    """Print aider installation help."""
-    print()
-    print(f"{BOLD}FIX:{RESET}")
-    print("   1. Install aider: pip install aider-chat")
-    print("   2. Verify: aider --version")
-
-
 def _print_rate_limit_error(file_path: str) -> None:
     """Print rate limit error with suggestions."""
     print(f"{RED}Error: API rate limit exceeded{RESET}")
@@ -342,13 +250,3 @@ def _print_rate_limit_error(file_path: str) -> None:
 def _print_timeout_error(timeout: int) -> None:
     """Print timeout error."""
     print(f"{RED}Error: Evaluation timed out (>{timeout}s){RESET}")
-
-
-def _print_platform_error() -> None:
-    """Print platform compatibility error."""
-    if platform.system() == "Windows":
-        print(f"{RED}Error: Windows not supported{RESET}")
-        print("   Use WSL (Windows Subsystem for Linux)")
-    else:
-        print(f"{RED}Error: Script not found{RESET}")
-        print("   Run: adversarial init")
