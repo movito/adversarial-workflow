@@ -4,10 +4,11 @@
   "last_updated": "2026-04-10",
   "agents": {
     "planner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0065 complete (PR #60 merged). Review insights extracted. thread-reply added to gh-review-helper.",
-      "details_link": null
+      "status": "completed",
+      "current_task": "ADV-0066",
+      "brief_note": "COMPLETE: ADV-0066 task spec created, arch-review-fast REVISION_SUGGESTED (minor — addressed), handoff ready.",
+      "details_link": "delegation/tasks/2-todo/ADV-0066-remove-aider-remnants.md",
+      "handoff_file": ".agent-context/ADV-0066-HANDOFF-feature-developer.md"
     },
     "feature-developer-v5": {
       "status": "idle",

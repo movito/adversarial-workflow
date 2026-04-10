@@ -261,10 +261,12 @@ Confirmed clean — no action needed.
 1. Update README.md, SETUP.md, QUICK_START.md, UPGRADE.md
 2. Update agent/workflow docs
 
-**Step 7: CHANGELOG + Verify**
-1. Add entry under [Unreleased]: "Removed: Aider dependency and all related artifacts"
-2. Run full test suite
-3. Run `./scripts/core/ci-check.sh`
+**Step 7: Lock file + CHANGELOG + Final Verify**
+1. Regenerate `uv.lock`: `uv lock` (verify aider-chat is gone from lock file)
+2. Add entry under [Unreleased]: "Removed: Aider dependency and all related artifacts"
+3. Run full test suite: `pytest tests/ -v`
+4. Run `./scripts/core/ci-check.sh`
+5. Final sweep: `grep -ri aider adversarial_workflow/ scripts/ tests/ .github/ .claude/ .agent-context/workflows/ README.md SETUP.md QUICK_START.md UPGRADE.md` — confirm only historical/archival hits remain
 
 ## Acceptance Criteria
 
@@ -287,8 +289,10 @@ Confirmed clean — no action needed.
 - [ ] UPGRADE.md documents the migration
 - [ ] CHANGELOG.md updated
 
+### Must Have (continued)
+- [ ] Final `grep -ri aider` on live code confirms only historical/archival references remain
+
 ### Nice to Have
-- [ ] Verify `grep -ri aider` on live code returns only historical/archival references
 - [ ] `.aider*` removed from `.gitignore`
 
 ## Success Metrics
