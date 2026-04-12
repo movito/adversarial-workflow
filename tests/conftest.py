@@ -28,7 +28,6 @@ def tmp_project(tmp_path):
     config_content = """
 project_name: test_project
 openai_api_key: sk-fake-test-key
-aider_model: gpt-4o
 stages:
   - plan_evaluation
   - implementation
@@ -101,10 +100,13 @@ def sample_task_file(tmp_project, sample_task_content):
 
 @pytest.fixture
 def mock_subprocess():
-    """Mock subprocess.run calls to avoid running actual aider commands."""
+    """Mock subprocess.run calls to avoid running actual subprocess commands."""
     with patch("subprocess.run") as mock_run:
-        # Default successful aider run
-        mock_run.return_value = Mock(returncode=0, stdout="Aider completed successfully", stderr="")
+        from unittest.mock import Mock
+
+        mock_run.return_value = Mock(
+            returncode=0, stdout="Command completed successfully", stderr=""
+        )
         yield mock_run
 
 
@@ -124,7 +126,6 @@ def sample_config():
     return {
         "project_name": "test_project",
         "openai_api_key": "sk-fake-test-key",
-        "aider_model": "gpt-4o",
         "stages": [
             "plan_evaluation",
             "implementation",
@@ -164,48 +165,6 @@ def change_test_dir(tmp_project):
     os.chdir(tmp_project)
     yield
     os.chdir(old_cwd)
-
-
-@pytest.fixture
-def mock_aider_command():
-    """Mock aider command execution with realistic outputs."""
-
-    def _mock_aider(command_type="evaluate"):
-        """Create a mock aider command result based on type."""
-        if command_type == "evaluate":
-            return Mock(
-                returncode=0,
-                stdout="""
-# ADV-TEST-PLAN-EVALUATION
-
-## Summary
-Plan evaluation completed successfully.
-
-## Findings
-- Task specification is clear
-- Implementation approach is sound
-- Estimated effort is reasonable
-
-## Recommendations
-- Proceed with implementation
-- Add error handling for edge cases
-- Include comprehensive tests
-
-## Token Usage
-- Input tokens: 1500
-- Output tokens: 500
-- Total tokens: 2000
-""",
-                stderr="",
-            )
-        elif command_type == "implement":
-            return Mock(returncode=0, stdout="Implementation completed successfully", stderr="")
-        else:
-            return Mock(returncode=0, stdout=f"{command_type} completed successfully", stderr="")
-
-    with patch("subprocess.run") as mock_run:
-        mock_run.side_effect = lambda *args, **kwargs: _mock_aider()
-        yield _mock_aider
 
 
 @pytest.fixture

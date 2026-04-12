@@ -2,7 +2,7 @@
 Test Python version compatibility requirements.
 
 This test validates that the project configuration correctly specifies
-Python version requirements to match aider-chat dependency constraints.
+Python version requirements for the adversarial-workflow package.
 """
 
 import sys
@@ -26,7 +26,7 @@ def test_python_version_requirement_in_pyproject():
     requires_python = config["project"]["requires-python"]
     assert requires_python == ">=3.10", (
         f"Expected requires-python='>=3.10', got '{requires_python}'. "
-        "This should match aider-chat dependency requirements."
+        "Python 3.10+ is required for adversarial-workflow."
     )
 
 

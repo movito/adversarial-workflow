@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **Aider dependency** — all evaluators now use LiteLLM directly (ADV-0065, ADV-0066)
+- Dead shell scripts (`.adversarial/scripts/`), templates, and investigation files
+- `shutil.which("aider")` checks from CLI `init`, `check`, `evaluate`, `review`, `validate` commands
+- `pip install aider-chat` from CI workflow
+- Python <3.13 upper bound constraint (Python 3.13+ now supported)
+- Aider references from README, SETUP, QUICK_START, and agent docs
+
+### Changed
+
+- `adversarial init` no longer creates `.aider.conf.yml`
+- `adversarial check` no longer validates aider installation
+- Updated user-facing docs to reference LiteLLM instead of aider
+
 ## [0.9.9] - 2026-03-05
 
 ### Fixed

@@ -34,7 +34,7 @@ mcp__serena__activate_project("adversarial-workflow")
 - **Package Name**: `adversarial-workflow`
 - **PyPI URL**: https://pypi.org/project/adversarial-workflow/
 - **CLI Command**: `adversarial`
-- **Core Dependency**: `aider-chat` (bundled as hard dependency)
+- **Core Dependency**: `litellm` (for AI model access)
 
 ## Core Responsibilities
 - Update version numbers across all locations
@@ -91,7 +91,7 @@ All tests must pass before releasing.
 # Clean old builds
 rm -rf dist/ build/ *.egg-info
 
-# Build using Python 3.11 (required for aider-chat compatibility)
+# Build the package
 /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m build
 ```
 
@@ -142,10 +142,10 @@ gh release create vX.Y.Z --title "vX.Y.Z" --notes "Release notes here"
 
 ## Dependency Management
 
-**Key Dependency**: `aider-chat>=0.86.0`
+**Key Dependency**: `litellm`
 
-When updating aider-chat:
-1. Check latest version: https://pypi.org/project/aider-chat/
+When updating litellm:
+1. Check latest version: https://pypi.org/project/litellm/
 2. Update constraint in pyproject.toml if needed
 3. Test locally before releasing
 

@@ -8,7 +8,7 @@ This guide walks you through setting up adversarial-workflow for development and
 
 Before you begin, ensure you have:
 
-1. **Python 3.11+** installed (required for aider compatibility)
+1. **Python 3.10+** installed
    ```bash
    python3 --version  # Should be 3.11 or higher
    ```

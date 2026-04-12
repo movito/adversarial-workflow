@@ -26,7 +26,7 @@ updates:
           - "flake8"
       core-dependencies:
         patterns:
-          - "aider-chat"
+          - "litellm"
           - "pyyaml"
           - "python-dotenv"
 

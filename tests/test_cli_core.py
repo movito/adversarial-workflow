@@ -63,65 +63,8 @@ class TestInitCommand:
         # Check that .adversarial directory was created
         assert (tmp_path / ".adversarial").exists()
         assert (tmp_path / ".adversarial" / "config.yml").exists()
-        assert (tmp_path / ".adversarial" / "scripts").exists()
         assert (tmp_path / ".adversarial" / "logs").exists()
         assert (tmp_path / ".adversarial" / "artifacts").exists()
-
-    def test_init_creates_scripts(self, tmp_path, capsys):
-        """init should create all required scripts."""
-        os.chdir(tmp_path)
-        (tmp_path / ".git").mkdir()
-
-        result = init(str(tmp_path), interactive=False)
-
-        assert result == 0
-        scripts_dir = tmp_path / ".adversarial" / "scripts"
-        assert (scripts_dir / "evaluate_plan.sh").exists()
-        assert (scripts_dir / "review_implementation.sh").exists()
-        assert (scripts_dir / "validate_tests.sh").exists()
-        assert (scripts_dir / "proofread_content.sh").exists()
-
-    def test_init_scripts_have_version_headers(self, tmp_path):
-        """init should inject SCRIPT_VERSION headers into scripts."""
-        os.chdir(tmp_path)
-        (tmp_path / ".git").mkdir()
-
-        result = init(str(tmp_path), interactive=False)
-
-        assert result == 0
-        scripts_dir = tmp_path / ".adversarial" / "scripts"
-        from adversarial_workflow import __version__
-
-        # Check all scripts have version headers
-        for script_name in [
-            "evaluate_plan.sh",
-            "review_implementation.sh",
-            "validate_tests.sh",
-            "proofread_content.sh",
-        ]:
-            script_path = scripts_dir / script_name
-            content = script_path.read_text()
-            lines = content.splitlines()
-            assert len(lines) >= 2, f"{script_name} has insufficient content"
-
-            # First line should be shebang, second should be version
-            assert lines[0].startswith("#!/bin/bash"), f"{script_name} missing shebang"
-            assert lines[1].startswith("# SCRIPT_VERSION:"), (
-                f"{script_name} missing SCRIPT_VERSION header"
-            )
-
-            # Version should be current package version
-            assert __version__ in lines[1], f"{script_name} has wrong version: {lines[1]}"
-
-    def test_init_creates_aider_config(self, tmp_path, capsys):
-        """init should create .aider.conf.yml in project root."""
-        os.chdir(tmp_path)
-        (tmp_path / ".git").mkdir()
-
-        result = init(str(tmp_path), interactive=False)
-
-        assert result == 0
-        assert (tmp_path / ".aider.conf.yml").exists()
 
     def test_init_creates_env_example(self, tmp_path, capsys):
         """init should create .env.example in project root."""
@@ -277,18 +220,7 @@ class TestCheckCommand:
         (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
         (tmp_path / ".adversarial" / "scripts").mkdir()
 
-        # Create script files
-        scripts = ["evaluate_plan.sh", "review_implementation.sh", "validate_tests.sh"]
-        for script in scripts:
-            script_path = tmp_path / ".adversarial" / "scripts" / script
-            script_path.write_text("#!/bin/bash\n")
-            script_path.chmod(0o755)
-
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.50.0")),
-            patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test123456789"}),
-        ):
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test123456789"}):
             result = check()
 
         assert result == 0
@@ -309,35 +241,6 @@ class TestCheckCommand:
         captured = capsys.readouterr()
         assert "Not a git repository" in captured.out
 
-    def test_check_aider_not_installed(self, tmp_path, capsys):
-        """check should warn if aider is not installed."""
-        os.chdir(tmp_path)
-        (tmp_path / ".git").mkdir()
-
-        with patch("shutil.which", return_value=None):
-            result = check()
-
-        # Should fail or warn about missing aider
-        captured = capsys.readouterr()
-        assert "Aider not found" in captured.out
-
-    def test_check_aider_installed(self, tmp_path, capsys):
-        """check should detect aider when installed."""
-        os.chdir(tmp_path)
-        (tmp_path / ".git").mkdir()
-        # Create minimal config
-        (tmp_path / ".adversarial").mkdir()
-        (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
-
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.50.0")),
-        ):
-            result = check()
-
-        captured = capsys.readouterr()
-        assert "Aider installed" in captured.out
-
     def test_check_no_api_keys(self, tmp_path, capsys):
         """check should fail if no API keys are configured."""
         os.chdir(tmp_path)
@@ -346,8 +249,6 @@ class TestCheckCommand:
         # Clear any existing API key environment variables
         with (
             patch.dict(os.environ, {"OPENAI_API_KEY": "", "ANTHROPIC_API_KEY": ""}, clear=False),
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
             patch("os.getenv", return_value=None),
         ):
             result = check()
@@ -362,15 +263,7 @@ class TestCheckCommand:
         (tmp_path / ".git").mkdir()
         (tmp_path / ".adversarial").mkdir()
         (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
-        (tmp_path / ".adversarial" / "scripts").mkdir()
-        for script in ["evaluate_plan.sh", "review_implementation.sh", "validate_tests.sh"]:
-            script_path = tmp_path / ".adversarial" / "scripts" / script
-            script_path.write_text("#!/bin/bash\n")
-            script_path.chmod(0o755)
-
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.50.0")),
             patch.dict(os.environ, {"OPENAI_API_KEY": "sk-realkey12345678901234567890"}),
         ):
             result = check()
@@ -384,15 +277,7 @@ class TestCheckCommand:
         (tmp_path / ".git").mkdir()
         (tmp_path / ".adversarial").mkdir()
         (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
-        (tmp_path / ".adversarial" / "scripts").mkdir()
-        for script in ["evaluate_plan.sh", "review_implementation.sh", "validate_tests.sh"]:
-            script_path = tmp_path / ".adversarial" / "scripts" / script
-            script_path.write_text("#!/bin/bash\n")
-            script_path.chmod(0o755)
-
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.50.0")),
             patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-ant-realkey12345678901234567890"}),
         ):
             result = check()
@@ -408,8 +293,6 @@ class TestCheckCommand:
         (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
 
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
             patch.dict(os.environ, {"OPENAI_API_KEY": "your-api-key-here"}),
         ):
             result = check()
@@ -423,10 +306,7 @@ class TestCheckCommand:
         (tmp_path / ".git").mkdir()
         # No .adversarial directory
 
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
-        ):
+        with patch("subprocess.run", return_value=Mock(returncode=0, stdout="")):
             result = check()
 
         assert result == 1
@@ -441,57 +321,12 @@ class TestCheckCommand:
         # Write truly malformed YAML (unclosed bracket)
         (tmp_path / ".adversarial" / "config.yml").write_text("key: [unclosed bracket")
 
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
-        ):
+        with patch("subprocess.run", return_value=Mock(returncode=0, stdout="")):
             result = check()
 
         assert result == 1
         captured = capsys.readouterr()
         assert "Invalid" in captured.out or "YAML" in captured.out
-
-    def test_check_scripts_not_executable(self, tmp_path, capsys):
-        """check should warn if scripts are not executable."""
-        os.chdir(tmp_path)
-        (tmp_path / ".git").mkdir()
-        (tmp_path / ".adversarial").mkdir()
-        (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
-        (tmp_path / ".adversarial" / "scripts").mkdir()
-
-        # Create non-executable script
-        script_path = tmp_path / ".adversarial" / "scripts" / "evaluate_plan.sh"
-        script_path.write_text("#!/bin/bash\n")
-        script_path.chmod(0o644)  # Not executable
-
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
-            patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test123456789"}),
-        ):
-            result = check()
-
-        captured = capsys.readouterr()
-        assert "not executable" in captured.out or "chmod" in captured.out
-
-    def test_check_scripts_missing(self, tmp_path, capsys):
-        """check should warn if scripts are missing."""
-        os.chdir(tmp_path)
-        (tmp_path / ".git").mkdir()
-        (tmp_path / ".adversarial").mkdir()
-        (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
-        (tmp_path / ".adversarial" / "scripts").mkdir()
-        # Don't create any scripts
-
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
-            patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test123456789"}),
-        ):
-            result = check()
-
-        captured = capsys.readouterr()
-        assert "not found" in captured.out
 
     def test_check_env_file_loaded(self, tmp_path, capsys):
         """check should load and report .env file."""
@@ -502,10 +337,7 @@ class TestCheckCommand:
         # Create .env file
         (tmp_path / ".env").write_text("OPENAI_API_KEY=sk-testkey123456789\n")
 
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
-        ):
+        with patch("subprocess.run", return_value=Mock(returncode=0, stdout="")):
             result = check()
 
         captured = capsys.readouterr()
@@ -517,19 +349,9 @@ class TestCheckCommand:
         (tmp_path / ".git").mkdir()
         (tmp_path / ".adversarial").mkdir()
         (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
-        (tmp_path / ".adversarial" / "scripts").mkdir()
-        scripts = ["evaluate_plan.sh", "review_implementation.sh", "validate_tests.sh"]
-        for script in scripts:
-            script_path = tmp_path / ".adversarial" / "scripts" / script
-            # Include SCRIPT_VERSION to match package version
-            script_path.write_text("#!/bin/bash\n# SCRIPT_VERSION: 0.9.6\n")
-            script_path.chmod(0o755)
-
         (tmp_path / ".env").write_text("OPENAI_API_KEY=sk-testkey123456789\n")
 
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.50.0")),
             patch.dict(os.environ, {"OPENAI_API_KEY": "sk-testkey123456789"}),
             patch("importlib.metadata.version", return_value="0.9.6"),
         ):
@@ -554,8 +376,6 @@ class TestInitAndCheckIntegration:
 
         # Verify check passes (with mocked external dependencies)
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.50.0")),
             patch.dict(os.environ, {"OPENAI_API_KEY": "sk-testkey123456789012345678901234"}),
         ):
             check_result = check()
@@ -578,8 +398,6 @@ class TestInitAndCheckIntegration:
 
         # Check should still pass
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.50.0")),
             patch.dict(os.environ, {"OPENAI_API_KEY": "sk-testkey123456789012345678901234"}),
         ):
             check_result = check()
@@ -787,18 +605,10 @@ class TestCheckEdgeCases:
         (tmp_path / ".git").mkdir()
         (tmp_path / ".adversarial").mkdir()
         (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
-        (tmp_path / ".adversarial" / "scripts").mkdir()
-        for script in ["evaluate_plan.sh", "review_implementation.sh", "validate_tests.sh"]:
-            script_path = tmp_path / ".adversarial" / "scripts" / script
-            script_path.write_text("#!/bin/bash\n")
-            script_path.chmod(0o755)
-
         # Long API key to test preview format
         long_key = "sk-abcdefgh123456789012345678901234567890xyz"
 
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.50.0")),
             patch.dict(os.environ, {"OPENAI_API_KEY": long_key}),
         ):
             result = check()
@@ -807,22 +617,6 @@ class TestCheckEdgeCases:
         # Should show first 8 and last 4 characters
         assert "sk-abcde" in captured.out
         assert "xyz]" in captured.out
-
-    def test_check_aider_version_retrieval(self, tmp_path, capsys):
-        """check should display aider version."""
-        os.chdir(tmp_path)
-        (tmp_path / ".git").mkdir()
-        (tmp_path / ".adversarial").mkdir()
-        (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
-
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="v0.55.0")),
-        ):
-            result = check()
-
-        captured = capsys.readouterr()
-        assert "v0.55.0" in captured.out
 
     def test_check_with_env_file_variable_count(self, tmp_path, capsys):
         """check should report correct number of .env variables."""
@@ -833,10 +627,7 @@ class TestCheckEdgeCases:
         # Create .env with 3 variables
         (tmp_path / ".env").write_text("VAR1=value1\nVAR2=value2\nOPENAI_API_KEY=sk-test123\n")
 
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
-        ):
+        with patch("subprocess.run", return_value=Mock(returncode=0, stdout="")):
             result = check()
 
         captured = capsys.readouterr()
@@ -1048,10 +839,7 @@ class TestHealthCommand:
         os.chdir(tmp_path)
         (tmp_path / ".git").mkdir()
 
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
-        ):
+        with patch("subprocess.run", return_value=Mock(returncode=0, stdout="")):
             result = health()
 
         # Should return an integer
@@ -1309,18 +1097,10 @@ class TestCheckInternalFunctions:
         (tmp_path / ".git").mkdir()
         (tmp_path / ".adversarial").mkdir()
         (tmp_path / ".adversarial" / "config.yml").write_text("log_directory: .adversarial/logs/")
-        (tmp_path / ".adversarial" / "scripts").mkdir()
-        for script in ["evaluate_plan.sh", "review_implementation.sh", "validate_tests.sh"]:
-            script_path = tmp_path / ".adversarial" / "scripts" / script
-            script_path.write_text("#!/bin/bash\n")
-            script_path.chmod(0o755)
-
         # Short API key (less than 12 chars) - should show "***"
         short_key = "sk-short"
 
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
             patch.dict(os.environ, {"OPENAI_API_KEY": short_key}),
         ):
             result = check()
@@ -1337,10 +1117,7 @@ class TestCheckInternalFunctions:
         # Create .env file with binary/invalid content
         (tmp_path / ".env").write_bytes(b"\xff\xfe")
 
-        with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="")),
-        ):
+        with patch("subprocess.run", return_value=Mock(returncode=0, stdout="")):
             result = check()
 
         # Should handle gracefully without crashing
@@ -1410,7 +1187,7 @@ class TestInitTemplateErrors:
         original_copy = shutil.copy
 
         def failing_copy(src, dst):
-            if ".aider.conf" in str(dst):
+            if ".env.example" in str(dst):
                 raise OSError("Mock copy failure")
             return original_copy(src, dst)
 

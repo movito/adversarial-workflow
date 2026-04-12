@@ -180,7 +180,7 @@ This will help me proceed without further evaluation loops."
 
 **Technical Details**:
 - **Evaluator**: External AI via adversarial-workflow
-- **Runs**: Non-interactively with `aider --yes` flag
+- **Runs**: Non-interactively via LiteLLM API calls
 - **API Key**: Varies by evaluator (see `adversarial list-evaluators`)
 - **Cost**: Varies by evaluator (see `adversarial list-evaluators`)
 - **No User Required**: Fully autonomous workflow (with escalation safety valve)

@@ -1,7 +1,7 @@
 """
 Tests for the evaluate command functionality.
 
-Tests the evaluate function which runs Phase 1: Plan evaluation using aider.
+Tests the evaluate function which runs Phase 1: Plan evaluation using LiteLLM.
 This includes error handling, file validation, subprocess management, and output parsing.
 """
 
@@ -42,37 +42,15 @@ class TestEvaluate:
         captured = capsys.readouterr()
         assert "Not initialized" in captured.out
 
-    @patch("shutil.which")
-    @patch("adversarial_workflow.cli.load_config")
-    def test_evaluate_aider_not_found(self, mock_load_config, mock_which, tmp_path, capsys):
-        """Test evaluate when aider is not available."""
-        # Create a test file
-        task_file = tmp_path / "test_task.md"
-        task_file.write_text("# Test task")
-
-        # Mock aider not being found
-        mock_which.return_value = None
-        mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
-
-        result = evaluate(str(task_file))
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "Aider not found" in captured.out
-
-    @patch("shutil.which")
     @patch("adversarial_workflow.cli.load_config")
     @patch("os.path.exists")
-    def test_evaluate_missing_script(
-        self, mock_exists, mock_load_config, mock_which, tmp_path, capsys
-    ):
+    def test_evaluate_missing_script(self, mock_exists, mock_load_config, tmp_path, capsys):
         """Test evaluate when evaluation script is missing."""
         # Create a test file
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
 
         # Mock dependencies
-        mock_which.return_value = "/usr/bin/aider"
         mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
 
         # Mock script file not existing
@@ -89,7 +67,6 @@ class TestEvaluate:
         captured = capsys.readouterr()
         assert "Script not found" in captured.out
 
-    @patch("shutil.which")
     @patch("adversarial_workflow.cli.load_config")
     @patch("os.path.exists")
     @patch("subprocess.run")
@@ -102,7 +79,6 @@ class TestEvaluate:
         mock_run,
         mock_exists,
         mock_load_config,
-        mock_which,
         tmp_path,
         capsys,
     ):
@@ -112,7 +88,6 @@ class TestEvaluate:
         task_file.write_text("# Test task")
 
         # Mock dependencies
-        mock_which.return_value = "/usr/bin/aider"
         mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
         mock_exists.return_value = True
 
@@ -128,7 +103,6 @@ class TestEvaluate:
         captured = capsys.readouterr()
         assert "APPROVED" in captured.out
 
-    @patch("shutil.which")
     @patch("adversarial_workflow.cli.load_config")
     @patch("os.path.exists")
     @patch("subprocess.run")
@@ -141,7 +115,6 @@ class TestEvaluate:
         mock_run,
         mock_exists,
         mock_load_config,
-        mock_which,
         tmp_path,
         capsys,
     ):
@@ -151,7 +124,6 @@ class TestEvaluate:
         task_file.write_text("# Test task")
 
         # Mock dependencies
-        mock_which.return_value = "/usr/bin/aider"
         mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
         mock_exists.return_value = True
 
@@ -167,12 +139,11 @@ class TestEvaluate:
         captured = capsys.readouterr()
         assert "NEEDS_REVISION" in captured.out
 
-    @patch("shutil.which")
     @patch("adversarial_workflow.cli.load_config")
     @patch("os.path.exists")
     @patch("subprocess.run")
     def test_evaluate_rate_limit_error(
-        self, mock_run, mock_exists, mock_load_config, mock_which, tmp_path, capsys
+        self, mock_run, mock_exists, mock_load_config, tmp_path, capsys
     ):
         """Test evaluate handles rate limit errors."""
         # Create a test file
@@ -180,7 +151,6 @@ class TestEvaluate:
         task_file.write_text("# Test task")
 
         # Mock dependencies
-        mock_which.return_value = "/usr/bin/aider"
         mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
         mock_exists.return_value = True
 
@@ -197,20 +167,16 @@ class TestEvaluate:
         captured = capsys.readouterr()
         assert "rate limit exceeded" in captured.out
 
-    @patch("shutil.which")
     @patch("adversarial_workflow.cli.load_config")
     @patch("os.path.exists")
     @patch("subprocess.run")
-    def test_evaluate_timeout(
-        self, mock_run, mock_exists, mock_load_config, mock_which, tmp_path, capsys
-    ):
+    def test_evaluate_timeout(self, mock_run, mock_exists, mock_load_config, tmp_path, capsys):
         """Test evaluate handles subprocess timeout."""
         # Create a test file
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
 
         # Mock dependencies
-        mock_which.return_value = "/usr/bin/aider"
         mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
         mock_exists.return_value = True
 
@@ -224,7 +190,6 @@ class TestEvaluate:
         assert "timed out" in captured.out
 
     @patch("platform.system")
-    @patch("shutil.which")
     @patch("adversarial_workflow.cli.load_config")
     @patch("os.path.exists")
     @patch("subprocess.run")
@@ -233,7 +198,6 @@ class TestEvaluate:
         mock_run,
         mock_exists,
         mock_load_config,
-        mock_which,
         mock_system,
         tmp_path,
         capsys,
@@ -244,7 +208,6 @@ class TestEvaluate:
         task_file.write_text("# Test task")
 
         # Mock dependencies
-        mock_which.return_value = "/usr/bin/aider"
         mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
         mock_exists.return_value = True
         mock_system.return_value = "Windows"
@@ -266,7 +229,6 @@ class TestEvaluate:
         task_file.write_text(large_content)
 
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
             patch(
                 "adversarial_workflow.cli.load_config",
                 return_value={"log_directory": ".adversarial/logs/"},
@@ -291,7 +253,6 @@ class TestEvaluate:
         task_file.write_text(very_large_content)
 
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
             patch(
                 "adversarial_workflow.cli.load_config",
                 return_value={"log_directory": ".adversarial/logs/"},
@@ -444,15 +405,15 @@ class TestVerifyTokenCount:
 class TestEvaluateIntegration:
     """Integration tests for evaluate command with fixtures."""
 
-    def test_evaluate_with_sample_task(self, sample_task_file, mock_aider_command):
+    def test_evaluate_with_sample_task(self, sample_task_file):
         """Test evaluate with sample task file from fixture."""
         with (
-            patch("shutil.which", return_value="/usr/bin/aider"),
             patch(
                 "adversarial_workflow.cli.load_config",
                 return_value={"log_directory": ".adversarial/logs/"},
             ),
             patch("os.path.exists", return_value=True),
+            patch("subprocess.run", return_value=Mock(returncode=0, stdout="Success", stderr="")),
             patch(
                 "adversarial_workflow.cli.validate_evaluation_output",
                 return_value=(True, "APPROVED", "OK"),

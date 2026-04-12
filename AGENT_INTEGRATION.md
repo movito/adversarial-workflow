@@ -8,7 +8,7 @@ This guide provides a complete playbook for AI agents (like Claude Code, Cursor,
 
 ## Quick Reference
 
-**Prerequisites:** Python 3.8+, Git, aider-chat, API keys (Anthropic/OpenAI)
+**Prerequisites:** Python 3.10+, Git, API keys (Anthropic/OpenAI)
 **Installation:** `pip install adversarial-workflow`
 **Verification:** `adversarial check`
 **First Run:** `adversarial quickstart`
@@ -40,7 +40,7 @@ This guide provides a complete playbook for AI agents (like Claude Code, Cursor,
 
 ```
 □ What dependencies does this package require?
-□ Are there any hidden dependencies (like aider-chat)?
+□ Are there any hidden dependencies?
 □ What API keys or credentials are needed?
 □ What platform requirements exist? (Windows/macOS/Linux)
 □ Are there any system-level dependencies? (bash, git, etc.)
@@ -57,7 +57,6 @@ Agent: "I'm about to install adversarial-workflow. Here's what's needed:
 DEPENDENCIES:
 • Python 3.8+ ✅ (you have 3.11)
 • Git repository ✅ (detected)
-• aider-chat ❌ (needs installation)
 • API keys ❌ (will need Anthropic or OpenAI)
 
 PLATFORM:
@@ -69,7 +68,6 @@ COSTS:
 • Requires at least one API key (both recommended)
 
 INSTALLATION PLAN:
-1. Install aider-chat (prerequisite)
 2. Install adversarial-workflow
 3. Configure API keys (interactive)
 4. Verify setup
@@ -83,16 +81,6 @@ Proceed? (Y/n)"
 
 ### Phase 1: Prerequisites
 
-**Install aider-chat FIRST:**
-
-```bash
-pip install aider-chat
-
-# Verify installation
-aider --version
-```
-
-If aider install fails, STOP and report to user. Don't continue with broken setup.
 
 ### Phase 2: Main Installation
 
@@ -127,7 +115,6 @@ adversarial check
 Expected output:
 ```
 ✅ Git repository detected
-✅ Aider installed (version X.Y.Z)
 ✅ ANTHROPIC_API_KEY configured
 ✅ OPENAI_API_KEY configured
 ✅ .adversarial/config.yml valid
@@ -239,22 +226,19 @@ Created: .env.example ✅"
 
 ## Common Failure Modes
 
-### 1. Missing aider-chat
 
 **Symptom:**
 ```
-❌ ERROR: Aider not found
-   Fix: Install: pip install aider-chat
+❌ ERROR: Configuration issues found
 ```
 
 **Agent Response:**
 ```
-Agent: "adversarial check revealed missing aider-chat dependency.
+Agent: "adversarial check revealed configuration issues.
 
 This wasn't mentioned in your initial request, but it's required.
 
 Should I:
-[A] Install aider-chat now (recommended)
 [B] Skip for now (you'll install manually)
 [C] Abort installation"
 ```
@@ -266,8 +250,7 @@ Should I:
 ❌ ERROR: Package installation incomplete
 
    MISSING TEMPLATES:
-   • .aider.conf.yml.template
-   • .env.example.template
+      • .env.example.template
 ```
 
 **Agent Response:**
@@ -277,7 +260,6 @@ Agent: "❌ adversarial init failed with missing template error.
 This is a PACKAGE BUG, not a configuration issue.
 
 The package distribution is missing required files:
-• .aider.conf.yml.template
 • .env.example.template
 
 OPTIONS:
@@ -357,11 +339,7 @@ adversarial --version
 python -m adversarial_workflow --version
 # Expected: adversarial-workflow X.Y.Z
 
-# Check 3: Aider available
-aider --version
-# Expected: aider X.Y.Z
-
-# Check 4: Setup validation
+# Check 3: Setup validation
 adversarial check
 # Expected: All checks passed
 
@@ -374,7 +352,7 @@ ls -la .adversarial/scripts/
 # Expected: evaluate_plan.sh, review_implementation.sh, validate_tests.sh
 
 # Check 7: Dotfiles created
-ls -la .aider.conf.yml .env.example
+ls -la .env.example
 # Expected: Both files exist
 ```
 
@@ -386,11 +364,9 @@ Agent: "✅ Installation Complete
 VERIFICATION RESULTS:
 ✅ adversarial-workflow v0.2.2 installed
 ✅ python -m adversarial_workflow works
-✅ aider v0.XX.X available
 ✅ Git repository detected
 ✅ Configuration files created
 ✅ All 3 workflow scripts present
-✅ .aider.conf.yml created
 ✅ .env.example created
 
 ⚠️  REMAINING STEPS:
@@ -409,7 +385,6 @@ Ready to configure API keys now? (Y/n)"
 
 ```
 1. Check prerequisites
-2. Install aider-chat
 3. Install adversarial-workflow
 4. Run adversarial init --interactive
 5. Collect API keys interactively
@@ -420,10 +395,9 @@ Ready to configure API keys now? (Y/n)"
 ### Pattern 2: Partial Automation (Missing Prerequisites)
 
 ```
-1. Check prerequisites → aider missing
+1. Check prerequisites
 2. Inform user about missing dependency
 3. Ask if should install now
-4. Install aider-chat
 5. Install adversarial-workflow
 6. Run adversarial init
 7. Create .env.example (defer API key config)
@@ -529,7 +503,6 @@ Don't overwhelm the user. Reveal information progressively:
 
 ```
 Step 1: "Installing adversarial-workflow..."
-Step 2: "Need to install prerequisite: aider-chat"
 Step 3: "Ready to configure API keys?"
 ```
 
@@ -543,11 +516,11 @@ Not all at once:
 If something is wrong, STOP immediately and inform user:
 
 ```
-Agent: "❌ STOPPED: aider-chat installation failed
+Agent: "❌ STOPPED: Setup failed
 
 ERROR: [actual error message]
 
-I cannot continue without aider-chat. Options:
+Options:
 1. Troubleshoot the error together
 2. Try alternative installation method
 3. Defer adversarial-workflow installation
@@ -568,13 +541,11 @@ Create `INTEGRATION_NOTES.md`:
 **Version:** 0.2.2
 
 ## What Worked
-- ✅ Installed aider-chat v0.XX.X
 - ✅ Installed adversarial-workflow v0.2.2
 - ✅ Created .adversarial/ structure
 - ✅ Configured API keys (both Anthropic + OpenAI)
 
 ## What Didn't Work
-- ⚠️ Had to install aider manually (not documented in user request)
 
 ## Workarounds Applied
 - None needed
@@ -587,7 +558,6 @@ Create `INTEGRATION_NOTES.md`:
 ## Files Created
 - .adversarial/config.yml
 - .adversarial/scripts/ (3 scripts)
-- .aider.conf.yml
 - .env (with actual keys)
 - .env.example (template)
 ```
@@ -598,10 +568,9 @@ When in doubt, ASK the user:
 
 ```
 ✅ GOOD:
-"The package needs aider-chat but it's not installed. Install now? (Y/n)"
+"Setup check found issues. Fix now? (Y/n)"
 
 ❌ BAD:
-[Silently installs aider without asking]
 ```
 
 ### 5. Test Incrementally
@@ -610,13 +579,10 @@ Verify each step before proceeding:
 
 ```python
 # ✅ Good
-install_aider()
-verify_aider()  # Test it works
 install_adversarial()
 verify_adversarial()  # Test it works
 
 # ❌ Bad
-install_aider()
 install_adversarial()
 [Hope everything works]
 ```
@@ -628,11 +594,9 @@ install_adversarial()
 Before marking integration as complete, verify:
 
 - [ ] adversarial-workflow installed and version correct
-- [ ] aider-chat installed and accessible
 - [ ] Git repository initialized
 - [ ] .adversarial/ directory structure created
 - [ ] All 3 workflow scripts present and executable
-- [ ] .aider.conf.yml created
 - [ ] .env.example created (or .env with actual keys)
 - [ ] .env added to .gitignore
 - [ ] `adversarial check` passes (or lists remaining steps)
@@ -652,19 +616,16 @@ Agent: "I'll install adversarial-workflow. Let me first check prerequisites...
 
 ✅ Python 3.11 detected
 ✅ Git repository detected
-❌ aider-chat not found (required dependency)
 ❌ API keys needed (Anthropic or OpenAI)
 
 Before installing adversarial-workflow, I need to:
-1. Install aider-chat (prerequisite)
 2. Set up API keys (~$0.02-0.10 per workflow)
 
 Proceed? (Y/n)"
 
 User: "Yes"
 
-Agent: "Installing aider-chat...
-✅ aider-chat v0.XX.X installed
+Agent: "Setting up...
 
 Installing adversarial-workflow...
 ✅ adversarial-workflow v0.2.2 installed
@@ -698,7 +659,6 @@ Running final verification...
 
 VERIFICATION:
 ✅ adversarial-workflow v0.2.2
-✅ aider v0.XX.X
 ✅ All configuration files created
 ✅ API keys configured
 ✅ All checks passed
@@ -757,7 +717,6 @@ if not is_venv():
 - **Package Repository**: https://github.com/movito/adversarial-workflow
 - **Issue Tracker**: https://github.com/movito/adversarial-workflow/issues
 - **Agent Experience Report**: `.agent-context/AGENT_EXPERIENCE_ADVERSARIAL_WORKFLOW.md` (this package)
-- **aider Documentation**: https://aider.chat/docs/
 
 ---
 

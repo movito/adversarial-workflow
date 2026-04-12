@@ -331,8 +331,7 @@ def init_interactive(project_path: str = ".") -> int:
                 else "  ⚠️ .env (skipped - no API keys provided)"
             ),
             "  ✓ .adversarial/config.yml",
-            "  ✓ .adversarial/scripts/ (3 workflow scripts)",
-            "  ✓ .aider.conf.yml (aider configuration)",
+            "  ✓ .adversarial/ (configuration and logs)",
             "",
             (
                 "Your configuration:"
@@ -493,7 +492,7 @@ def quickstart() -> int:
             "You've completed your first adversarial workflow evaluation! 🎉",
             "",
             "Try the full workflow:",
-            "  1. Implement the fix (or let Claude do it via aider)",
+            "  1. Implement the fix (or let an AI assistant do it)",
             "  2. Run: adversarial review <task_file> (Phase 3: Code Review)",
             "  3. Run: adversarial validate (Phase 4: Test Validation)",
             "",
@@ -633,11 +632,6 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
 
     required_templates = [
         "config.yml.template",
-        "evaluate_plan.sh.template",
-        "proofread_content.sh.template",
-        "review_implementation.sh.template",
-        "validate_tests.sh.template",
-        ".aider.conf.yml.template",
         ".env.example.template",
     ]
 
@@ -665,7 +659,6 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
         print()
         print(f"{BOLD}WORKAROUND:{RESET}")
         print("   Create missing files manually:")
-        print("   - .aider.conf.yml: See https://aider.chat/docs/config.html")
         print("   - .env.example: Create with API key placeholders")
         return 1
 
@@ -683,7 +676,6 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
     # Error 3: Can't write to directory
     try:
         os.makedirs(adversarial_dir)
-        os.makedirs(os.path.join(adversarial_dir, "scripts"))
         os.makedirs(os.path.join(adversarial_dir, "logs"))
         os.makedirs(os.path.join(adversarial_dir, "artifacts"))
     except PermissionError:
@@ -713,36 +705,7 @@ def init(project_path: str = ".", interactive: bool = True) -> int:
             config_vars,
         )
 
-        render_template(
-            str(templates_dir / "evaluate_plan.sh.template"),
-            os.path.join(adversarial_dir, "scripts", "evaluate_plan.sh"),
-            config_vars,
-        )
-
-        render_template(
-            str(templates_dir / "proofread_content.sh.template"),
-            os.path.join(adversarial_dir, "scripts", "proofread_content.sh"),
-            config_vars,
-        )
-
-        render_template(
-            str(templates_dir / "review_implementation.sh.template"),
-            os.path.join(adversarial_dir, "scripts", "review_implementation.sh"),
-            config_vars,
-        )
-
-        render_template(
-            str(templates_dir / "validate_tests.sh.template"),
-            os.path.join(adversarial_dir, "scripts", "validate_tests.sh"),
-            config_vars,
-        )
-
-        # Copy .aider.conf.yml and .env.example to project root
-        shutil.copy(
-            str(templates_dir / ".aider.conf.yml.template"),
-            os.path.join(project_path, ".aider.conf.yml"),
-        )
-
+        # Copy .env.example to project root
         shutil.copy(
             str(templates_dir / ".env.example.template"),
             os.path.join(project_path, ".env.example"),
@@ -864,27 +827,7 @@ def check() -> int:
             }
         )
 
-    # Check 2: Aider installed
-    if shutil.which("aider"):
-        # Try to get version
-        try:
-            result = subprocess.run(
-                ["aider", "--version"], capture_output=True, text=True, timeout=2
-            )
-            version = result.stdout.strip() if result.returncode == 0 else "unknown"
-            good_checks.append(f"Aider installed ({version})")
-        except:
-            good_checks.append("Aider installed")
-    else:
-        issues.append(
-            {
-                "severity": "ERROR",
-                "message": "Aider not found in PATH",
-                "fix": "Install: pip install aider-chat",
-            }
-        )
-
-    # Check 3: API keys (with source tracking)
+    # Check 2: API keys (with source tracking)
     # Track which keys existed before and after .env loading
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
     openai_key = os.getenv("OPENAI_API_KEY")
@@ -946,10 +889,7 @@ def check() -> int:
         )
 
     # Check 4: Config valid
-    try:
-        config = load_config(".adversarial/config.yml")
-        good_checks.append(".adversarial/config.yml valid")
-    except FileNotFoundError:
+    if not os.path.exists(".adversarial/config.yml"):
         issues.append(
             {
                 "severity": "ERROR",
@@ -958,84 +898,28 @@ def check() -> int:
             }
         )
         config = None
-    except yaml.YAMLError as e:
-        issues.append(
-            {
-                "severity": "ERROR",
-                "message": f"Invalid config.yml: {e}",
-                "fix": "Fix YAML syntax in .adversarial/config.yml",
-            }
-        )
-        config = None
-
-    # Check 5: Scripts executable
-    if config:
-        scripts = ["evaluate_plan.sh", "review_implementation.sh", "validate_tests.sh"]
-        all_scripts_ok = True
-        for script in scripts:
-            path = f".adversarial/scripts/{script}"
-            if os.path.exists(path):
-                if not os.access(path, os.X_OK):
-                    issues.append(
-                        {
-                            "severity": "WARNING",
-                            "message": f"{script} not executable",
-                            "fix": f"chmod +x {path}",
-                        }
-                    )
-                    all_scripts_ok = False
-            else:
-                issues.append(
-                    {
-                        "severity": "ERROR",
-                        "message": f"{script} not found",
-                        "fix": "Run: adversarial init",
-                    }
-                )
-                all_scripts_ok = False
-
-        if all_scripts_ok:
-            good_checks.append("All scripts executable")
-
-        # Check 6: Script versions (compare to package version)
-        from importlib.metadata import version as pkg_version
-
+    else:
         try:
-            package_ver = pkg_version("adversarial-workflow")
-        except Exception:
-            package_ver = None
-
-        if package_ver:
-            outdated_scripts = []
-            for script in scripts:
-                path = f".adversarial/scripts/{script}"
-                if os.path.exists(path):
-                    try:
-                        with open(path, encoding="utf-8") as f:
-                            # Read first 5 lines to find SCRIPT_VERSION
-                            for _ in range(5):
-                                line = f.readline()
-                                if line.startswith("# SCRIPT_VERSION:"):
-                                    script_ver = line.split(":")[1].strip()
-                                    if script_ver != package_ver:
-                                        outdated_scripts.append(f"{script} (v{script_ver})")
-                                    break
-                            else:
-                                # No version found - script is pre-versioning
-                                outdated_scripts.append(f"{script} (no version)")
-                    except Exception:  # noqa: DK004 — fire-and-forget: script version check is best-effort
-                        pass
-
-            if outdated_scripts:
-                issues.append(
-                    {
-                        "severity": "WARNING",
-                        "message": f"Scripts outdated (package v{package_ver}): {', '.join(outdated_scripts)}",
-                        "fix": "Run: adversarial init --force",
-                    }
-                )
-            else:
-                good_checks.append(f"Scripts up-to-date (v{package_ver})")
+            config = load_config(".adversarial/config.yml")
+            good_checks.append(".adversarial/config.yml valid")
+        except FileNotFoundError:
+            issues.append(
+                {
+                    "severity": "ERROR",
+                    "message": "Not initialized (.adversarial/config.yml not found)",
+                    "fix": "Run: adversarial init",
+                }
+            )
+            config = None
+        except yaml.YAMLError as e:
+            issues.append(
+                {
+                    "severity": "ERROR",
+                    "message": f"Invalid config.yml: {e}",
+                    "fix": "Fix YAML syntax in .adversarial/config.yml",
+                }
+            )
+            config = None
 
     # Print results
     print("━" * 70)
@@ -1327,24 +1211,6 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
             recommendation="Python 3.10+ required - upgrade your Python installation",
         )
 
-    # Aider
-    if shutil.which("aider"):
-        try:
-            aider_version = subprocess.run(
-                ["aider", "--version"], capture_output=True, text=True, timeout=2
-            )
-            version = aider_version.stdout.strip() if aider_version.returncode == 0 else "unknown"
-            check_pass("dependencies", f"Aider: {version} (functional)")
-        except:
-            check_pass("dependencies", "Aider: installed")
-    else:
-        check_fail(
-            "dependencies",
-            "Aider not found",
-            fix="Install: pip install aider-chat",
-            recommendation="Aider is required - install with: pip install aider-chat",
-        )
-
     # Bash
     try:
         bash_version = subprocess.run(
@@ -1505,50 +1371,7 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     if not json_output:
         print()
 
-    # 5. Workflow Scripts
-    if not json_output:
-        print(f"{BOLD}Workflow Scripts:{RESET}")
-
-    scripts = ["evaluate_plan.sh", "review_implementation.sh", "validate_tests.sh"]
-
-    for script_name in scripts:
-        script_path = Path(f".adversarial/scripts/{script_name}")
-        if script_path.exists():
-            # Check executable
-            if os.access(script_path, os.X_OK):
-                # Check syntax (basic - just try to read it)
-                try:
-                    with open(script_path, encoding="utf-8") as f:
-                        content = f.read()
-                    if "#!/bin/bash" in content or "#!/usr/bin/env bash" in content:
-                        check_pass("workflow_scripts", f"{script_name} - Executable, valid")
-                    else:
-                        check_warn(
-                            "workflow_scripts",
-                            f"{script_name} - Missing shebang",
-                            recommendation=f"Add #!/bin/bash to {script_name}",
-                        )
-                except:
-                    check_warn("workflow_scripts", f"{script_name} - Could not read")
-            else:
-                check_fail(
-                    "workflow_scripts",
-                    f"{script_name} - Not executable",
-                    fix=f"chmod +x .adversarial/scripts/{script_name}",
-                    recommendation=f"Make executable: chmod +x .adversarial/scripts/{script_name}",
-                )
-        else:
-            check_fail(
-                "workflow_scripts",
-                f"{script_name} - Not found",
-                fix="Run: adversarial init",
-                recommendation="Reinstall scripts with: adversarial init",
-            )
-
-    if not json_output:
-        print()
-
-    # 6. Tasks
+    # 5. Tasks
     if not json_output:
         print(f"{BOLD}Tasks:{RESET}")
 
@@ -1806,8 +1629,8 @@ def validate_evaluation_output(
     """
     Validate that evaluation log contains actual GPT-4o evaluation content.
 
-    This prevents false positives where the evaluation script runs but Aider
-    fails to produce an actual evaluation (e.g., due to git scanning errors).
+    This prevents false positives where the evaluation runs but the LLM
+    fails to produce an actual evaluation (e.g., due to API errors).
     Also extracts the verdict from successful evaluations.
 
     Args:
@@ -1856,7 +1679,7 @@ def validate_evaluation_output(
     for pattern, description in failure_patterns:
         if pattern in content and len(content) < 1000:
             # Small file with error pattern = evaluation didn't run
-            return False, None, f"Aider failed: {description}"
+            return False, None, f"Evaluation failed: {description}"
 
     # Check for token usage (indicates GPT-4o actually ran)
     if "Tokens:" not in content and "tokens" not in content.lower():
@@ -1903,25 +1726,6 @@ def evaluate(task_file: str) -> int:
         config = load_config()
     except FileNotFoundError:
         print(f"{RED}❌ ERROR: Not initialized. Run 'adversarial init' first.{RESET}")
-        return 1
-
-    # Error 3: Aider not available
-    if not shutil.which("aider"):
-        print(f"{RED}❌ ERROR: Aider not found{RESET}")
-        print()
-        print(f"{BOLD}WHY:{RESET}")
-        print("   This package uses aider (AI pair programming tool) to:")
-        print("   • Review your implementation plans")
-        print("   • Analyze code changes")
-        print("   • Validate test results")
-        print()
-        print(f"{BOLD}FIX:{RESET}")
-        print("   1. Install aider: pip install aider-chat")
-        print("   2. Verify installation: aider --version")
-        print("   3. Then retry: adversarial evaluate ...")
-        print()
-        print(f"{BOLD}HELP:{RESET}")
-        print("   Aider docs: https://aider.chat/docs/install.html")
         return 1
 
     # Pre-flight check for file size
@@ -2070,7 +1874,7 @@ def evaluate(task_file: str) -> int:
         print()
         print(f"{BOLD}WHY:{RESET}")
         print("   The evaluation script ran but didn't produce valid output")
-        print("   This usually means Aider encountered an error before running GPT-4o")
+        print("   This usually means the LLM encountered an error during evaluation")
         print()
         print(f"{BOLD}LOG FILE:{RESET}")
         print(f"   {log_file}")
@@ -2161,12 +1965,6 @@ def review(task_file: str) -> int:
         print(f"{RED}❌ ERROR: Not initialized. Run 'adversarial init' first.{RESET}")
         return 1
 
-    # Check aider
-    if not shutil.which("aider"):
-        print(f"{RED}❌ ERROR: Aider not installed{RESET}")
-        print("   Fix: pip install aider-chat")
-        return 1
-
     # Run review script
     script = ".adversarial/scripts/review_implementation.sh"
     if not os.path.exists(script):
@@ -2209,12 +2007,6 @@ def validate(test_command: str | None = None) -> int:
 
     print(f"   Test command: {test_command}")
     print()
-
-    # Check aider
-    if not shutil.which("aider"):
-        print(f"{RED}❌ ERROR: Aider not installed{RESET}")
-        print("   Fix: pip install aider-chat")
-        return 1
 
     # Run validation script
     script = ".adversarial/scripts/validate_tests.sh"
