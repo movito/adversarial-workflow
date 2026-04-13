@@ -119,7 +119,7 @@ See existing handoffs for examples:
 - **Quick Reference**: `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`
 - **Full Protocol**: This document
 - **Handoff Examples**: `.kit/context/archive/*.md`
-- **Task Templates**: `delegation/templates/TASK-TEMPLATE.md`
+- **Task Templates**: `.kit/tasks/9-reference/templates/task-template.md`
 
 ---
 

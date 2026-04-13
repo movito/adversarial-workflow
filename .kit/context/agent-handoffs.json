@@ -7,20 +7,20 @@
       "status": "completed",
       "current_task": "ADV-0068",
       "brief_note": "COMPLETE: ADV-0068 task spec created, evaluated (APPROVED), handoff ready. Migrate to .kit/ layout per KIT-ADR-0023.",
-      "details_link": "delegation/tasks/2-todo/ADV-0068-kit-migration.md",
-      "handoff_file": ".agent-context/ADV-0068-HANDOFF-feature-developer.md"
+      "details_link": ".kit/tasks/3-in-progress/ADV-0068-kit-migration.md",
+      "handoff_file": ".kit/context/ADV-0068-HANDOFF-feature-developer.md"
     },
     "feature-developer-v5": {
       "status": "idle",
       "current_task": null,
       "brief_note": "ADV-0067 delivered and merged (PR #63). ~420 lines removed, 4 threads, 2 rounds, 0 regressions.",
-      "details_link": ".agent-context/retros/ADV-0067-retro.md"
+      "details_link": ".kit/context/retros/ADV-0067-retro.md"
     },
     "code-reviewer": {
       "status": "idle",
       "current_task": null,
       "brief_note": "ADV-0031 Round 1 APPROVED",
-      "details_link": ".agent-context/reviews/ADV-0031-review.md"
+      "details_link": ".kit/context/reviews/ADV-0031-review.md"
     },
     "test-runner": {
       "status": "idle",
@@ -55,9 +55,9 @@
     "python_support": "3.10-3.13+"
   },
   "conventions": {
-    "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
-    "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
-    "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
+    "handoffs": ".kit/context/[TASK-ID]-HANDOFF-[agent].md",
+    "review_starters": ".kit/context/[TASK-ID]-REVIEW-STARTER.md",
+    "reviews": ".kit/context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "Aider fully removed in ADV-0065 + ADV-0066. Pre-existing issues tracked in .agent-context/ADV-0066-preexisting-issues.md (dead verdict handling, empty test_command edge case). Retro items: glob mock audit pattern, builtin evaluator key naming convention. gh-review-helper v1.1.0 has thread-reply subcommand. Tests: 539 passing."
+  "notes": "Aider fully removed in ADV-0065 + ADV-0066. Pre-existing issues tracked in .kit/context/ADV-0066-preexisting-issues.md (dead verdict handling, empty test_command edge case). Retro items: glob mock audit pattern, builtin evaluator key naming convention. gh-review-helper v1.1.0 has thread-reply subcommand. Tests: 539 passing."
 }
