@@ -123,14 +123,19 @@ class TestEvaluate:
         assert result == 1
 
     def test_evaluate_delegates_to_run_evaluator(self, tmp_path, capsys):
-        """Test evaluate delegates to run_evaluator (file size checks happen there)."""
+        """Test evaluate delegates to run_evaluator and processes the log file."""
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
+
+        log_dir = tmp_path / "logs"
+        log_dir.mkdir()
+        log_file = log_dir / "test-PLAN-EVALUATION.md"
+        log_file.write_text("# Evaluation\nVerdict: APPROVED")
 
         with (
             patch(
                 "adversarial_workflow.cli.load_config",
-                return_value={"log_directory": ".adversarial/logs/"},
+                return_value={"log_directory": str(log_dir) + "/"},
             ),
             patch(
                 "adversarial_workflow.evaluators.runner.run_evaluator",
@@ -141,7 +146,6 @@ class TestEvaluate:
                 return_value=(True, "APPROVED", "OK"),
             ),
             patch("adversarial_workflow.cli.verify_token_count"),
-            patch("glob.glob", return_value=[]),
         ):
             result = evaluate(str(task_file))
 
@@ -289,14 +293,18 @@ class TestVerifyTokenCount:
 class TestEvaluateIntegration:
     """Integration tests for evaluate command with fixtures."""
 
-    def test_evaluate_with_sample_task(self, sample_task_file):
+    def test_evaluate_with_sample_task(self, sample_task_file, tmp_path):
         """Test evaluate with sample task file from fixture."""
+        log_dir = tmp_path / "logs"
+        log_dir.mkdir()
+        log_file = log_dir / "sample-PLAN-EVALUATION.md"
+        log_file.write_text("# Evaluation\nVerdict: APPROVED")
+
         with (
             patch(
                 "adversarial_workflow.cli.load_config",
-                return_value={"log_directory": ".adversarial/logs/"},
+                return_value={"log_directory": str(log_dir) + "/"},
             ),
-            patch("os.path.exists", return_value=True),
             patch(
                 "adversarial_workflow.evaluators.runner.run_evaluator",
                 return_value=0,
@@ -306,7 +314,7 @@ class TestEvaluateIntegration:
                 return_value=(True, "APPROVED", "OK"),
             ),
             patch("adversarial_workflow.cli.verify_token_count"),
-            patch("glob.glob", return_value=[]),
         ):
             result = evaluate(str(sample_task_file))
             assert isinstance(result, int)
+            assert result == 0
