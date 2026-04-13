@@ -88,34 +88,26 @@ class TestEvaluate:
         assert "APPROVED" in captured.out
 
     @patch("adversarial_workflow.cli.load_config")
-    @patch("adversarial_workflow.cli.validate_evaluation_output")
-    @patch("adversarial_workflow.cli.verify_token_count")
     def test_evaluate_needs_revision(
         self,
-        mock_verify,
-        mock_validate,
         mock_load_config,
         tmp_path,
         capsys,
     ):
-        """Test evaluate with NEEDS_REVISION verdict."""
+        """Test evaluate returns non-zero when run_evaluator signals revision needed.
+
+        run_evaluator returns 1 for NEEDS_REVISION verdicts, so evaluate()
+        returns early without reaching validate_evaluation_output.
+        """
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
 
-        log_dir = tmp_path / "logs"
-        log_dir.mkdir()
-        log_file = log_dir / "test-PLAN-EVALUATION.md"
-        log_file.write_text("# Evaluation\nVerdict: NEEDS_REVISION")
+        mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
 
-        mock_load_config.return_value = {"log_directory": str(log_dir) + "/"}
-
-        with patch("adversarial_workflow.evaluators.runner.run_evaluator", return_value=0):
-            mock_validate.return_value = (True, "NEEDS_REVISION", "Plan needs work")
+        with patch("adversarial_workflow.evaluators.runner.run_evaluator", return_value=1):
             result = evaluate(str(task_file))
 
         assert result == 1
-        captured = capsys.readouterr()
-        assert "NEEDS_REVISION" in captured.out
 
     @patch("adversarial_workflow.cli.load_config")
     def test_evaluate_run_evaluator_failure(self, mock_load_config, tmp_path, capsys):
