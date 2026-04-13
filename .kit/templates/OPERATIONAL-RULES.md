@@ -120,13 +120,13 @@ If subagents report creating files but nothing appears on disk, check `.claude/s
 **DO NOT create ADRs in**:
 - ❌ `.claude/` (agent/settings directory, not for project documentation)
 - ❌ Root directory
-- ❌ `.agent-context/` (coordination files only)
+- ❌ `.kit/context/` (coordination files only)
 
-**Before creating an ADR**: Read `.agent-context/workflows/ADR-CREATION-WORKFLOW.md` for template and numbering.
+**Before creating an ADR**: Read `.kit/context/workflows/ADR-CREATION-WORKFLOW.md` for template and numbering.
 
 ### Tasks
 
-**Correct location**: `delegation/tasks/[status-folder]/TASK-NNNN-title.md`
+**Correct location**: `.kit/tasks/[status-folder]/TASK-NNNN-title.md`
 
 Status folders:
 - `1-backlog/` - Planned but not started

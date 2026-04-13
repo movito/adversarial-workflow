@@ -46,9 +46,9 @@ while [[ $# -gt 0 ]]; do
             echo "  2. CodeRabbit reviewed          coderabbitai[bot] reviewed latest code commit"
             echo "  3. BugBot reviewed              cursor[bot] reviewed latest code commit"
             echo "  4. Zero unresolved threads      All review threads resolved"
-            echo "  5. Evaluator review persisted   .agent-context/reviews/<TASK>-evaluator-review*.md"
-            echo "  6. Review starter exists         .agent-context/<TASK>-REVIEW-STARTER.md"
-            echo "  7. Task in correct folder        delegation/tasks/3-in-progress or 4-in-review"
+            echo "  5. Evaluator review persisted   .kit/context/reviews/<TASK>-evaluator-review*.md"
+            echo "  6. Review starter exists         .kit/context/<TASK>-REVIEW-STARTER.md"
+            echo "  7. Task in correct folder        .kit/tasks/3-in-progress or 4-in-review"
             echo ""
             echo "Gate matrix by type:"
             echo "          code    docs    sync"
@@ -147,7 +147,7 @@ fi
 # ─── Auto-detect task type from task spec ────────────────────────────
 # Priority: explicit --type > task spec **Type** field > code-changes heuristic
 if [ -z "$TASK_TYPE" ]; then
-    TASK_FILE_FOR_TYPE=$(find delegation/tasks -name "${TASK_ID}-*" -o -name "${TASK_ID}.*" 2>/dev/null | head -1 || true)
+    TASK_FILE_FOR_TYPE=$(find .kit/tasks -name "${TASK_ID}-*" -o -name "${TASK_ID}.*" 2>/dev/null | head -1 || true)
     if [ -n "$TASK_FILE_FOR_TYPE" ]; then
         SPEC_TYPE=$(grep '^\*\*Type\*\*:' "$TASK_FILE_FOR_TYPE" | sed 's/.*: *//')
         case "$SPEC_TYPE" in
@@ -190,7 +190,7 @@ if ! git rev-parse --verify origin/main &>/dev/null; then
 fi
 
 CODE_SHA=$(git log --diff-filter=ACDMR --format=%H "origin/main..HEAD" -- \
-    ':!*.md' ':!.agent-context/' ':!delegation/' 2>/dev/null | head -1 || true)
+    ':!*.md' ':!.kit/context/' ':!delegation/' 2>/dev/null | head -1 || true)
 
 NO_CODE_CHANGES=false
 if [ -z "$CODE_SHA" ]; then
@@ -369,7 +369,7 @@ fi
 if [ "$TASK_TYPE" = "docs" ] || [ "$TASK_TYPE" = "sync" ]; then
     echo "GATE:5:Evaluator:SKIP:$TASK_TYPE mode — evaluator not required"
 else
-    EVAL_FILE=$(find .agent-context/reviews -name "${TASK_ID}-evaluator-review*.md" 2>/dev/null | head -1 || true)
+    EVAL_FILE=$(find .kit/context/reviews -name "${TASK_ID}-evaluator-review*.md" 2>/dev/null | head -1 || true)
 
     if [ -n "$EVAL_FILE" ]; then
         echo "GATE:5:Evaluator:PASS:$EVAL_FILE"
@@ -384,7 +384,7 @@ fi
 if [ "$TASK_TYPE" = "docs" ] || [ "$TASK_TYPE" = "sync" ]; then
     echo "GATE:6:ReviewStarter:SKIP:$TASK_TYPE mode — review starter not required"
 else
-    STARTER_FILE=$(find .agent-context -maxdepth 1 -name "${TASK_ID}-REVIEW-STARTER.md" 2>/dev/null | head -1 || true)
+    STARTER_FILE=$(find .kit/context -maxdepth 1 -name "${TASK_ID}-REVIEW-STARTER.md" 2>/dev/null | head -1 || true)
 
     if [ -n "$STARTER_FILE" ]; then
         echo "GATE:6:ReviewStarter:PASS:$STARTER_FILE"
@@ -396,7 +396,7 @@ fi
 
 # ─── Gate 7: Task in correct folder ─────────────────────────────────
 
-TASK_FILE=$(find delegation/tasks/3-in-progress delegation/tasks/4-in-review -name "${TASK_ID}*" 2>/dev/null | head -1 || true)
+TASK_FILE=$(find .kit/tasks/3-in-progress .kit/tasks/4-in-review -name "${TASK_ID}*" 2>/dev/null | head -1 || true)
 
 if [ -n "$TASK_FILE" ]; then
     echo "GATE:7:TaskFolder:PASS:$TASK_FILE"

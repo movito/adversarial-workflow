@@ -15,7 +15,7 @@ This directory contains the coordination infrastructure for the multi-agent deve
 ## Directory Structure
 
 ```
-.agent-context/
+.kit/context/
 ├── README.md                    # This file
 ├── agent-handoffs.json          # Central agent status and coordination
 ├── current-state.json           # Project state snapshot
@@ -176,12 +176,12 @@ Synchronizes context between different development environments (if needed).
 
 1. Check current project state:
    ```bash
-   cat .agent-context/current-state.json
+   cat .kit/context/current-state.json
    ```
 
 2. Check agent status:
    ```bash
-   cat .agent-context/agent-handoffs.json | jq '.test-runner'
+   cat .kit/context/agent-handoffs.json | jq '.test-runner'
    ```
 
 3. Start your response with identity:
@@ -215,35 +215,35 @@ Update project state when major changes occur:
 
 ## Integration with Existing Systems
 
-### Delegation System (tasks/)
+### Task System (.kit/tasks/)
 
-The `.agent-context/` system COMPLEMENTS the existing `tasks/` directory:
+The `.kit/context/` system COMPLEMENTS the task directory:
 
-- **tasks/active/**: Detailed task specifications
-- **tasks/completed/**: Task archives
-- **tasks/analysis/**: Strategic planning
-- **.agent-context/**: Real-time agent coordination
+- **.kit/tasks/2-todo/**: Task specifications ready for work
+- **.kit/tasks/3-in-progress/**: Active tasks
+- **.kit/tasks/5-done/**: Completed task archives
+- **.kit/context/**: Real-time agent coordination
 
 **Workflow**:
-1. Tasks are defined in `tasks/active/`
+1. Tasks are defined in `.kit/tasks/2-todo/`
 2. Agents reference task files in their status
-3. Agent coordination happens via `.agent-context/`
-4. Completed tasks are archived to `tasks/completed/`
+3. Agent coordination happens via `.kit/context/`
+4. Completed tasks are moved to `.kit/tasks/5-done/`
 
 **DO NOT**:
 - Duplicate task definitions in both systems
-- Create new coordination directories outside `.agent-context/`
+- Create new coordination directories outside `.kit/context/`
 - Modify task status in both places (use task files as source of truth)
 
 ---
 
 ### Agent Launcher Scripts (agents/)
 
-Agent launcher scripts in `agents/` use `.agent-context/` for initialization:
+Agent launcher scripts in `agents/` use `.kit/context/` for initialization:
 
 ```bash
 # Example from universal-agent-launcher.sh
-CONTEXT_DIR="$PROJECT_ROOT/.agent-context"
+CONTEXT_DIR="$PROJECT_ROOT/.kit/context"
 HANDOFFS_FILE="$CONTEXT_DIR/agent-handoffs.json"
 
 # Load current agent status
@@ -254,7 +254,7 @@ AGENT_STATUS=$(cat "$HANDOFFS_FILE" | jq -r ".$AGENT_ROLE.status")
 
 ## Token Optimization
 
-The `.agent-context/` system is designed for token efficiency:
+The `.kit/context/` system is designed for token efficiency:
 
 **Traditional Approach** (500+ tokens):
 - Full project context repeated in every prompt
@@ -296,16 +296,16 @@ The `.agent-context/` system is designed for token efficiency:
 
 **Automatic Backups**:
 - `update-status.sh` creates timestamped backups before modifications
-- Location: `.agent-context/agent-handoffs.json.backup.YYYYMMDD_HHMMSS`
+- Location: `.kit/context/agent-handoffs.json.backup.YYYYMMDD_HHMMSS`
 
 **Manual Backup**:
 ```bash
-cp .agent-context/agent-handoffs.json .agent-context/agent-handoffs.json.backup.$(date +%Y%m%d)
+cp .kit/context/agent-handoffs.json .kit/context/agent-handoffs.json.backup.$(date +%Y%m%d)
 ```
 
 **Recovery**:
 ```bash
-cp .agent-context/agent-handoffs.json.backup.YYYYMMDD_HHMMSS .agent-context/agent-handoffs.json
+cp .kit/context/agent-handoffs.json.backup.YYYYMMDD_HHMMSS .kit/context/agent-handoffs.json
 ```
 
 ---
@@ -334,10 +334,10 @@ cp .agent-context/agent-handoffs.json.backup.YYYYMMDD_HHMMSS .agent-context/agen
 **Fix**:
 ```bash
 # Validate JSON
-cat .agent-context/agent-handoffs.json | jq .
+cat .kit/context/agent-handoffs.json | jq .
 
 # If invalid, restore from backup
-cp .agent-context/agent-handoffs.json.backup.* .agent-context/agent-handoffs.json
+cp .kit/context/agent-handoffs.json.backup.* .kit/context/agent-handoffs.json
 ```
 
 ---
@@ -359,7 +359,7 @@ cp .agent-context/agent-handoffs.json.backup.* .agent-context/agent-handoffs.jso
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0.0 | 2025-10-16 | Initial .agent-context system setup |
+| 1.0.0 | 2025-10-16 | Initial .kit/context system setup |
 
 ---
 

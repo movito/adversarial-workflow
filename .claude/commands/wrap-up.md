@@ -19,14 +19,14 @@ gh pr view --json number,title --jq '{pr: .number, title: .title}' 2>/dev/null |
 ```
 
 ```bash
-ls .agent-context/*-REVIEW-STARTER.md 2>/dev/null || echo "No review starter found"
+ls .kit/context/*-REVIEW-STARTER.md 2>/dev/null || echo "No review starter found"
 ```
 
 If you can't determine the task ID from the branch name, ask the user.
 
 ## Step 2: Run /retro
 
-Invoke the `/retro` skill to capture session learnings. This saves the retro to `.agent-context/retros/<TASK-ID>-retro.md`.
+Invoke the `/retro` skill to capture session learnings. This saves the retro to `.kit/context/retros/<TASK-ID>-retro.md`.
 
 If `/retro` fails (e.g., no PR found), note the failure but continue to Step 3. The phase_complete event is more important than the retro.
 
@@ -64,8 +64,8 @@ Print a summary for the user:
 🔬 <AGENT-NAME> | Task: <TASK-ID> — COMPLETE
 
 PR: <PR-URL>
-Review starter: .agent-context/<TASK-ID>-REVIEW-STARTER.md
-Retro: .agent-context/retros/<TASK-ID>-retro.md
+Review starter: .kit/context/<TASK-ID>-REVIEW-STARTER.md
+Retro: .kit/context/retros/<TASK-ID>-retro.md
 
 Ready for human review.
 ```

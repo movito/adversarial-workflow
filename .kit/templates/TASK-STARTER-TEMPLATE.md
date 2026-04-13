@@ -24,8 +24,8 @@ Create a task starter message when:
 ```markdown
 ## Task Assignment: [TASK-ID] - [Task Title]
 
-**Task File**: `delegation/tasks/[folder]/[TASK-ID]-[slug].md`
-**Handoff File**: `.agent-context/[TASK-ID]-HANDOFF-[agent-type].md`
+**Task File**: `.kit/tasks/[folder]/[TASK-ID]-[slug].md`
+**Handoff File**: `.kit/context/[TASK-ID]-HANDOFF-[agent-type].md`
 ```
 
 ### Overview Section
@@ -132,8 +132,8 @@ Here's a complete example following the template:
 ```markdown
 ## Task Assignment: TASK-0102 - Linear Task Sync TDD Rebuild
 
-**Task File**: `delegation/tasks/2-todo/TASK-0102-linear-task-sync-tdd-rebuild.md`
-**Handoff File**: `.agent-context/TASK-0102-HANDOFF-implementation-agent.md`
+**Task File**: `.kit/tasks/2-todo/TASK-0102-linear-task-sync-tdd-rebuild.md`
+**Handoff File**: `.kit/context/TASK-0102-HANDOFF-implementation-agent.md`
 
 ### Overview
 
@@ -213,7 +213,7 @@ See template structure below for creating handoff files.
 **Date**: YYYY-MM-DD
 **From**: [Coordinator Name]
 **To**: [Agent Type] ([specific agent if known])
-**Task**: delegation/tasks/[folder]/[TASK-ID]-[slug].md
+**Task**: .kit/tasks/[folder]/[TASK-ID]-[slug].md
 **Status**: Ready for implementation
 **Evaluation**: [Status - e.g., "✅ REVISED", "N/A", etc.]
 
@@ -269,7 +269,7 @@ See template structure below for creating handoff files.
 
 ---
 
-**Task File**: `delegation/tasks/[folder]/[TASK-ID]-[slug].md`
+**Task File**: `.kit/tasks/[folder]/[TASK-ID]-[slug].md`
 **Evaluation Log**: `.adversarial/logs/[TASK-ID]-PLAN-EVALUATION.md` (if applicable)
 **Handoff Date**: YYYY-MM-DD
 **Coordinator**: [Name]
@@ -325,7 +325,7 @@ Before sending task starter to user:
 
 After creating task specification and addressing evaluation feedback:
 
-1. Create handoff file: `.agent-context/[TASK-ID]-HANDOFF-[agent-type].md`
+1. Create handoff file: `.kit/context/[TASK-ID]-HANDOFF-[agent-type].md`
 2. Update `agent-handoffs.json` with task assignment
 3. Create task starter message using this template
 4. Send task starter to user

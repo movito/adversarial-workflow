@@ -138,7 +138,7 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 ### ADV-0066: Duplicate verdict extraction is dead code
 - `run_evaluator()` already extracts verdicts and returns exit codes (0=APPROVED, 1=revision/rejected)
 - `cli.evaluate()` then re-extracts the verdict from the log file — the NEEDS_REVISION/REJECTED branches are unreachable after a return code of 0
-- Pre-existing design smell tracked in `.agent-context/ADV-0066-preexisting-issues.md`
+- Pre-existing design smell tracked in `.kit/context/ADV-0066-preexisting-issues.md`
 - **RESOLVED in ADV-0067**: Dead code removed, `evaluate()` now follows the same pattern as `review()`
 
 ### ADV-0067: `run_evaluator()` returns 0 for both APPROVED and UNKNOWN verdicts

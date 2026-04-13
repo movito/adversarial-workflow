@@ -17,11 +17,11 @@ dispatch status --since 2h $ARGUMENTS
 Present the dashboard output to the user. If the command is not available (dispatch CLI not installed), fall back to manual inspection:
 
 ```bash
-ls delegation/tasks/3-in-progress/ 2>/dev/null || echo "No tasks in progress"
+ls .kit/tasks/3-in-progress/ 2>/dev/null || echo "No tasks in progress"
 ```
 
 ```bash
-ls delegation/tasks/2-todo/ 2>/dev/null || echo "No pending tasks"
+ls .kit/tasks/2-todo/ 2>/dev/null || echo "No pending tasks"
 ```
 
 ```bash

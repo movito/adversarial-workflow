@@ -16,7 +16,7 @@ After automated review is complete, you **MUST** request human code review befor
 
 1. **Verify automated review is complete**: PR has no unresolved threads, evaluator run persisted
 2. **Move task**: `./scripts/core/project move <TASK-ID> in-review`
-3. **Create review starter**: Write `.agent-context/<TASK-ID>-REVIEW-STARTER.md`
+3. **Create review starter**: Write `.kit/context/<TASK-ID>-REVIEW-STARTER.md`
 4. **Add Review section to task file**: Append review index to the task file
 5. **Notify user**: Include thread count proof (mandatory)
 6. **Address feedback**: Fix any issues from human reviewer
@@ -24,7 +24,7 @@ After automated review is complete, you **MUST** request human code review befor
 
 ## Creating Review Starter
 
-Copy template from `.agent-context/templates/review-starter-template.md` to `.agent-context/<TASK-ID>-REVIEW-STARTER.md` and fill in.
+Copy template from `.kit/context/templates/review-starter-template.md` to `.kit/context/<TASK-ID>-REVIEW-STARTER.md` and fill in.
 
 **IMPORTANT**: All file paths in the review starter MUST be repo-relative (e.g., `CLAUDE.md`, `scripts/core/pattern_lint.py`). Never use absolute paths like `/Users/.../project/file.py` — they leak local machine info and are non-portable.
 
@@ -32,7 +32,7 @@ Copy template from `.agent-context/templates/review-starter-template.md` to `.ag
 # Review Starter: <TASK-ID>
 
 **Task**: <TASK-ID> - [Task Title]
-**Task File**: `delegation/tasks/4-in-review/<TASK-ID>-*.md`
+**Task File**: `.kit/tasks/4-in-review/<TASK-ID>-*.md`
 **Branch**: [feature-branch] -> main
 **PR**: [URL]
 
@@ -66,7 +66,7 @@ Copy template from `.agent-context/templates/review-starter-template.md` to `.ag
 
 ## Adding Review Section to Task File
 
-Append a `## Review` section to the task file in `delegation/tasks/4-in-review/`:
+Append a `## Review` section to the task file in `.kit/tasks/4-in-review/`:
 
 ```markdown
 ## Review
@@ -75,8 +75,8 @@ Append a `## Review` section to the task file in `delegation/tasks/4-in-review/`
 **Branch**: [feature-branch] -> main
 
 ### Artifacts
-- Review starter: `.agent-context/<TASK-ID>-REVIEW-STARTER.md`
-- Evaluator review: `.agent-context/reviews/<TASK-ID>-evaluator-review.md`
+- Review starter: `.kit/context/<TASK-ID>-REVIEW-STARTER.md`
+- Evaluator review: `.kit/context/reviews/<TASK-ID>-evaluator-review.md`
 
 ### Files Changed
 - `path/to/file.py` (new)
@@ -94,8 +94,8 @@ Include the **actual thread count output** from your verification. This is manda
 Implementation complete. All automated reviews passed. Ready for human review.
 
 PR: [URL]
-Review starter: `.agent-context/<TASK-ID>-REVIEW-STARTER.md`
-Evaluator review: `.agent-context/reviews/<TASK-ID>-evaluator-review.md`
+Review starter: `.kit/context/<TASK-ID>-REVIEW-STARTER.md`
+Evaluator review: `.kit/context/reviews/<TASK-ID>-evaluator-review.md`
 Threads: [total]/[total] resolved, 0 unresolved
 ```
 
@@ -125,4 +125,4 @@ When you receive a fix prompt after CHANGES_REQUESTED:
 - Max 2 review rounds — Round 2 is final
 - Update, don't create new review-starter file
 
-**Full workflow**: `.agent-context/workflows/REVIEW-FIX-WORKFLOW.md`
+**Full workflow**: `.kit/context/workflows/REVIEW-FIX-WORKFLOW.md`

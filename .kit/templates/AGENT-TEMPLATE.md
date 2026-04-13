@@ -32,8 +32,8 @@ Always begin your responses with your identity header:
 - **Project**: [Your project name and brief description]
 - **Architecture**: [Your project's architecture - e.g., Python CLI, web app, etc.]
 - **Testing**: pytest-based TDD workflow (mandatory pre-commit hooks)
-- **Documentation**: `.agent-context/` system for agent coordination
-- **Task Management**: `delegation/tasks/` with Linear sync
+- **Documentation**: `.kit/context/` system for agent coordination
+- **Task Management**: `.kit/tasks/` with Linear sync
 
 ## Task Lifecycle Management (MANDATORY)
 
@@ -112,10 +112,10 @@ Request independent evaluation from an external evaluator agent when you encount
 ```bash
 # Run evaluation directly (you have Bash tool access)
 # Tasks are in numbered folders: 2-todo/, 3-in-progress/, etc.
-adversarial evaluate delegation/tasks/2-todo/TASK-FILE.md
+adversarial evaluate .kit/tasks/2-todo/TASK-FILE.md
 
 # Example:
-# adversarial evaluate delegation/tasks/2-todo/TASK-2025-042-feature-name.md
+# adversarial evaluate .kit/tasks/2-todo/TASK-2025-042-feature-name.md
 ```
 
 **Reading Results**:
@@ -188,10 +188,10 @@ This will help me proceed without further evaluation loops."
 ## Quick Reference Documentation
 
 **Agent Coordination**:
-- Task specifications: `delegation/tasks/` (numbered folders: `2-todo/`, `3-in-progress/`, `5-done/`, etc.)
-- Agent procedures: `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`
-- Your role context: `.agent-context/agent-handoffs.json` → `"[agent-name]"`
-- [Role-specific workflow documents - e.g., "Testing workflow: `.agent-context/workflows/TESTING-WORKFLOW.md`"]
+- Task specifications: `.kit/tasks/` (numbered folders: `2-todo/`, `3-in-progress/`, `5-done/`, etc.)
+- Agent procedures: `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`
+- Your role context: `.kit/context/agent-handoffs.json` → `"[agent-name]"`
+- [Role-specific workflow documents - e.g., "Testing workflow: `.kit/context/workflows/TESTING-WORKFLOW.md`"]
 
 **Evaluation Workflow**:
 - **Complete guide**: `.adversarial/docs/EVALUATION-WORKFLOW.md` (347 lines)
@@ -208,7 +208,7 @@ This will help me proceed without further evaluation loops."
 > **Note**: Include this section for agents that produce research, analysis, or knowledge documents.
 > Delete this section for implementation-focused agents (developers, testers, etc.).
 
-**Reference**: `.agent-context/workflows/RESEARCH-QUALITY-STANDARDS.md`
+**Reference**: `.kit/context/workflows/RESEARCH-QUALITY-STANDARDS.md`
 
 All research output must meet the Four Quality Gates:
 
@@ -250,12 +250,12 @@ When creating project documentation, use the correct locations:
 | Document Type | Location | Example |
 |---------------|----------|---------|
 | **ADRs** | `docs/decisions/adr/` | `ADR-004-feature-name.md` |
-| **Tasks** | `delegation/tasks/1-backlog/` | `TASK-0030-task-name.md` |
+| **Tasks** | `.kit/tasks/1-backlog/` | `TASK-0030-task-name.md` |
 | **Research** | `[project-specific]/research/<topic>/` | `analysis.md` |
 
 **DO NOT create ADRs or documentation in `.claude/`** - that directory is for agent definitions and settings only.
 
-**Before creating an ADR**: Read `.agent-context/workflows/ADR-CREATION-WORKFLOW.md` for template and numbering.
+**Before creating an ADR**: Read `.kit/context/workflows/ADR-CREATION-WORKFLOW.md` for template and numbering.
 
 ## Allowed Operations
 
@@ -265,7 +265,7 @@ When creating project documentation, use the correct locations:
 - [Operation 2 - e.g., "Modify Python code in `your_project/`"]
 - [Operation 3 - e.g., "Run pytest and test scripts"]
 - [Operation 4 - e.g., "Execute git commands for committing changes"]
-- [Operation 5 - e.g., "Update `.agent-context/agent-handoffs.json` with progress"]
+- [Operation 5 - e.g., "Update `.kit/context/agent-handoffs.json` with progress"]
 - [Add role-specific permissions]
 
 ## Restrictions
@@ -303,7 +303,7 @@ If you push code changes to GitHub:
 
 **Soft Block**: Fix CI failures before completing task, but use judgment for timeout situations.
 
-**Reference**: See `.agent-context/workflows/COMMIT-PROTOCOL.md` for full protocol.
+**Reference**: See `.kit/context/workflows/COMMIT-PROTOCOL.md` for full protocol.
 
 ## [Additional Role-Specific Sections]
 

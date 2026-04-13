@@ -9,18 +9,21 @@ see `README.md`.
 
 ```
 adversarial_workflow/  Python package (CLI, evaluators, config, resolver)
-.claude/agents/       Agent definitions (feature-developer-v3, planner, ci-checker, etc.)
-.claude/commands/     Slash commands (start-task, commit-push-pr, check-ci, check-bots, etc.)
-.claude/skills/       Skills (pre-implementation, self-review, bot-triage, review-handoff, code-review-evaluator)
-.agent-context/       Agent coordination: handoffs, reviews, patterns.yml, workflows/
-.adversarial/         Adversarial evaluation system (config, scripts, docs)
-.serena/              Serena MCP configuration (semantic code navigation)
-agents/               Agent launcher scripts (launch, onboarding, preflight)
-delegation/tasks/     Task specs by status: 1-backlog/ through 9-reference/
-docs/                 Documentation, ADRs, proposals, guides
-scripts/core/         Project management and CI scripts (14 files)
-scripts/local/        Local-only scripts (gitignored)
-tests/                pytest test suite
+.claude/agents/        Agent definitions (feature-developer-v3, planner, ci-checker, etc.)
+.claude/commands/      Slash commands (start-task, commit-push-pr, check-ci, check-bots, etc.)
+.claude/skills/        Skills (pre-implementation, self-review, bot-triage, review-handoff, code-review-evaluator)
+.kit/                  Builder infrastructure root
+  context/             Agent coordination: handoffs, reviews, patterns.yml, workflows/
+  tasks/               Task specs by status: 1-backlog/ through 9-reference/
+  launchers/           Agent launcher scripts (launch, onboarding, preflight)
+  templates/           Builder templates (agent, task-starter, operational-rules)
+  adr/                 Builder-layer ADRs
+.adversarial/          Adversarial evaluation system (config, scripts, docs)
+.serena/               Serena MCP configuration (semantic code navigation)
+docs/                  Documentation, ADRs, proposals, guides
+scripts/core/          Project management and CI scripts (14 files)
+scripts/local/         Local-only scripts (gitignored)
+tests/                 pytest test suite
 ```
 
 ## Project Rules
@@ -47,12 +50,12 @@ tests/                pytest test suite
 
 - Task prefix: `ADV-NNNN`
 - Status flow: `2-todo` -> `3-in-progress` -> `4-in-review` -> `5-done`
-- Task files live in `delegation/tasks/<status-folder>/`
+- Task files live in `.kit/tasks/<status-folder>/`
 - Use `./scripts/core/project start|move|complete <TASK-ID>` to manage status
 
 ### Defensive Coding
 
-- Consult `.agent-context/patterns.yml` before writing new utility functions
+- Consult `.kit/context/patterns.yml` before writing new utility functions
 - Use `==` for identifier comparison (not `in` unless justified with comment)
 - Use `str.removesuffix()` for extension removal (never `.replace()`)
 - Follow error strategy by layer: domain modules raise, CLI modules return empty,
@@ -76,19 +79,19 @@ tests/                pytest test suite
 | `onboarding` | First-run project setup |
 | `agent-creator` | Interactive agent creation |
 
-Full listing: `.claude/agents/` -- see `AGENT-TEMPLATE.md` for creating new agents.
+Full listing: `.claude/agents/` -- see `.kit/templates/AGENT-TEMPLATE.md` for creating new agents.
 
 ### Workflow Reference
 
 | Workflow | Location |
 |----------|----------|
-| Commit protocol | `.agent-context/workflows/COMMIT-PROTOCOL.md` |
-| Testing | `.agent-context/workflows/TESTING-WORKFLOW.md` |
-| Review fixes | `.agent-context/workflows/REVIEW-FIX-WORKFLOW.md` |
-| PR sizing | `.agent-context/workflows/PR-SIZE-WORKFLOW.md` |
-| Workflow freeze | `.agent-context/workflows/WORKFLOW-FREEZE-POLICY.md` |
-| Coverage | `.agent-context/workflows/COVERAGE-WORKFLOW.md` |
-| Task completion | `.agent-context/workflows/TASK-COMPLETION-PROTOCOL.md` |
+| Commit protocol | `.kit/context/workflows/COMMIT-PROTOCOL.md` |
+| Testing | `.kit/context/workflows/TESTING-WORKFLOW.md` |
+| Review fixes | `.kit/context/workflows/REVIEW-FIX-WORKFLOW.md` |
+| PR sizing | `.kit/context/workflows/PR-SIZE-WORKFLOW.md` |
+| Workflow freeze | `.kit/context/workflows/WORKFLOW-FREEZE-POLICY.md` |
+| Coverage | `.kit/context/workflows/COVERAGE-WORKFLOW.md` |
+| Task completion | `.kit/context/workflows/TASK-COMPLETION-PROTOCOL.md` |
 
 ## Key Scripts
 
@@ -101,7 +104,7 @@ Full listing: `.claude/agents/` -- see `AGENT-TEMPLATE.md` for creating new agen
 | `./scripts/core/ci-check.sh` | Full CI check (local) |
 | `./scripts/core/verify-ci.sh` | Verify CI status on GitHub |
 | `./scripts/core/pattern_lint.py` | Check for defensive coding violations |
-| `agents/launch` | Interactive agent launcher |
+| `.kit/launchers/launch` | Interactive agent launcher |
 
 ## Version
 

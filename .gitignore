@@ -62,5 +62,15 @@ release-*.diff
 # audit-results/
 .env
 
+# Aider artifacts
+.aider.*
+.aider.tags.cache.v4/
+
+# Dispatch event bus
+.dispatch/
+
+# Stale planner notes
+planner2.md
+
 # Security files (never commit)
 .pypirc
