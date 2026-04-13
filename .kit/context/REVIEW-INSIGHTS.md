@@ -175,4 +175,24 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 - Agent went straight to implementation with zero exploration time
 - For small refactors, precise line-number references in the handoff are more valuable than architectural context
 
+## Infrastructure Migrations
+
+### ADV-0068: Bulk path replacement must include destination directories
+- When moving files AND rewriting paths, the replacement script must target BOTH source-adjacent files and the moved files themselves
+- Files moved into `.kit/context/` (agent-handoffs.json, README.md, workflows/) still contained old paths
+- Pattern: run replacement script on destination dirs AFTER `git mv`, not just on `.claude/` and `scripts/`
+
+### ADV-0068: `delegation/tasks/active/` has no .kit/ equivalent
+- Legacy `delegation/tasks/active/` paths in CLI-scaffolded docs (README, QUICK_START, SETUP) describe consumer project structure
+- The `.kit/tasks/` layout uses numbered folders (1-backlog through 9-reference), not `active/`
+- Don't blindly sed `delegation/tasks/active/` → `.kit/tasks/active/` — it doesn't exist
+- Rule: consumer-facing docs that describe CLI behavior should NOT be rewritten during kit migration
+
+### ADV-0068: Use explicit `git add` for large migrations, never `git add -A`
+- `git add -A` swept up `.aider.*`, `.dispatch/`, and stale root files (`planner2.md`)
+- Stage by category: `git add .kit/` then `git add .claude/` etc.
+- Add common dev artifacts (`.aider.*`, `.dispatch/`) to `.gitignore` proactively
+
+---
+
 *Last updated: 2026-04-13*
