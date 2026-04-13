@@ -130,19 +130,16 @@ class TestEvaluate:
 
         assert result == 1
 
-    def test_evaluate_large_file_warning(self, mock_subprocess, tmp_path, capsys):
-        """Test evaluate warns about large files."""
-        # Create a large test file (>500 lines)
-        task_file = tmp_path / "large_task.md"
-        large_content = "# Test task\n" + "Line content\n" * 600
-        task_file.write_text(large_content)
+    def test_evaluate_delegates_to_run_evaluator(self, tmp_path, capsys):
+        """Test evaluate delegates to run_evaluator (file size checks happen there)."""
+        task_file = tmp_path / "test_task.md"
+        task_file.write_text("# Test task")
 
         with (
             patch(
                 "adversarial_workflow.cli.load_config",
                 return_value={"log_directory": ".adversarial/logs/"},
             ),
-            patch("os.path.exists", return_value=True),
             patch(
                 "adversarial_workflow.evaluators.runner.run_evaluator",
                 return_value=0,
@@ -156,26 +153,7 @@ class TestEvaluate:
         ):
             result = evaluate(str(task_file))
 
-        captured = capsys.readouterr()
-        assert "Large file detected" in captured.out
-
-    def test_evaluate_very_large_file_prompt(self, tmp_path):
-        """Test evaluate prompts for confirmation on very large files."""
-        # Create a very large test file (>700 lines)
-        task_file = tmp_path / "very_large_task.md"
-        very_large_content = "# Test task\n" + "Line content\n" * 800
-        task_file.write_text(very_large_content)
-
-        with (
-            patch(
-                "adversarial_workflow.cli.load_config",
-                return_value={"log_directory": ".adversarial/logs/"},
-            ),
-            patch("os.path.exists", return_value=True),
-            patch("builtins.input", return_value="n"),
-        ):  # User says no
-            result = evaluate(str(task_file))
-            assert result == 0  # Cancelled, not error
+        assert result == 0
 
 
 class TestValidateEvaluationOutput:

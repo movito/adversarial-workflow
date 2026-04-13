@@ -7,7 +7,7 @@ This document provides solutions to common issues when setting up and using the 
 - [Installation & Setup Issues](#installation--setup-issues)
 - [Configuration Problems](#configuration-problems)
 - [API & Authentication Errors](#api--authentication-errors)
-- [Script Execution Issues](#script-execution-issues)
+- [Evaluation Issues](#evaluation-issues)
 - [Workflow-Specific Problems](#workflow-specific-problems)
 - [Performance & Cost Issues](#performance--cost-issues)
 - [Getting Help](#getting-help)
@@ -492,7 +492,7 @@ Error: Request too large for model
 
 **Symptoms**:
 ```bash
-$ adversarial review
+$ adversarial review task.md
 ⚠️ WARNING: No changes detected in git diff!
 ⚠️ This might indicate PHANTOM WORK
 ```
@@ -508,16 +508,14 @@ $ adversarial review
    ```bash
    git status  # Check what changed
    git add .   # Stage changes
-   adversarial review
+   adversarial review task.md
    ```
 
 3. **Changes already committed**
    ```bash
-   # Review the last commit instead
-   git diff HEAD~1 > .adversarial/artifacts/last-commit.diff
-
-   # Review using the CLI
-   adversarial review
+   # The review command checks committed, staged, and unstaged changes
+   # against the base branch. If changes are committed, they will be detected.
+   adversarial review task.md
    ```
 
 ### Issue: Evaluation hangs or times out

@@ -1714,38 +1714,8 @@ def evaluate(task_file: str) -> int:
         print(f"{RED}❌ ERROR: Not initialized. Run 'adversarial init' first.{RESET}")
         return 1
 
-    # Pre-flight check for file size
-    with open(task_file, encoding="utf-8") as f:
-        line_count = len(f.readlines())
-        f.seek(0)
-        file_size = len(f.read())
-
-    # Estimate tokens (1 token ≈ 4 characters)
-    estimated_tokens = file_size // 4
-
-    # Warn if file is large (>500 lines or >20k tokens)
-    if line_count > 500 or estimated_tokens > 20000:
-        print(f"{YELLOW}⚠️  Large file detected:{RESET}")
-        print(f"   Lines: {line_count:,}")
-        print(f"   Estimated tokens: ~{estimated_tokens:,}")
-        print()
-        print(f"{BOLD}Note:{RESET} Files over 500 lines may exceed OpenAI rate limits.")
-        print("      If evaluation fails, consider splitting into smaller documents.")
-        print()
-
-        # Give user a chance to cancel for very large files
-        if line_count > 700:
-            print(f"{RED}⚠️  WARNING: File is very large (>{line_count} lines){RESET}")
-            print("   This will likely fail on Tier 1 OpenAI accounts (30k TPM limit)")
-            print("   Recommended: Split into files <500 lines each")
-            print()
-            response = input("Continue anyway? [y/N]: ").strip().lower()
-            if response not in ["y", "yes"]:
-                print("Evaluation cancelled.")
-                return 0
-            print()
-
     # Use the built-in 'evaluate' evaluator via LiteLLM
+    # Note: run_evaluator() handles large-file warnings and confirmation prompts
     from adversarial_workflow.evaluators.builtins import BUILTIN_EVALUATORS
     from adversarial_workflow.evaluators.runner import run_evaluator
 
@@ -1761,11 +1731,18 @@ def evaluate(task_file: str) -> int:
         print(f"   Details: {config.get('log_directory', '.adversarial/logs/')}")
         return eval_result
 
-    # Find the output log file
+    # Find the output log file by evaluator suffix
     log_dir = config.get("log_directory", ".adversarial/logs/")
     import glob
 
-    log_files = sorted(glob.glob(os.path.join(log_dir, "*.md")), key=os.path.getmtime, reverse=True)
+    suffix = builtin_config.output_suffix or "EVALUATE"
+    log_pattern = os.path.join(log_dir, f"*{suffix}*.md")
+    log_files = sorted(glob.glob(log_pattern), key=os.path.getmtime, reverse=True)
+    if not log_files:
+        # Fallback to any .md file
+        log_files = sorted(
+            glob.glob(os.path.join(log_dir, "*.md")), key=os.path.getmtime, reverse=True
+        )
     if not log_files:
         print(f"{YELLOW}⚠️  No evaluation log found in {log_dir}{RESET}")
         return 0
@@ -1913,9 +1890,11 @@ def validate(test_command: str | None = None) -> int:
     print()
 
     # Run test command directly (no shell script needed)
+    import shlex
+
     try:
         result = subprocess.run(
-            test_command.split(),
+            shlex.split(test_command),
             timeout=600,  # 10 minutes for tests
         )
     except subprocess.TimeoutExpired:

@@ -44,7 +44,7 @@ git clone https://github.com/gmickel/adversarial-workflow.git
 cd adversarial-workflow
 
 # Create virtual environment with Python 3.11
-python3.11 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 
 # Install in development mode
