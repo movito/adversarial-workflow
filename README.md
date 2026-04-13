@@ -1,7 +1,7 @@
 # Adversarial Workflow
 
 [![PyPI version](https://badge.fury.io/py/adversarial-workflow.svg)](https://pypi.org/project/adversarial-workflow/)
-[![Python 3.10-3.12](https://img.shields.io/badge/python-3.10--3.12-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10-3.13+](https://img.shields.io/badge/python-3.10--3.13+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **A multi-stage AI code review system that makes your code better**

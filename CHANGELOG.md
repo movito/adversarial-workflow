@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.10] - 2026-04-13
+
 ### Removed
 
 - **Aider dependency** — all evaluators now use LiteLLM directly (ADV-0065, ADV-0066)
@@ -15,12 +17,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `pip install aider-chat` from CI workflow
 - Python <3.13 upper bound constraint (Python 3.13+ now supported)
 - Aider references from README, SETUP, QUICK_START, and agent docs
+- ~420 lines of dead/duplicate verdict-extraction code from `cli.evaluate()` (ADV-0067)
+- Orphaned helper functions (`verify_token_count`, `extract_verdict`, `get_evaluation_summary`, `format_verdict_message`) and unused `import re`, `import glob`
 
 ### Changed
 
 - `adversarial init` no longer creates `.aider.conf.yml`
 - `adversarial check` no longer validates aider installation
 - Updated user-facing docs to reference LiteLLM instead of aider
+- `cli.evaluate()` now follows the same clean pattern as `cli.review()` — delegates fully to `run_evaluator()` (ADV-0067)
+
+### Fixed
+
+- **Empty test command crash** — `adversarial validate` with an empty `test_command` now returns a clear error instead of crashing with `IndexError` on `shlex.split("")` (ADV-0067)
 
 ## [0.9.9] - 2026-03-05
 
@@ -598,6 +607,7 @@ This release specifically improves the agent integration experience by:
 ---
 
 [0.9.2]: https://github.com/movito/adversarial-workflow/compare/v0.9.1...v0.9.2
+[0.9.10]: https://github.com/movito/adversarial-workflow/compare/v0.9.9...v0.9.10
 [0.9.9]: https://github.com/movito/adversarial-workflow/compare/v0.9.8...v0.9.9
 [0.9.8]: https://github.com/movito/adversarial-workflow/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/movito/adversarial-workflow/compare/v0.9.6...v0.9.7
