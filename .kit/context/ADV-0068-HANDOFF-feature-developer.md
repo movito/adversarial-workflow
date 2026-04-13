@@ -1,6 +1,6 @@
 # ADV-0068 Handoff: Migrate to .kit/ Directory Layout
 
-**Task**: `delegation/tasks/2-todo/ADV-0068-kit-migration.md`
+**Task**: `.kit/tasks/3-in-progress/ADV-0068-kit-migration.md`
 **Agent**: feature-developer-v5
 **Created**: 2026-04-13
 

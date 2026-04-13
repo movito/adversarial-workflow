@@ -215,20 +215,20 @@ Update project state when major changes occur:
 
 ## Integration with Existing Systems
 
-### Delegation System (tasks/)
+### Task System (.kit/tasks/)
 
-The `.kit/context/` system COMPLEMENTS the existing `tasks/` directory:
+The `.kit/context/` system COMPLEMENTS the task directory:
 
-- **tasks/active/**: Detailed task specifications
-- **tasks/completed/**: Task archives
-- **tasks/analysis/**: Strategic planning
+- **.kit/tasks/2-todo/**: Task specifications ready for work
+- **.kit/tasks/3-in-progress/**: Active tasks
+- **.kit/tasks/5-done/**: Completed task archives
 - **.kit/context/**: Real-time agent coordination
 
 **Workflow**:
-1. Tasks are defined in `tasks/active/`
+1. Tasks are defined in `.kit/tasks/2-todo/`
 2. Agents reference task files in their status
 3. Agent coordination happens via `.kit/context/`
-4. Completed tasks are archived to `tasks/completed/`
+4. Completed tasks are moved to `.kit/tasks/5-done/`
 
 **DO NOT**:
 - Duplicate task definitions in both systems
