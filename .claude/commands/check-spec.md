@@ -13,7 +13,7 @@ git branch --show-current
 
 ```bash
 # Find the task spec
-ls delegation/tasks/3-in-progress/
+ls .kit/tasks/3-in-progress/
 ```
 
 ## Step 2: Build the evaluator input

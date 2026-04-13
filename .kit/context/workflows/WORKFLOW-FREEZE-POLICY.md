@@ -6,7 +6,7 @@ Do NOT edit workflow definitions during an active feature task. This includes:
 - Skill files (`.claude/skills/`)
 - Command files (`.claude/commands/`)
 - Agent definition files (`.claude/agents/`)
-- Workflow documents (`.agent-context/workflows/`)
+- Workflow documents (`.kit/context/workflows/`)
 
 ## Rationale
 

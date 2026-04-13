@@ -1,5 +1,5 @@
 reviewer_model: gpt-4o
 evaluator_model: gpt-4o
-task_directory: delegation/tasks/
+task_directory: .kit/tasks/
 test_command: "python -m pytest tests/ -v || echo 'No tests yet - manual validation required'"
 log_directory: .adversarial/logs/

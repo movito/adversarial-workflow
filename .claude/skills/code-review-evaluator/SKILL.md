@@ -42,7 +42,7 @@ You may skip the evaluator when ALL of these conditions are true:
 
 ```bash
 echo "# Evaluator skipped: <N lines logic, no new functions, no external integrations" \
-  > .agent-context/reviews/<TASK-ID>-evaluator-review.md
+  > .kit/context/reviews/<TASK-ID>-evaluator-review.md
 ```
 
 **When in doubt, run it.** The fast variant costs ~$0.004 and takes 30 seconds.
@@ -110,20 +110,20 @@ cat .adversarial/logs/<TASK-ID>-code-review-input-r2--code-reviewer-fast.md.md
 
 ## Step 4: Persist Output
 
-Copy to `.agent-context/reviews/` so it's tracked in git:
+Copy to `.kit/context/reviews/` so it's tracked in git:
 
 ```bash
 # First run (adjust source filename to the evaluator you used):
 cp .adversarial/logs/<TASK-ID>-code-review-input--code-reviewer.md.md \
-   .agent-context/reviews/<TASK-ID>-evaluator-review.md
+   .kit/context/reviews/<TASK-ID>-evaluator-review.md
 
 # Example for fast evaluator:
 cp .adversarial/logs/<TASK-ID>-code-review-input--code-reviewer-fast.md.md \
-   .agent-context/reviews/<TASK-ID>-evaluator-review.md
+   .kit/context/reviews/<TASK-ID>-evaluator-review.md
 
 # Follow-up:
 cp .adversarial/logs/<TASK-ID>-code-review-input-r2--code-reviewer.md.md \
-   .agent-context/reviews/<TASK-ID>-evaluator-review-r2.md
+   .kit/context/reviews/<TASK-ID>-evaluator-review-r2.md
 ```
 
 Include this file in your next commit.

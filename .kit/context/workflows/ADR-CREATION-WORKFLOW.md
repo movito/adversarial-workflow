@@ -123,7 +123,7 @@ Real-world outcomes:
 ## References
 
 - Related ADRs: [ADR-XXXX](./XXXX-title.md)
-- Task files: `delegation/tasks/active/TASK-YYYY-####.md`
+- Task files: `.kit/tasks/active/TASK-YYYY-####.md`
 - Commits: abc1234, def5678
 - External docs: Links to libraries, standards, etc.
 
@@ -202,7 +202,7 @@ Update `docs/decisions/adr/README.md`:
 
 ## Documentation
 
-- **Quick Reference**: `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`
+- **Quick Reference**: `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`
 - **Full Guide**: This document
 - **ADR Index**: `docs/decisions/adr/README.md`
 - **Existing ADRs**: `docs/decisions/adr/`

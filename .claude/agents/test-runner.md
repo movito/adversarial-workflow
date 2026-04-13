@@ -120,9 +120,9 @@ You can run evaluation autonomously when encountering unclear test requirements 
 
 ```bash
 # For files < 500 lines (use appropriate folder):
-adversarial evaluate delegation/tasks/3-in-progress/TASK-FILE.md
+adversarial evaluate .kit/tasks/3-in-progress/TASK-FILE.md
 # For large files (>500 lines) requiring confirmation:
-echo y | adversarial evaluate delegation/tasks/3-in-progress/TASK-FILE.md
+echo y | adversarial evaluate .kit/tasks/3-in-progress/TASK-FILE.md
 
 # Read results
 cat .adversarial/logs/TASK-*-PLAN-EVALUATION.md
@@ -192,7 +192,7 @@ If you push code changes to GitHub (test fixes, test additions, etc.):
 
 **Soft Block**: Fix CI failures before completing task, but use judgment for timeout situations.
 
-**Reference**: See `.agent-context/workflows/COMMIT-PROTOCOL.md` for full protocol.
+**Reference**: See `.kit/context/workflows/COMMIT-PROTOCOL.md` for full protocol.
 
 ## Permissions
 You have read and execution permissions to:

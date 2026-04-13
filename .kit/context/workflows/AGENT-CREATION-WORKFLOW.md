@@ -90,7 +90,7 @@ cp .claude/agents/AGENT-TEMPLATE.md .claude/agents/your-agent-name.md
 
 **Option B: Automation Script (Recommended)**
 ```bash
-.agent-context/scripts/create-agent.sh your-agent-name "One sentence description"
+.kit/context/scripts/create-agent.sh your-agent-name "One sentence description"
 ```
 
 The automation script will:
@@ -239,11 +239,11 @@ Customize the documentation links for this agent's role:
 ## Quick Reference Documentation
 
 **Agent Coordination**:
-- Task specifications: `delegation/tasks/active/`
-- Agent procedures: `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`
-- Your role context: `.agent-context/agent-handoffs.json` → `"api-tester"`
-- Testing workflow: `.agent-context/workflows/TESTING-WORKFLOW.md`
-- Test suite management: `.agent-context/workflows/TEST-SUITE-WORKFLOW.md`
+- Task specifications: `.kit/tasks/active/`
+- Agent procedures: `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`
+- Your role context: `.kit/context/agent-handoffs.json` → `"api-tester"`
+- Testing workflow: `.kit/context/workflows/TESTING-WORKFLOW.md`
+- Test suite management: `.kit/context/workflows/TEST-SUITE-WORKFLOW.md`
 
 **Evaluation Workflow**:
 - **Complete guide**: `.adversarial/docs/EVALUATION-WORKFLOW.md` (347 lines)
@@ -271,7 +271,7 @@ You have the following permissions:
 - Create and modify test files in `tests/` directory
 - Run pytest and test validation commands
 - Execute API test scripts and validation tools
-- Update `.agent-context/agent-handoffs.json` with test results
+- Update `.kit/context/agent-handoffs.json` with test results
 - Document API behavior in `docs/technical/api/`
 - Report issues to feature-developer or davinci-api-developer agents
 - Invoke Evaluator autonomously when encountering test strategy ambiguities
@@ -327,7 +327,7 @@ If your agent needs additional context, add custom sections:
 
 ### Step 11: Update Procedural Knowledge Index
 
-Add your new agent to `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`:
+Add your new agent to `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`:
 
 ```markdown
 ## [Agent Role] Procedures
@@ -352,7 +352,7 @@ Add your new agent to `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`:
 
 ### API Testing Workflow
 
-**Where**: `.agent-context/workflows/API-TESTING-WORKFLOW.md` (if created)
+**Where**: `.kit/context/workflows/API-TESTING-WORKFLOW.md` (if created)
 
 **Quick Reference**:
 ```bash
@@ -365,7 +365,7 @@ pytest tests/integration/api/ --cov=thematic_cuts.api --cov-report=html
 
 **Documentation**:
 - Agent file: `.claude/agents/api-tester.md`
-- Testing workflow: `.agent-context/workflows/TESTING-WORKFLOW.md`
+- Testing workflow: `.kit/context/workflows/TESTING-WORKFLOW.md`
 - ADR-0008: DaVinci API Integration
 ```
 
@@ -375,7 +375,7 @@ pytest tests/integration/api/ --cov=thematic_cuts.api --cov-report=html
 
 Before committing, verify agent works:
 
-1. **Create test task specification** in `delegation/tasks/active/`
+1. **Create test task specification** in `.kit/tasks/active/`
 2. **Launch agent** via your agent system
 3. **Verify agent can**:
    - Access required tools
@@ -393,7 +393,7 @@ Before committing, verify agent works:
 git add .claude/agents/[agent-name].md
 
 # Stage procedural index update
-git add .agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md
+git add .kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md
 
 # Commit with descriptive message
 git commit -m "docs: Add [agent-name] agent with Evaluator workflow
@@ -401,7 +401,7 @@ git commit -m "docs: Add [agent-name] agent with Evaluator workflow
 - Create specialized agent for [role description]
 - Include standardized Evaluator instructions (autonomous)
 - Add to procedural knowledge index
-- Implements agent creation workflow from .agent-context/workflows/AGENT-CREATION-WORKFLOW.md"
+- Implements agent creation workflow from .kit/context/workflows/AGENT-CREATION-WORKFLOW.md"
 
 # Push to branch
 git push -u origin [branch-name]
@@ -472,13 +472,13 @@ Let's walk through creating an "api-tester" agent from start to finish.
 
 ```bash
 # Use automation script
-.agent-context/scripts/create-agent.sh api-tester "API testing and validation specialist for DaVinci Resolve integration"
+.kit/context/scripts/create-agent.sh api-tester "API testing and validation specialist for DaVinci Resolve integration"
 
 # Output:
 # ✅ Created .claude/agents/api-tester.md
 # 📝 Next steps:
 #    1. Edit api-tester.md and customize all [bracketed] sections
-#    2. Add to .agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md
+#    2. Add to .kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md
 #    3. Test agent with sample task
 ```
 
@@ -555,7 +555,7 @@ Follow these practices when testing APIs:
 ```markdown
 **API Testing Documentation**:
 - ADR-0008: DaVinci API Integration
-- Testing workflow: `.agent-context/workflows/TESTING-WORKFLOW.md`
+- Testing workflow: `.kit/context/workflows/TESTING-WORKFLOW.md`
 - API implementation: `your_project/api/davinci/`
 - API tests: `tests/integration/api/`
 ```
@@ -569,7 +569,7 @@ Follow these practices when testing APIs:
 - Create and modify test files in `tests/integration/api/` directory
 - Run pytest and API test validation commands
 - Execute API test scripts and validation tools
-- Update `.agent-context/agent-handoffs.json` with test results
+- Update `.kit/context/agent-handoffs.json` with test results
 - Document API behavior in `docs/technical/api/`
 - Report issues to davinci-api-developer agent
 
@@ -584,14 +584,14 @@ Follow these practices when testing APIs:
 
 ### 11. Update Procedural Index
 
-Add to `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`:
+Add to `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`:
 
 ```markdown
 ## API Tester Procedures
 
 ### API Testing Workflow
 
-**Where**: `.agent-context/workflows/TESTING-WORKFLOW.md`
+**Where**: `.kit/context/workflows/TESTING-WORKFLOW.md`
 
 **Quick Reference**:
 ```bash
@@ -613,7 +613,7 @@ pytest tests/integration/api/ -m performance
 
 ### 12. Test Agent
 
-Create `delegation/tasks/active/TASK-2025-TEST-api-basic-validation.md`:
+Create `.kit/tasks/active/TASK-2025-TEST-api-basic-validation.md`:
 
 ```markdown
 # TASK-2025-TEST: API Basic Validation Test
@@ -642,7 +642,7 @@ Launch api-tester agent and verify it completes the test task successfully.
 
 ```bash
 git add .claude/agents/api-tester.md
-git add .agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md
+git add .kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md
 git commit -m "docs: Add api-tester agent with Evaluator workflow
 
 - Create specialized agent for DaVinci Resolve API testing
@@ -721,7 +721,7 @@ Before committing new agent, verify:
 - [ ] Role-specific "When to Request Evaluation" scenarios
 
 ### Documentation
-- [ ] Added to `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`
+- [ ] Added to `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`
 - [ ] All documentation links work
 - [ ] Role-specific workflows referenced (if exist)
 - [ ] Related ADRs linked (if applicable)
@@ -741,7 +741,7 @@ Before committing new agent, verify:
 
 ## Using the Automation Script
 
-The automation script (`.agent-context/scripts/create-agent.sh`) streamlines agent creation.
+The automation script (`.kit/context/scripts/create-agent.sh`) streamlines agent creation.
 
 ### Basic Usage
 
@@ -750,10 +750,10 @@ The automation script (`.agent-context/scripts/create-agent.sh`) streamlines age
 cd /path/to/your-project
 
 # Run script with agent name and description
-.agent-context/scripts/create-agent.sh agent-name "One sentence description"
+.kit/context/scripts/create-agent.sh agent-name "One sentence description"
 
 # Example:
-.agent-context/scripts/create-agent.sh api-tester "API testing and validation specialist for DaVinci Resolve integration"
+.kit/context/scripts/create-agent.sh api-tester "API testing and validation specialist for DaVinci Resolve integration"
 ```
 
 ### What the Script Does
@@ -916,7 +916,7 @@ This will help me proceed without further evaluation loops."
 **Symptom**: Can't find agent in documentation
 
 **Solution**:
-1. Add agent section to `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`
+1. Add agent section to `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`
 2. Follow format of existing agent entries
 3. Include key procedures and documentation links
 4. Commit update with agent creation
@@ -944,10 +944,10 @@ grep -n '\[' .claude/agents/your-agent.md
 
 - **Agent Template**: `.claude/agents/AGENT-TEMPLATE.md` (reusable template)
 - **Evaluator Workflow**: `.adversarial/docs/EVALUATION-WORKFLOW.md` (complete guide)
-- **Procedural Index**: `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md` (central reference)
-- **Agent System Guide**: `.agent-context/AGENT-SYSTEM-GUIDE.md` (overall architecture)
+- **Procedural Index**: `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md` (central reference)
+- **Agent System Guide**: `.kit/context/AGENT-SYSTEM-GUIDE.md` (overall architecture)
 - **ADR-0011**: `docs/decisions/adr/0011-adversarial-workflow-integration.md` (decision rationale)
-- **Automation Script**: `.agent-context/scripts/create-agent.sh` (agent creation automation)
+- **Automation Script**: `.kit/context/scripts/create-agent.sh` (agent creation automation)
 
 ---
 

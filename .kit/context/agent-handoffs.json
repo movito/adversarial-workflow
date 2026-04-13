@@ -5,10 +5,10 @@
   "agents": {
     "planner": {
       "status": "completed",
-      "current_task": null,
-      "brief_note": "ADV-0067 post-completion done. All pre-existing CLI issues resolved. Ready for v1.0.0 release.",
-      "details_link": "delegation/tasks/5-done/ADV-0067-fix-cli-preexisting-issues.md",
-      "handoff_file": null
+      "current_task": "ADV-0068",
+      "brief_note": "COMPLETE: ADV-0068 task spec created, evaluated (APPROVED), handoff ready. Migrate to .kit/ layout per KIT-ADR-0023.",
+      "details_link": "delegation/tasks/2-todo/ADV-0068-kit-migration.md",
+      "handoff_file": ".agent-context/ADV-0068-HANDOFF-feature-developer.md"
     },
     "feature-developer-v5": {
       "status": "idle",

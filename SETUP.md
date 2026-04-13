@@ -170,8 +170,8 @@ After setup, verify each component:
 - [ ] Pre-commit hooks run on commit
 
 ### Agents (if using Claude Code)
-- [ ] `./agents/launch` shows agent menu
-- [ ] `./agents/preflight` runs checks
+- [ ] `./.kit/launchers/launch` shows agent menu
+- [ ] `./.kit/launchers/preflight` runs checks
 - [ ] Serena activates (if configured)
 
 ---

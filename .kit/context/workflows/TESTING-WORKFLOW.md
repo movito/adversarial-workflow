@@ -262,7 +262,7 @@ If the script fails:
 
 ## Documentation
 
-- **Quick Reference**: `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`
+- **Quick Reference**: `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`
 - **Full Guide**: This document
 - **Test Infrastructure**: See `tests/conftest.py` for fixtures and configuration
 - **CI/CD**: `.github/workflows/tests.yml`

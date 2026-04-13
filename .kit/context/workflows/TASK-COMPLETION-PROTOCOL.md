@@ -22,7 +22,7 @@
 4. ✅ **No regressions introduced** (overall pass rate maintained or improved)
 5. ✅ **Documentation updated** (README, CHANGELOG, ADRs if applicable)
 6. ✅ **CI/CD passing** (GitHub Actions green)
-7. ✅ **Handoff document created** (`delegation/handoffs/HANDOFF-TO-*.md`)
+7. ✅ **Handoff document created** (`.kit/context/archive/HANDOFF-TO-*.md`)
 
 ---
 
@@ -30,7 +30,7 @@
 
 ### Filename:
 ```
-delegation/handoffs/HANDOFF-TO-<AGENT>-TASK-YYYY-####.md
+.kit/context/archive/HANDOFF-TO-<AGENT>-TASK-YYYY-####.md
 ```
 
 ### Required Sections:
@@ -80,8 +80,8 @@ What should the next agent do with this?
 1. **Verify all deliverables complete** (check task file)
 2. **Run full test suite**: `pytest tests/ -v`
 3. **Review git status**: Ensure all changes committed
-4. **Create handoff document** in `delegation/handoffs/`
-5. **Update `.agent-context/agent-handoffs.json`** with task completion
+4. **Create handoff document** in `.kit/context/archive/`
+5. **Update `.kit/context/agent-handoffs.json`** with task completion
 6. **Stage and commit** handoff + agent-handoffs.json update
 7. **Push to remote repository**
 8. **Notify coordinator** (or wait for coordinator to pick up)
@@ -108,17 +108,17 @@ What should the next agent do with this?
 ## Example Handoff Document
 
 See existing handoffs for examples:
-- `delegation/handoffs/SCRIPTWRITER-MVP-IMPLEMENTATION-COMPLETE.md`
-- `delegation/handoffs/HANDOFF-TO-FEATURE-DEVELOPER-TASK-2025-0037.md`
-- `delegation/handoffs/TASK-P3-001-IMPLEMENTATION-COMPLETE.md`
+- `.kit/context/archive/SCRIPTWRITER-MVP-IMPLEMENTATION-COMPLETE.md`
+- `.kit/context/archive/HANDOFF-TO-FEATURE-DEVELOPER-TASK-2025-0037.md`
+- `.kit/context/archive/TASK-P3-001-IMPLEMENTATION-COMPLETE.md`
 
 ---
 
 ## Documentation
 
-- **Quick Reference**: `.agent-context/PROCEDURAL-KNOWLEDGE-INDEX.md`
+- **Quick Reference**: `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`
 - **Full Protocol**: This document
-- **Handoff Examples**: `delegation/handoffs/*.md`
+- **Handoff Examples**: `.kit/context/archive/*.md`
 - **Task Templates**: `delegation/templates/TASK-TEMPLATE.md`
 
 ---

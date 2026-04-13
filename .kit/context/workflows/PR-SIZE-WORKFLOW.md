@@ -19,9 +19,9 @@ bot findings, require zero fix-commit rounds, and merge on first human review.
 
 Planner artifacts go to `main` as `chore:` or `docs:` commits:
 
-- Task specs (`delegation/tasks/`)
+- Task specs (`.kit/tasks/`)
 - Architecture assessments (`docs/decisions/adr/`)
-- Handoff files (`.agent-context/`)
+- Handoff files (`.kit/context/`)
 - Evaluator doc updates (`.adversarial/docs/`)
 
 **Do NOT** put these on the feature branch. They inflate PR line counts and
@@ -29,7 +29,7 @@ generate irrelevant bot findings.
 
 ```bash
 # Planner workflow (on main):
-git add delegation/tasks/2-todo/TASK-XXXX.md .agent-context/TASK-XXXX-HANDOFF-*.md
+git add .kit/tasks/2-todo/TASK-XXXX.md .kit/context/TASK-XXXX-HANDOFF-*.md
 git commit -m "chore: Add TASK-XXXX task spec and handoff"
 git push origin main
 ```
