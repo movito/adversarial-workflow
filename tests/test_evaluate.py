@@ -2,11 +2,10 @@
 Tests for the evaluate command functionality.
 
 Tests the evaluate function which runs Phase 1: Plan evaluation using LiteLLM.
-This includes error handling, file validation, subprocess management, and output parsing.
+This includes error handling, file validation, and output parsing.
 """
 
-import subprocess
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from adversarial_workflow.cli import (
     evaluate,
@@ -43,183 +42,93 @@ class TestEvaluate:
         assert "Not initialized" in captured.out
 
     @patch("adversarial_workflow.cli.load_config")
-    @patch("os.path.exists")
-    def test_evaluate_missing_script(self, mock_exists, mock_load_config, tmp_path, capsys):
-        """Test evaluate when evaluation script is missing."""
-        # Create a test file
+    def test_evaluate_builtin_not_found(self, mock_load_config, tmp_path, capsys):
+        """Test evaluate when built-in evaluator is missing."""
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
 
-        # Mock dependencies
         mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
 
-        # Mock script file not existing
-        def mock_exists_side_effect(path):
-            if path.endswith("evaluate_plan.sh"):
-                return False
-            return True
-
-        mock_exists.side_effect = mock_exists_side_effect
-
-        result = evaluate(str(task_file))
+        with patch("adversarial_workflow.evaluators.builtins.BUILTIN_EVALUATORS", {}):
+            result = evaluate(str(task_file))
 
         assert result == 1
         captured = capsys.readouterr()
-        assert "Script not found" in captured.out
+        assert "evaluator not found" in captured.out
 
     @patch("adversarial_workflow.cli.load_config")
-    @patch("os.path.exists")
-    @patch("subprocess.run")
     @patch("adversarial_workflow.cli.validate_evaluation_output")
     @patch("adversarial_workflow.cli.verify_token_count")
     def test_evaluate_successful_approved(
         self,
         mock_verify,
         mock_validate,
-        mock_run,
-        mock_exists,
         mock_load_config,
         tmp_path,
         capsys,
     ):
         """Test successful evaluate with APPROVED verdict."""
-        # Create a test file
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
 
-        # Mock dependencies
-        mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
-        mock_exists.return_value = True
+        log_dir = tmp_path / "logs"
+        log_dir.mkdir()
+        log_file = log_dir / "test-PLAN-EVALUATION.md"
+        log_file.write_text("# Evaluation\nVerdict: APPROVED")
 
-        # Mock successful subprocess run
-        mock_run.return_value = Mock(returncode=0, stdout="Success", stderr="")
+        mock_load_config.return_value = {"log_directory": str(log_dir) + "/"}
 
-        # Mock successful validation
-        mock_validate.return_value = (True, "APPROVED", "Plan approved")
-
-        result = evaluate(str(task_file))
+        # Mock run_evaluator to succeed
+        with patch("adversarial_workflow.evaluators.runner.run_evaluator", return_value=0):
+            mock_validate.return_value = (True, "APPROVED", "Plan approved")
+            result = evaluate(str(task_file))
 
         assert result == 0
         captured = capsys.readouterr()
         assert "APPROVED" in captured.out
 
     @patch("adversarial_workflow.cli.load_config")
-    @patch("os.path.exists")
-    @patch("subprocess.run")
     @patch("adversarial_workflow.cli.validate_evaluation_output")
     @patch("adversarial_workflow.cli.verify_token_count")
     def test_evaluate_needs_revision(
         self,
         mock_verify,
         mock_validate,
-        mock_run,
-        mock_exists,
         mock_load_config,
         tmp_path,
         capsys,
     ):
         """Test evaluate with NEEDS_REVISION verdict."""
-        # Create a test file
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
 
-        # Mock dependencies
-        mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
-        mock_exists.return_value = True
+        log_dir = tmp_path / "logs"
+        log_dir.mkdir()
+        log_file = log_dir / "test-PLAN-EVALUATION.md"
+        log_file.write_text("# Evaluation\nVerdict: NEEDS_REVISION")
 
-        # Mock successful subprocess run
-        mock_run.return_value = Mock(returncode=0, stdout="Success", stderr="")
+        mock_load_config.return_value = {"log_directory": str(log_dir) + "/"}
 
-        # Mock needs revision validation
-        mock_validate.return_value = (True, "NEEDS_REVISION", "Plan needs work")
-
-        result = evaluate(str(task_file))
+        with patch("adversarial_workflow.evaluators.runner.run_evaluator", return_value=0):
+            mock_validate.return_value = (True, "NEEDS_REVISION", "Plan needs work")
+            result = evaluate(str(task_file))
 
         assert result == 1
         captured = capsys.readouterr()
         assert "NEEDS_REVISION" in captured.out
 
     @patch("adversarial_workflow.cli.load_config")
-    @patch("os.path.exists")
-    @patch("subprocess.run")
-    def test_evaluate_rate_limit_error(
-        self, mock_run, mock_exists, mock_load_config, tmp_path, capsys
-    ):
-        """Test evaluate handles rate limit errors."""
-        # Create a test file
+    def test_evaluate_run_evaluator_failure(self, mock_load_config, tmp_path, capsys):
+        """Test evaluate handles run_evaluator failure (e.g., rate limit, timeout)."""
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
 
-        # Mock dependencies
         mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
-        mock_exists.return_value = True
 
-        # Mock rate limit error in subprocess output
-        mock_run.return_value = Mock(
-            returncode=1,
-            stdout="RateLimitError: tokens per min (TPM) limit exceeded",
-            stderr="",
-        )
-
-        result = evaluate(str(task_file))
+        with patch("adversarial_workflow.evaluators.runner.run_evaluator", return_value=1):
+            result = evaluate(str(task_file))
 
         assert result == 1
-        captured = capsys.readouterr()
-        assert "rate limit exceeded" in captured.out
-
-    @patch("adversarial_workflow.cli.load_config")
-    @patch("os.path.exists")
-    @patch("subprocess.run")
-    def test_evaluate_timeout(self, mock_run, mock_exists, mock_load_config, tmp_path, capsys):
-        """Test evaluate handles subprocess timeout."""
-        # Create a test file
-        task_file = tmp_path / "test_task.md"
-        task_file.write_text("# Test task")
-
-        # Mock dependencies
-        mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
-        mock_exists.return_value = True
-
-        # Mock timeout exception
-        mock_run.side_effect = subprocess.TimeoutExpired("cmd", 180)
-
-        result = evaluate(str(task_file))
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "timed out" in captured.out
-
-    @patch("platform.system")
-    @patch("adversarial_workflow.cli.load_config")
-    @patch("os.path.exists")
-    @patch("subprocess.run")
-    def test_evaluate_windows_error(
-        self,
-        mock_run,
-        mock_exists,
-        mock_load_config,
-        mock_system,
-        tmp_path,
-        capsys,
-    ):
-        """Test evaluate handles Windows platform issues."""
-        # Create a test file
-        task_file = tmp_path / "test_task.md"
-        task_file.write_text("# Test task")
-
-        # Mock dependencies
-        mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
-        mock_exists.return_value = True
-        mock_system.return_value = "Windows"
-
-        # Mock FileNotFoundError (bash script not found on Windows)
-        mock_run.side_effect = FileNotFoundError("Script not found")
-
-        result = evaluate(str(task_file))
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "Windows" in captured.out and "WSL" in captured.out
 
     def test_evaluate_large_file_warning(self, mock_subprocess, tmp_path, capsys):
         """Test evaluate warns about large files."""
@@ -235,10 +144,15 @@ class TestEvaluate:
             ),
             patch("os.path.exists", return_value=True),
             patch(
+                "adversarial_workflow.evaluators.runner.run_evaluator",
+                return_value=0,
+            ),
+            patch(
                 "adversarial_workflow.cli.validate_evaluation_output",
                 return_value=(True, "APPROVED", "OK"),
             ),
             patch("adversarial_workflow.cli.verify_token_count"),
+            patch("glob.glob", return_value=[]),
         ):
             result = evaluate(str(task_file))
 
@@ -413,12 +327,16 @@ class TestEvaluateIntegration:
                 return_value={"log_directory": ".adversarial/logs/"},
             ),
             patch("os.path.exists", return_value=True),
-            patch("subprocess.run", return_value=Mock(returncode=0, stdout="Success", stderr="")),
+            patch(
+                "adversarial_workflow.evaluators.runner.run_evaluator",
+                return_value=0,
+            ),
             patch(
                 "adversarial_workflow.cli.validate_evaluation_output",
                 return_value=(True, "APPROVED", "OK"),
             ),
             patch("adversarial_workflow.cli.verify_token_count"),
+            patch("glob.glob", return_value=[]),
         ):
             result = evaluate(str(sample_task_file))
             assert isinstance(result, int)

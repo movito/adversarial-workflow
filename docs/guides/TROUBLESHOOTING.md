@@ -696,6 +696,7 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
 **Causes & Solutions**:
 
 1. **Large files in context**
+
    ```bash
    # Check file sizes
    wc -l tasks/TASK-001.md

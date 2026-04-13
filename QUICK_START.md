@@ -440,7 +440,7 @@ EOF
 # 2-6. Same workflow as above
 ```
 
-### Workflow 3: With Aider for Implementation
+### Workflow 3: Full Adversarial Review
 
 ```bash
 # 1. Get plan approved
@@ -449,8 +449,8 @@ adversarial evaluate tasks/add-api-endpoint.md
 # 2. Implement with your preferred tool
 # ... use Claude Code, Cursor, or any editor ...
 
-# 3. Independent review (different AI)
-adversarial review  # Catches what you might miss
+# 3. Independent review (different AI evaluator)
+adversarial code-reviewer tasks/add-api-endpoint.md
 
 # 4-6. Validate and commit
 ```

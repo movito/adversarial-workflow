@@ -1441,20 +1441,6 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
                 recommendation="Secure .env file: chmod 600 .env",
             )
 
-    # Check scripts executable (summary)
-    scripts_dir = Path(".adversarial/scripts")
-    if scripts_dir.exists():
-        script_files = list(scripts_dir.glob("*.sh"))
-        executable_count = sum(1 for s in script_files if os.access(s, os.X_OK))
-        if len(script_files) > 0 and executable_count == len(script_files):
-            check_pass("permissions", f"All {len(script_files)} scripts executable")
-        elif executable_count < len(script_files):
-            check_warn(
-                "permissions",
-                f"{executable_count}/{len(script_files)} scripts executable",
-                recommendation="Fix with: chmod +x .adversarial/scripts/*.sh",
-            )
-
     # Check log directory writable
     if config and "log_directory" in config:
         log_dir = Path(config["log_directory"])
@@ -1759,113 +1745,32 @@ def evaluate(task_file: str) -> int:
                 return 0
             print()
 
-    # Error 4: Script execution fails
-    script = ".adversarial/scripts/evaluate_plan.sh"
-    if not os.path.exists(script):
-        print(f"{RED}❌ ERROR: Script not found: {script}{RESET}")
-        print("   Fix: Run 'adversarial init' to reinstall scripts")
+    # Use the built-in 'evaluate' evaluator via LiteLLM
+    from adversarial_workflow.evaluators.builtins import BUILTIN_EVALUATORS
+    from adversarial_workflow.evaluators.runner import run_evaluator
+
+    builtin_config = BUILTIN_EVALUATORS.get("evaluate")
+    if builtin_config is None:
+        print(f"{RED}❌ ERROR: Built-in 'evaluate' evaluator not found{RESET}")
         return 1
 
-    try:
-        result = subprocess.run(
-            [script, task_file],
-            text=True,
-            capture_output=True,
-            timeout=180,  # 3 minutes
-        )
-
-        # Check for rate limit errors in output
-        output = result.stdout + result.stderr
-        if "RateLimitError" in output or "tokens per min (TPM)" in output:
-            print(f"{RED}❌ ERROR: OpenAI rate limit exceeded{RESET}")
-            print()
-            print(f"{BOLD}WHY:{RESET}")
-            print("   Your task file is too large for your OpenAI organization's rate limit")
-            print()
-
-            # Extract file size for helpful message
-            with open(task_file, encoding="utf-8") as f:
-                line_count = len(f.readlines())
-
-            print(f"{BOLD}FILE SIZE:{RESET}")
-            print(f"   Lines: {line_count:,}")
-            print("   Recommended limit: 500 lines")
-            print()
-            print(f"{BOLD}SOLUTIONS:{RESET}")
-            print("   1. Split your task into smaller documents (<500 lines each)")
-            print("   2. Upgrade your OpenAI tier (Tier 2 supports ~1,000 lines)")
-            print("   3. Use manual review for this comprehensive specification")
-            print()
-            print(f"{BOLD}MORE INFO:{RESET}")
-            print("   https://platform.openai.com/docs/guides/rate-limits")
-            return 1
-
-    except subprocess.TimeoutExpired:
-        print(f"{RED}❌ ERROR: Evaluation timed out (>3 minutes){RESET}")
-        print()
-        print(f"{BOLD}WHY:{RESET}")
-        print("   The AI model took too long to respond")
-        print()
-        print(f"{BOLD}POSSIBLE CAUSES:{RESET}")
-        print("   • Network issues connecting to API")
-        print("   • Task file too large (>1000 lines)")
-        print("   • API rate limiting")
-        print()
-        print(f"{BOLD}FIX:{RESET}")
-        print("   1. Check your network connection")
-        print("   2. Try a smaller task file")
-        print("   3. Wait a few minutes and retry")
-        return 1
-    except FileNotFoundError:
-        # Check if this is a bash/platform issue
-        if platform.system() == "Windows":
-            print(f"{RED}❌ ERROR: Cannot execute workflow scripts{RESET}")
-            print()
-            print(f"{BOLD}WHY:{RESET}")
-            print("   Native Windows (PowerShell/CMD) cannot run bash scripts")
-            print("   This package requires Unix shell (bash) for workflow automation")
-            print()
-            print(f"{BOLD}FIX:{RESET}")
-            print("   Option 1 (RECOMMENDED): Use WSL (Windows Subsystem for Linux)")
-            print("     1. Install WSL: https://learn.microsoft.com/windows/wsl/install")
-            print("     2. Open WSL terminal")
-            print("     3. Reinstall package in WSL: pip install adversarial-workflow")
-            print()
-            print("   Option 2: Try Git Bash (not officially supported)")
-            print("     • May have compatibility issues")
-            print("     • WSL is strongly recommended")
-            print()
-            print(f"{BOLD}HELP:{RESET}")
-            print("   See platform requirements: README.md#platform-support")
-        else:
-            print(f"{RED}❌ ERROR: Script not found: {script}{RESET}")
-            print()
-            print(f"{BOLD}WHY:{RESET}")
-            print("   Workflow scripts are missing or corrupted")
-            print()
-            print(f"{BOLD}FIX:{RESET}")
-            print("   Run: adversarial init")
-            print("   This will reinstall all workflow scripts")
-        return 1
-
-    # Error 5: Evaluation rejected
-    if result.returncode != 0:
+    eval_result = run_evaluator(builtin_config, task_file)
+    if eval_result != 0:
         print()
         print("📋 Evaluation complete (needs revision)")
-        print(f"   Details: {config['log_directory']}")
-        return result.returncode
+        print(f"   Details: {config.get('log_directory', '.adversarial/logs/')}")
+        return eval_result
 
-    # Error 6: Validation - Check if evaluation actually ran (not just empty output)
-    # Extract task number from filename to find log file
-    task_basename = os.path.basename(task_file)
-    # Try to extract TASK-YYYY-NNN pattern, fallback to filename without extension
-    task_match = re.search(r"TASK-\d+-\d+", task_basename)
-    if task_match:
-        task_num = task_match.group(0)
-    else:
-        task_num = os.path.splitext(task_basename)[0]
+    # Find the output log file
+    log_dir = config.get("log_directory", ".adversarial/logs/")
+    import glob
 
-    log_file = os.path.join(config["log_directory"], f"{task_num}-PLAN-EVALUATION.md")
+    log_files = sorted(glob.glob(os.path.join(log_dir, "*.md")), key=os.path.getmtime, reverse=True)
+    if not log_files:
+        print(f"{YELLOW}⚠️  No evaluation log found in {log_dir}{RESET}")
+        return 0
+
+    log_file = log_files[0]
 
     is_valid, verdict, message = validate_evaluation_output(log_file)
     if not is_valid:
@@ -1965,23 +1870,22 @@ def review(task_file: str) -> int:
         print(f"{RED}❌ ERROR: Not initialized. Run 'adversarial init' first.{RESET}")
         return 1
 
-    # Run review script
-    script = ".adversarial/scripts/review_implementation.sh"
-    if not os.path.exists(script):
-        print(f"{RED}❌ ERROR: Script not found: {script}{RESET}")
-        print("   Fix: Run 'adversarial init'")
+    # Use the built-in 'review' evaluator via LiteLLM
+    from adversarial_workflow.evaluators.builtins import BUILTIN_EVALUATORS
+    from adversarial_workflow.evaluators.runner import run_evaluator
+
+    builtin_config = BUILTIN_EVALUATORS.get("review")
+    if builtin_config is None:
+        print(f"{RED}❌ ERROR: Built-in 'review' evaluator not found{RESET}")
+        print("   Install a review evaluator: adversarial library install <name>")
+        print("   Or use: adversarial <evaluator-name> <task-file>")
         return 1
 
-    try:
-        result = subprocess.run([script, task_file], timeout=180)
-    except subprocess.TimeoutExpired:
-        print(f"{RED}❌ ERROR: Review timed out (>3 minutes){RESET}")
-        return 1
-
-    if result.returncode != 0:
+    eval_result = run_evaluator(builtin_config, task_file)
+    if eval_result != 0:
         print()
         print("📋 Review complete (needs revision)")
-        return result.returncode
+        return eval_result
 
     print()
     print(f"{GREEN}✅ Review approved!{RESET}")
@@ -2008,17 +1912,18 @@ def validate(test_command: str | None = None) -> int:
     print(f"   Test command: {test_command}")
     print()
 
-    # Run validation script
-    script = ".adversarial/scripts/validate_tests.sh"
-    if not os.path.exists(script):
-        print(f"{RED}❌ ERROR: Script not found: {script}{RESET}")
-        print("   Fix: Run 'adversarial init'")
-        return 1
-
+    # Run test command directly (no shell script needed)
     try:
-        result = subprocess.run([script, test_command], timeout=600)  # 10 minutes for tests
+        result = subprocess.run(
+            test_command.split(),
+            timeout=600,  # 10 minutes for tests
+        )
     except subprocess.TimeoutExpired:
         print(f"{RED}❌ ERROR: Test validation timed out (>10 minutes){RESET}")
+        return 1
+    except FileNotFoundError:
+        print(f"{RED}❌ ERROR: Test command not found: {test_command}{RESET}")
+        print("   Fix: Ensure the test runner is installed and on PATH")
         return 1
 
     if result.returncode != 0:
