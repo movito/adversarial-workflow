@@ -20,7 +20,6 @@ import argparse
 import getpass
 import os
 import platform
-import re
 import shutil
 import subprocess
 import sys
@@ -1526,174 +1525,6 @@ def health(verbose: bool = False, json_output: bool = False) -> int:
     return 0 if errors == 0 else 1
 
 
-def estimate_file_tokens(file_path: str) -> int:
-    """
-    Estimate tokens for a file using rough approximation.
-
-    Estimation: ~1 token per 4 characters (OpenAI's rule of thumb)
-
-    Args:
-        file_path: Path to the file to estimate tokens for
-
-    Returns:
-        Estimated token count (integer)
-    """
-    with open(file_path, encoding="utf-8") as f:
-        char_count = len(f.read())
-
-    return char_count // 4  # Rough estimate
-
-
-def extract_token_count_from_log(log_file_path: str) -> int | None:
-    """
-    Extract tokens sent from evaluation log.
-
-    Looks for pattern: "Tokens: 15k sent, 422 received"
-    Returns tokens sent as integer, or None if not found.
-
-    Args:
-        log_file_path: Path to the evaluation log file
-
-    Returns:
-        Tokens sent as integer, or None if pattern not found
-    """
-    if not os.path.exists(log_file_path):
-        return None
-
-    with open(log_file_path, encoding="utf-8") as f:
-        content = f.read()
-
-    # Pattern: "Tokens: 12k sent" or "Tokens: 12000 sent"
-    match = re.search(r"Tokens:\s+(\d+\.?\d*)k?\s+sent", content)
-    if match:
-        tokens_str = match.group(1)
-        tokens = float(tokens_str)
-        # If 'k' suffix found, multiply by 1000
-        if "k" in match.group(0).lower():
-            tokens *= 1000
-        return int(tokens)
-
-    return None
-
-
-def verify_token_count(task_file: str, log_file: str) -> None:
-    """
-    Warn if token count is suspiciously low for file size.
-
-    This helps detect cases where large files may not be fully
-    processed by the evaluator due to API rate limits or other issues.
-
-    Args:
-        task_file: Path to the task file being evaluated
-        log_file: Path to the evaluation log file
-    """
-    expected_tokens = estimate_file_tokens(task_file)
-    actual_tokens = extract_token_count_from_log(log_file)
-
-    if actual_tokens is None:
-        # Can't verify if we can't extract token count
-        return
-
-    # 70% tolerance - warn if actual < 70% of expected
-    if actual_tokens < expected_tokens * 0.7:
-        print()
-        print(f"{YELLOW}⚠️  Token count lower than expected:{RESET}")
-        print(f"   File size estimate: ~{expected_tokens:,} tokens")
-        print(f"   Actually sent: {actual_tokens:,} tokens")
-        print(
-            f"   Difference: {expected_tokens - actual_tokens:,} tokens ({100 - int(actual_tokens / expected_tokens * 100)}% less)"
-        )
-        print()
-        print(f"{BOLD}Note:{RESET} Large files may not be fully processed by evaluator.")
-        print("      Consider splitting into smaller documents (<1,000 lines).")
-        print()
-
-
-def validate_evaluation_output(
-    log_file_path: str,
-) -> tuple[bool, str | None, str]:
-    """
-    Validate that evaluation log contains actual GPT-4o evaluation content.
-
-    This prevents false positives where the evaluation runs but the LLM
-    fails to produce an actual evaluation (e.g., due to API errors).
-    Also extracts the verdict from successful evaluations.
-
-    Args:
-        log_file_path: Path to the evaluation log file
-
-    Returns:
-        (is_valid, verdict, message):
-            - is_valid: True if valid evaluation, False if failed
-            - verdict: "APPROVED", "NEEDS_REVISION", "REJECTED", or None if validation failed
-            - message: Descriptive message about validation result
-    """
-    # Check if log file exists
-    if not os.path.exists(log_file_path):
-        return False, None, f"Log file not found: {log_file_path}"
-
-    with open(log_file_path, encoding="utf-8") as f:
-        content = f.read()
-
-    # Check minimum content size (working evaluations are >1000 bytes)
-    if len(content) < 500:
-        return (
-            False,
-            None,
-            f"Log file too small ({len(content)} bytes), evaluation likely failed",
-        )
-
-    # Check for required evaluation sections
-    # Note: The prompt uses "Evaluation Summary" not "OVERALL ASSESSMENT"
-    required_sections = ["Evaluation Summary", "Verdict"]
-
-    missing_sections = [s for s in required_sections if s not in content]
-    if missing_sections:
-        return (
-            False,
-            None,
-            f"Missing evaluation sections: {', '.join(missing_sections)}",
-        )
-
-    # Check for known failure patterns (git errors)
-    failure_patterns = [
-        ("Unable to list files in git repo", "Git repository scanning failed"),
-        ("Is your git repo corrupted", "Git repository error"),
-        ("BadObject", "Git object error"),
-    ]
-
-    for pattern, description in failure_patterns:
-        if pattern in content and len(content) < 1000:
-            # Small file with error pattern = evaluation didn't run
-            return False, None, f"Evaluation failed: {description}"
-
-    # Check for token usage (indicates GPT-4o actually ran)
-    if "Tokens:" not in content and "tokens" not in content.lower():
-        return False, None, "No token usage found - GPT-4o may not have run"
-
-    # Extract verdict from evaluation content
-    verdict = None
-    verdict_patterns = [
-        ("Verdict:** APPROVED", "APPROVED"),
-        ("Verdict: APPROVED", "APPROVED"),
-        ("Verdict:** NEEDS_REVISION", "NEEDS_REVISION"),
-        ("Verdict: NEEDS_REVISION", "NEEDS_REVISION"),
-        ("Verdict:** REJECT", "REJECTED"),
-        ("Verdict: REJECT", "REJECTED"),
-    ]
-
-    for pattern, verdict_value in verdict_patterns:
-        if pattern in content:
-            verdict = verdict_value
-            break
-
-    # If we couldn't extract a verdict, that's suspicious but not fatal
-    if verdict is None:
-        verdict = "UNKNOWN"
-
-    return True, verdict, "Evaluation output valid"
-
-
 def evaluate(task_file: str) -> int:
     """Run Phase 1: Plan evaluation."""
 
@@ -1731,67 +1562,9 @@ def evaluate(task_file: str) -> int:
         print(f"   Details: {config.get('log_directory', '.adversarial/logs/')}")
         return eval_result
 
-    # Find the output log file by evaluator suffix
-    log_dir = config.get("log_directory", ".adversarial/logs/")
-    import glob
-
-    suffix = builtin_config.output_suffix or "EVALUATE"
-    log_pattern = os.path.join(log_dir, f"*{suffix}*.md")
-    log_files = sorted(glob.glob(log_pattern), key=os.path.getmtime, reverse=True)
-    if not log_files:
-        # Fallback to any .md file
-        log_files = sorted(
-            glob.glob(os.path.join(log_dir, "*.md")), key=os.path.getmtime, reverse=True
-        )
-    if not log_files:
-        print(f"{YELLOW}⚠️  No evaluation log found in {log_dir}{RESET}")
-        return 0
-
-    log_file = log_files[0]
-
-    is_valid, verdict, message = validate_evaluation_output(log_file)
-    if not is_valid:
-        print()
-        print(f"{RED}❌ Evaluation failed: {message}{RESET}")
-        print()
-        print(f"{BOLD}WHY:{RESET}")
-        print("   The evaluation script ran but didn't produce valid output")
-        print("   This usually means the LLM encountered an error during evaluation")
-        print()
-        print(f"{BOLD}LOG FILE:{RESET}")
-        print(f"   {log_file}")
-        print()
-        print(f"{BOLD}FIX:{RESET}")
-        print("   1. Check the log file for error messages")
-        print("   2. Ensure your API keys are valid: adversarial check")
-        print("   3. Try running the evaluation again")
-        print()
-        return 1
-
-    # Verify token count (warn if suspiciously low)
-    verify_token_count(task_file, log_file)
-
-    # Report based on actual verdict from evaluation
     print()
-    if verdict == "APPROVED":
-        print(f"{GREEN}✅ Evaluation APPROVED!{RESET}")
-        print("   Plan is ready for implementation")
-        print(f"   Review output: {log_file}")
-        return 0
-    elif verdict == "NEEDS_REVISION":
-        print(f"{YELLOW}⚠️  Evaluation NEEDS_REVISION{RESET}")
-        print("   Review feedback and update plan")
-        print(f"   Details: {log_file}")
-        return 1
-    elif verdict == "REJECTED":
-        print(f"{RED}❌ Evaluation REJECTED{RESET}")
-        print("   Plan has fundamental issues - major revision needed")
-        print(f"   Details: {log_file}")
-        return 1
-    else:  # UNKNOWN or other
-        print(f"{YELLOW}⚠️  Evaluation complete (verdict: {verdict}){RESET}")
-        print(f"   Review output: {log_file}")
-        return 0
+    print(f"{GREEN}✅ Evaluation complete!{RESET}")
+    return 0
 
 
 def review(task_file: str) -> int:
@@ -1865,7 +1638,7 @@ def review(task_file: str) -> int:
         return eval_result
 
     print()
-    print(f"{GREEN}✅ Review approved!{RESET}")
+    print(f"{GREEN}✅ Review complete!{RESET}")
     return 0
 
 
@@ -1885,6 +1658,12 @@ def validate(test_command: str | None = None) -> int:
     # Use provided test command or config default
     if test_command is None:
         test_command = config.get("test_command", "pytest")
+
+    # Guard against empty test command (shlex.split("") returns [], causing IndexError)
+    if not test_command or not test_command.strip():
+        print(f"{RED}❌ ERROR: Test command is empty{RESET}")
+        print("   Fix: Provide a test command or set test_command in .adversarial/config.yml")
+        return 1
 
     print(f"   Test command: {test_command}")
     print()

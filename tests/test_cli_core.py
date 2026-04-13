@@ -23,8 +23,6 @@ from adversarial_workflow.cli import (
     check,
     check_platform_compatibility,
     create_example_task,
-    estimate_file_tokens,
-    extract_token_count_from_log,
     init,
     load_config,
     print_box,
@@ -907,95 +905,6 @@ class TestPrintBox:
         assert "Title" in captured.out
         assert "Line 1" in captured.out
         assert "Line 2" in captured.out
-
-
-class TestEstimateFileTokens:
-    """Test the estimate_file_tokens utility function."""
-
-    def test_estimate_tokens_basic(self, tmp_path):
-        """estimate_file_tokens should return reasonable token estimate."""
-        test_file = tmp_path / "test.md"
-        # Write 100 characters (roughly 25 tokens)
-        test_file.write_text("a" * 100)
-
-        tokens = estimate_file_tokens(str(test_file))
-
-        # Should be approximately 25 tokens (100 chars / 4)
-        assert 20 <= tokens <= 30
-
-    def test_estimate_tokens_empty_file(self, tmp_path):
-        """estimate_file_tokens should handle empty files."""
-        test_file = tmp_path / "empty.md"
-        test_file.write_text("")
-
-        tokens = estimate_file_tokens(str(test_file))
-
-        assert tokens == 0
-
-    def test_estimate_tokens_large_file(self, tmp_path):
-        """estimate_file_tokens should handle large files."""
-        test_file = tmp_path / "large.md"
-        test_file.write_text("x" * 10000)  # 10000 chars
-
-        tokens = estimate_file_tokens(str(test_file))
-
-        # Should be approximately 2500 tokens
-        assert 2400 <= tokens <= 2600
-
-
-class TestExtractTokenCountFromLog:
-    """Test the extract_token_count_from_log utility function."""
-
-    def test_extract_tokens_from_log_with_k_suffix(self, tmp_path):
-        """extract_token_count_from_log should find token count with k suffix."""
-        log_file = tmp_path / "log.md"
-        log_file.write_text(
-            """
-# Evaluation Log
-
-Some content here.
-
-Tokens: 15k sent, 422 received
-"""
-        )
-
-        tokens = extract_token_count_from_log(str(log_file))
-
-        assert tokens is not None
-        assert tokens == 15000
-
-    def test_extract_tokens_from_log_decimal(self, tmp_path):
-        """extract_token_count_from_log should find token count with decimal."""
-        log_file = tmp_path / "log.md"
-        log_file.write_text(
-            """
-# Evaluation Log
-
-Tokens: 1.5k sent, 100 received
-"""
-        )
-
-        tokens = extract_token_count_from_log(str(log_file))
-
-        assert tokens is not None
-        assert tokens == 1500  # 1.5k = 1500
-
-    def test_extract_tokens_no_count(self, tmp_path):
-        """extract_token_count_from_log should return None when no tokens found."""
-        log_file = tmp_path / "log.md"
-        log_file.write_text("# Log with no token info")
-
-        tokens = extract_token_count_from_log(str(log_file))
-
-        # Should return None when pattern not found
-        assert tokens is None
-
-    def test_extract_tokens_file_not_found(self):
-        """extract_token_count_from_log should handle missing files."""
-        tokens = extract_token_count_from_log("nonexistent.md")
-
-        # Should return None for missing file
-        assert tokens is None
 
 
 class TestPromptUser:
