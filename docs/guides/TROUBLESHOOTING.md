@@ -7,7 +7,7 @@ This document provides solutions to common issues when setting up and using the 
 - [Installation & Setup Issues](#installation--setup-issues)
 - [Configuration Problems](#configuration-problems)
 - [API & Authentication Errors](#api--authentication-errors)
-- [Script Execution Issues](#script-execution-issues)
+- [Evaluation Issues](#evaluation-issues)
 - [Workflow-Specific Problems](#workflow-specific-problems)
 - [Performance & Cost Issues](#performance--cost-issues)
 - [Getting Help](#getting-help)
@@ -36,9 +36,9 @@ ERROR: Could not find a version that satisfies the requirement adversarial-workf
      ```
 
 2. **Python version too old**
-   - Requires Python 3.8+
+   - Requires Python 3.10+
    - Check version: `python --version`
-   - Upgrade: `pyenv install 3.11` or download from python.org
+   - Upgrade: `pyenv install 3.12` or download from python.org
 
 3. **Virtual environment issues**
    - Create clean venv:
@@ -103,28 +103,6 @@ adversarial init
 ```
 
 **Why**: Adversarial workflow requires git for code review (git diff).
-
-### Issue: Permission denied when running scripts
-
-**Symptoms**:
-```bash
-$ .adversarial/scripts/evaluate_plan.sh task.md
-bash: .adversarial/scripts/evaluate_plan.sh: Permission denied
-```
-
-**Solution**:
-```bash
-# Make scripts executable
-chmod +x .adversarial/scripts/*.sh
-
-# Or run with bash
-bash .adversarial/scripts/evaluate_plan.sh task.md
-```
-
-**Prevention**: `adversarial init` should set permissions automatically. If not:
-```bash
-find .adversarial/scripts -name "*.sh" -exec chmod +x {} \;
-```
 
 ---
 
@@ -508,68 +486,13 @@ Error: Request too large for model
 
 ---
 
-## Script Execution Issues
-
-### Issue: "aider: command not found"
-
-**Symptoms**:
-```bash
-$ .adversarial/scripts/evaluate_plan.sh task.md
-.../evaluate_plan.sh: line 53: aider: command not found
-```
-
-**Solution**:
-```bash
-# Install aider-chat
-pip install aider-chat
-
-# Verify installation
-aider --version
-
-# If still not found, use full path in config
-which aider  # Note the path
-# Update .adversarial/config.yml if needed
-```
-
-### Issue: Scripts fail with "no such file or directory"
-
-**Symptoms**:
-```bash
-$ .adversarial/scripts/evaluate_plan.sh task.md
-Error: Task file not found: task.md
-```
-
-**Solutions**:
-
-1. **Use correct path** (relative to current directory)
-   ```bash
-   # If in project root
-   .adversarial/scripts/evaluate_plan.sh tasks/TASK-001.md
-
-   # If in different directory
-   .adversarial/scripts/evaluate_plan.sh ../tasks/TASK-001.md
-
-   # Or use absolute path
-   .adversarial/scripts/evaluate_plan.sh /full/path/to/task.md
-   ```
-
-2. **Check file exists**
-   ```bash
-   ls -la tasks/TASK-001.md
-   ```
-
-3. **Check task_directory in config**
-   ```bash
-   # Config should match your project structure
-   cat .adversarial/config.yml
-   # task_directory: tasks/  # Must match actual location
-   ```
+## Evaluation Issues
 
 ### Issue: "No changes detected in git diff"
 
 **Symptoms**:
 ```bash
-$ adversarial review
+$ adversarial review task.md
 ⚠️ WARNING: No changes detected in git diff!
 ⚠️ This might indicate PHANTOM WORK
 ```
@@ -585,57 +508,36 @@ $ adversarial review
    ```bash
    git status  # Check what changed
    git add .   # Stage changes
-   adversarial review
+   adversarial review task.md
    ```
 
 3. **Changes already committed**
    ```bash
-   # Review the last commit instead
-   git diff HEAD~1 > .adversarial/artifacts/last-commit.diff
-
-   # Manually review using aider
-   aider --read .adversarial/artifacts/last-commit.diff \
-         --message "Review this implementation"
+   # The review command checks committed, staged, and unstaged changes
+   # against the base branch. If changes are committed, they will be detected.
+   adversarial review task.md
    ```
 
-### Issue: Script hangs or runs forever
+### Issue: Evaluation hangs or times out
 
-**Symptoms**: Script starts but never completes
+**Symptoms**: Evaluation starts but never completes
 
 **Causes & Solutions**:
 
-1. **Interactive aider prompt**
-   ```bash
-   # Make sure scripts use --yes flag
-   grep -n "\-\-yes" .adversarial/scripts/evaluate_plan.sh
+1. **Large context causing timeout**
+   - Check file sizes being evaluated
+   - Reduce file size (keep under 500 lines)
 
-   # Should see --yes in aider command
-   ```
-
-2. **Large context causing timeout**
-   - Check file sizes being read
-   - Reduce context (use --read for large files)
-   - Increase timeout in script
-
-3. **API timeout**
+2. **API timeout**
    ```bash
    # Check network connectivity
    curl https://api.openai.com/v1/models
 
-   # Try manual aider call
-   aider --model gpt-4o --yes --message "test"
+   # Test evaluation
+   adversarial evaluate task.md
    ```
 
-**Kill hung process**:
-```bash
-# Find process
-ps aux | grep aider
-
-# Kill it
-kill -9 <PID>
-
-# Or use Ctrl+C in terminal
-```
+**Kill hung process**: Use Ctrl+C in terminal.
 
 ---
 
@@ -791,45 +693,25 @@ Acceptance: 6 xfailed tests in test_validation.py pass, exit code 0
 
 **Causes & Solutions**:
 
-1. **Using `--files` instead of `--read`**
-   ```bash
-   # ❌ EXPENSIVE:
-   aider --files src/**/*.py  # Adds ALL files to context
+1. **Large files in context**
 
-   # ✅ CHEAP:
-   aider --read task.md --read diff.txt  # Reference only
-   ```
-
-2. **Conversational usage** (not single-shot)
-   ```bash
-   # ❌ EXPENSIVE: Multiple messages
-   aider --files src/validation.py
-   # Then 10 messages back and forth
-
-   # ✅ CHEAP: One complete message
-   aider --files src/validation.py \
-         --read plan.md \
-         --message "[Complete detailed instructions]" \
-         --yes
-   ```
-
-3. **Large files in context**
    ```bash
    # Check file sizes
    wc -l tasks/TASK-001.md
 
-   # If > 1000 lines, extract relevant section
-   sed -n '100,200p' tasks/TASK-001.md > task-excerpt.md
-   aider --read task-excerpt.md
+   # If > 1000 lines, split into smaller files
+   adversarial split tasks/TASK-001.md
    ```
+
+2. **Too many evaluations per task**
+   - Plan your evaluations before running them
+   - Use targeted evaluators for specific concerns
 
 **Target costs**:
 - Plan evaluation: $0.05-0.15
 - Code review: $0.10-0.30
 - Test validation: $0.05-0.15
 - **Total per task: $0.25-1.00**
-
-If exceeding these, optimize your aider usage.
 
 ### Issue: API calls timing out
 
@@ -860,32 +742,6 @@ Error: Request timed out after 60 seconds
    done
    ```
 
-### Issue: Aider crashes with "Out of memory"
-
-**Symptoms**: System freezes, aider process killed
-
-**Causes**: Too many large files in context
-
-**Solutions**:
-
-1. **Use `--read` instead of `--files`**
-2. **Limit file scope**
-   ```bash
-   # Instead of:
-   aider --files src/**/*.py
-
-   # Do:
-   aider --files src/validation.py  # Just one file
-   ```
-
-3. **Increase swap space** (Linux)
-   ```bash
-   sudo fallocate -l 4G /swapfile
-   sudo chmod 600 /swapfile
-   sudo mkswap /swapfile
-   sudo swapon /swapfile
-   ```
-
 ---
 
 ## Getting Help
@@ -903,9 +759,9 @@ Error: Request timed out after 60 seconds
    # Check versions
    python --version
    pip show adversarial-workflow
-   aider --version
 
    # Check configuration
+   adversarial check
    cat .adversarial/config.yml
    env | grep ADVERSARIAL
 
@@ -929,7 +785,6 @@ Error: Request timed out after 60 seconds
 - OS: Ubuntu 22.04
 - Python: 3.11.5
 - adversarial-workflow: 1.0.0
-- aider-chat: 0.30.0
 
 **Steps to reproduce**:
 1. Run `adversarial init`
@@ -982,15 +837,12 @@ set -x  # Print each command
 # ... rest of script ...
 set +x  # Turn off debug
 
-# Or run with bash -x
-bash -x .adversarial/scripts/evaluate_plan.sh task.md
+# Or enable verbose output
+ADVERSARIAL_DEBUG=1 adversarial evaluate task.md
 ```
 
 **Test individual components**:
 ```bash
-# Test aider directly
-aider --model gpt-4o --yes --message "test message"
-
 # Test YAML parsing
 python -c "import yaml; print(yaml.safe_load(open('.adversarial/config.yml')))"
 
@@ -1026,15 +878,6 @@ enabled: true
 # ✅ Correct:
 workflow_settings:
   enabled: true
-```
-
-### "ModuleNotFoundError: No module named 'aider'"
-
-**Cause**: Aider not installed
-
-**Solution**:
-```bash
-pip install aider-chat
 ```
 
 ### "git: command not found"

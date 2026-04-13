@@ -132,9 +132,7 @@ See [Custom Evaluators](#custom-evaluators) for full documentation, or check the
 Before installing, ensure you have:
 
 ### Required
-- **Python 3.10-3.12** (Python 3.12 recommended)
-  - ⚠️ **Python 3.13+ not supported** - aider-chat dependency requires Python <3.13
-  - Use [uv](https://github.com/astral-sh/uv) to manage Python versions: `uv venv --python 3.12`
+- **Python 3.10+** (Python 3.12 recommended)
 - **Git repository** (workflow analyzes git diff)
 - **API Keys** - At least one of:
   - **Anthropic Claude** (recommended): Get at https://console.anthropic.com/settings/keys
@@ -159,7 +157,7 @@ Before installing, ensure you have:
 pip install adversarial-workflow
 ```
 
-This installs everything you need, including aider-chat.
+This installs everything you need, including LiteLLM for AI model access.
 
 ### From GitHub (Development)
 
@@ -344,7 +342,7 @@ For more details, see [OpenAI Rate Limits](https://platform.openai.com/docs/guid
 Traditional AI coding suffers from "phantom work" - where AI claims implementation is complete but only adds comments or TODOs. This workflow prevents that through **multiple independent verification gates**:
 
 ### Phase 1: Plan Evaluation
-**Evaluator** (aider + GPT-4o or Claude) evaluates your implementation plan before coding begins.
+**Evaluator** (LiteLLM + GPT-4o or Claude) evaluates your implementation plan before coding begins.
 - Catches design flaws early
 - Validates completeness
 - Identifies missing edge cases
@@ -358,14 +356,14 @@ Traditional AI coding suffers from "phantom work" - where AI claims implementati
 - Deviations are intentional and documented
 
 ### Phase 3: Code Review
-**Evaluator** (aider) analyzes actual git diff against plan.
+**Evaluator** (LiteLLM) analyzes actual git diff against plan.
 - **Phantom work detection**: Checks for real code vs. TODOs
 - Verifies plan adherence
 - Catches implementation bugs early
 - Provides specific, actionable feedback
 
 ### Phase 4: Test Validation
-**Evaluator** (aider) analyzes test results objectively.
+**Evaluator** (LiteLLM) analyzes test results objectively.
 - Proves functionality works (not just looks right)
 - Catches regressions immediately
 - Validates all requirements met
@@ -379,14 +377,13 @@ Traditional AI coding suffers from "phantom work" - where AI claims implementati
 This package is **completely standalone** and works with any development workflow:
 
 ✅ **No Claude Code required** - Works with any editor/IDE
-✅ **No special agent system required** - Just aider + API keys
+✅ **No special agent system required** - Just API keys
 ✅ **Integrates into existing projects** - Doesn't change your workflow
 ✅ **Tool-agnostic** - Use with your preferred development tools
 
 **You can implement using:**
 - **Claude Code** (what thematic-cuts project uses)
 - **Cursor** / **GitHub Copilot** / any AI coding assistant
-- **Aider directly** (`aider --architect-mode`)
 - **Manual coding** with AI review
 - **Any combination** of the above
 
@@ -398,33 +395,26 @@ This package is **completely standalone** and works with any development workflo
 
 - **"Author"**: Whoever creates the work (plan or code)
   - METAPHOR for: The person or tool that writes implementation plans and code
-  - In practice: You, Claude Code, Cursor, Copilot, aider, manual coding
+  - In practice: You, Claude Code, Cursor, Copilot, manual coding
   - Technical reality: Just whoever writes the files
 
 - **"Evaluator"**: Independent analysis stage that evaluates the Author's work for quality and correctness
   - METAPHOR for: Independent evaluation perspective
-  - Technical reality: `aider --model gpt-4o --message "review prompt"`
+  - Technical reality: `adversarial <evaluator> <task_file>` via LiteLLM
   - NOT a persistent agent or special software
   - Different prompt for each phase (plan evaluation, code review, test validation)
 
-**No agents, no infrastructure, no special setup** - just aider with different review prompts at each verification stage!
+**No agents, no infrastructure, no special setup** - just LiteLLM with different review prompts at each verification stage!
 
 **Historical note**: Earlier versions used "Coordinator"/"Evaluator" (v0.1), then "Author"/"Reviewer" (v0.2-v0.3.1). We've updated to "Author"/"Evaluator" to eliminate ambiguity with agent roles like "document-reviewer".
 
 ## Token Optimization
 
-Key to avoiding excessive costs:
+The adversarial pattern is designed for efficient token usage:
 
-```bash
-# ❌ Standard Aider (expensive)
-aider --files src/**/*.py    # Adds all files to context
-
-# ✅ Adversarial pattern (efficient)
-aider --read task.md --read diff.txt --message "review this"
-# Only reads specific files, doesn't add to context
-```
-
-**Result**: 20-40k tokens per task vs. 100-500k with full context = **10-20x savings**
+- Only sends specific files to the evaluator (task spec, diff, test results)
+- No full-repository context loading
+- **Result**: 20-40k tokens per task vs. 100-500k with full context = **10-20x savings**
 
 ## Integration with Existing Projects
 
@@ -454,7 +444,7 @@ my-project/
 
 **Configuration** (`.adversarial/config.yml`):
 ```yaml
-evaluator_model: gpt-4o            # AI model for Reviewer (aider)
+evaluator_model: gpt-4o            # AI model for evaluators (via LiteLLM)
 task_directory: tasks/current/    # Your existing tasks
 test_command: npm test             # Your test command
 log_directory: .adversarial/logs/
@@ -467,7 +457,7 @@ log_directory: .adversarial/logs/
 adversarial init                        # Initialize in current project
 adversarial init --interactive          # Interactive setup wizard
 adversarial quickstart                  # Quick start with example
-adversarial check                       # Validate setup (aider, API keys, config)
+adversarial check                       # Validate setup (API keys, config)
 adversarial health                      # Comprehensive system health check
 
 # Agent Coordination (optional)
@@ -768,22 +758,21 @@ adversarial validate "pytest tests/test_auth.py"
 # AI analyzes test results
 ```
 
-### Example 2: With Aider for Implementation
+### Example 2: With Any AI Assistant
 
-Use aider for coding, adversarial workflow for quality gates:
+Use any AI coding tool for implementation, adversarial workflow for quality gates:
 
 ```bash
 # 1. Create and evaluate plan
 echo "# Task: Refactor database layer" > tasks/refactor-db.md
 adversarial evaluate tasks/refactor-db.md
 
-# 2. Implement with aider
-aider --architect-mode src/database.py
-# ... make changes with aider ...
+# 2. Implement with your preferred tool (Claude Code, Cursor, etc.)
+# ... make changes ...
 
 # 3. Review implementation
 adversarial review
-# Independent AI reviews what aider did
+# Independent AI reviews your changes
 
 # 4. Validate
 adversarial validate "npm test"

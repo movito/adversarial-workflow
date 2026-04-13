@@ -16,14 +16,14 @@ v0.5.0 (as of pyproject.toml)
 ## Tech Stack
 - **Language**: Python 3.10+ (3.12 recommended)
 - **CLI Entry Point**: `adversarial` command
-- **Core Dependency**: `aider-chat` (bundled) - GPT-4o via aider for evaluation
+- **Core Dependency**: `litellm` - LLM API access for evaluation
 - **Config Format**: YAML (`.adversarial/config.yml`)
 - **Package Manager**: pip, setuptools
 
 ## Key Dependencies
 - `pyyaml>=6.0`
 - `python-dotenv>=0.19.0`
-- `aider-chat>=0.86.0`
+- `litellm`
 
 ## Project Structure
 ```

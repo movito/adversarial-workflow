@@ -25,28 +25,7 @@ Before starting, make sure you have:
 
 ---
 
-## Step 1: Install aider
-
-adversarial-workflow uses [aider](https://aider.chat/) for AI code review.
-
-```bash
-pip install aider-chat
-```
-
-**Verify installation:**
-```bash
-aider --version
-```
-
-Expected output: `aider version X.Y.Z`
-
-**Troubleshooting:**
-- If `aider` command not found: Check your PATH or use `python -m aider`
-- If pip fails: Try `pip install --user aider-chat`
-
----
-
-## Step 2: Install adversarial-workflow
+## Step 1: Install adversarial-workflow
 
 ```bash
 pip install adversarial-workflow
@@ -346,7 +325,6 @@ The AI reviewer will analyze your plan and either:
 Use your preferred method:
 - **Claude Code**: Let Claude implement via the IDE
 - **Cursor / Copilot**: Use AI coding assistants
-- **Aider**: `aider --architect-mode src/profile.py`
 - **Manual coding**: Write code yourself in your editor
 
 The adversarial workflow is **tool-agnostic** - it reviews the result, not how you create it.
@@ -462,19 +440,17 @@ EOF
 # 2-6. Same workflow as above
 ```
 
-### Workflow 3: With Aider for Implementation
+### Workflow 3: Full Adversarial Review
 
 ```bash
 # 1. Get plan approved
 adversarial evaluate tasks/add-api-endpoint.md
 
-# 2. Implement with aider
-aider --architect-mode src/api.py
+# 2. Implement with your preferred tool
+# ... use Claude Code, Cursor, or any editor ...
 
-# ... use aider to implement ...
-
-# 3. Independent review (different AI)
-adversarial review  # Catches what aider might miss
+# 3. Independent review (different AI evaluator)
+adversarial code-reviewer tasks/add-api-endpoint.md
 
 # 4-6. Validate and commit
 ```
@@ -586,14 +562,6 @@ git init
 git add .
 git commit -m "Initial commit"
 adversarial init
-```
-
-### "ERROR: Aider not found"
-
-**Solution:**
-```bash
-pip install aider-chat
-aider --version
 ```
 
 ### "ERROR: No API keys configured"

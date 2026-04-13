@@ -86,10 +86,6 @@ jobs:
         run: |
           pip install -e .
 
-      - name: Install aider-chat
-        run: |
-          pip install aider-chat
-
       - name: Create test project
         run: |
           mkdir -p /tmp/test-adversarial-project
@@ -119,28 +115,8 @@ jobs:
           cd /tmp/test-adversarial-project
           test -d .adversarial || exit 1
           test -f .adversarial/config.yml || exit 1
-          test -f .adversarial/scripts/evaluate_plan.sh || exit 1
-          test -f .adversarial/scripts/review_implementation.sh || exit 1
-          test -f .adversarial/scripts/validate_tests.sh || exit 1
-          test -f .aider.conf.yml || exit 1
           test -f .env.example || exit 1
           echo "✓ All expected files created"
-
-      - name: Check script executability
-        run: |
-          cd /tmp/test-adversarial-project
-          test -x .adversarial/scripts/evaluate_plan.sh || exit 1
-          test -x .adversarial/scripts/review_implementation.sh || exit 1
-          test -x .adversarial/scripts/validate_tests.sh || exit 1
-          echo "✓ All scripts are executable"
-
-      - name: Validate script syntax
-        run: |
-          cd /tmp/test-adversarial-project
-          bash -n .adversarial/scripts/evaluate_plan.sh
-          bash -n .adversarial/scripts/review_implementation.sh
-          bash -n .adversarial/scripts/validate_tests.sh
-          echo "✓ All scripts have valid bash syntax"
 
       - name: Test adversarial check (without API key)
         run: |
@@ -184,7 +160,7 @@ jobs:
         run: |
           pip install -e .
 
-      - name: Initialize and test scripts
+      - name: Initialize and verify setup
         run: |
           mkdir -p /tmp/bash-test
           cd /tmp/bash-test
@@ -194,12 +170,14 @@ jobs:
 
           adversarial init
 
-          # Test scripts with explicit bash version check
-          for script in .adversarial/scripts/*.sh; do
-            echo "Testing: $script"
-            bash -n "$script" || exit 1
-          done
-          echo "✓ All scripts compatible with Linux bash"
+          # Verify initialization created expected files
+          test -d .adversarial || exit 1
+          test -f .adversarial/config.yml || exit 1
+          test -f .env.example || exit 1
+
+          # Verify no legacy script directory is created
+          test ! -d .adversarial/scripts || echo "Note: scripts directory exists but is no longer required"
+          echo "✓ Initialization compatible with Linux bash"
 
   test-pytest:
     name: Run Tests - Python ${{ matrix.python-version }}

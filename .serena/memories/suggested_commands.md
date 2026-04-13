@@ -2,7 +2,7 @@
 
 ## Virtual Environment
 ```bash
-# Activate virtual environment (Python 3.11 required for aider)
+# Activate virtual environment (Python 3.10+ required)
 source .venv/bin/activate
 ```
 

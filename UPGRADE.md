@@ -2,17 +2,23 @@
 
 ## Python Version Requirement
 
-**Python 3.10-3.12 required** (Python 3.13+ not supported)
+**Python 3.10+ required**
 
-The `aider-chat` dependency requires Python <3.13. If you're on Python 3.13+:
+---
 
-```bash
-# Use uv to create a venv with Python 3.12
-uv venv .venv --python 3.12
-source .venv/bin/activate
+## Upgrading to v1.0.0
 
-# Then proceed with upgrade below
-```
+### What Changed
+
+- **Aider dependency removed** — evaluators now use LiteLLM directly instead of shelling out to `aider-chat`. No more `pip install aider-chat`, no more Python <3.13 constraint.
+- Python 3.13+ is now supported.
+
+### Migration Steps
+
+1. Upgrade the package: `pip install --upgrade adversarial-workflow`
+2. Remove aider if no longer needed: `pip uninstall aider-chat`
+3. Re-run `adversarial init` to update project files (optional — `.aider.conf.yml` is no longer created)
+4. Ensure your API key is set: `export OPENAI_API_KEY=sk-...` (or `ANTHROPIC_API_KEY`)
 
 ---
 

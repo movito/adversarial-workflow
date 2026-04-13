@@ -1,6 +1,6 @@
 # ADV-0066: Remove Aider Remnants from Codebase
 
-**Status**: Todo
+**Status**: In Review
 **Priority**: high
 **Assigned To**: unassigned
 **Estimated Effort**: 3-5 hours

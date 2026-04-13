@@ -8,9 +8,9 @@ This guide walks you through setting up adversarial-workflow for development and
 
 Before you begin, ensure you have:
 
-1. **Python 3.11+** installed (required for aider compatibility)
+1. **Python 3.10+** installed
    ```bash
-   python3 --version  # Should be 3.11 or higher
+   python3 --version  # Should be 3.10 or higher
    ```
 
 2. **Git** installed and configured
@@ -44,7 +44,7 @@ git clone https://github.com/gmickel/adversarial-workflow.git
 cd adversarial-workflow
 
 # Create virtual environment with Python 3.11
-python3.11 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 
 # Install in development mode

@@ -151,7 +151,7 @@ test_command: pytest
         # This tests integration with our fixtures
         assert "project_name" in sample_config
         assert "openai_api_key" in sample_config
-        assert sample_config["aider_model"] == "gpt-4o"
+        assert "stages" in sample_config
 
     def test_load_config_default_path(self):
         """Test load_config with default path parameter."""

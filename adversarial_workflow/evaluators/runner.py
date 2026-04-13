@@ -133,7 +133,7 @@ def _run_custom_evaluator(
     try:
         print(f"{prefix}: Using model {resolved_model}")
 
-        # Call LiteLLM completion API (ADV-0065: replaces Aider subprocess)
+        # Call LiteLLM completion API
         response = litellm.completion(
             model=resolved_model,
             messages=[{"role": "user", "content": full_prompt}],

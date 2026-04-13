@@ -247,7 +247,7 @@ def _verify_identity_leaks(project_dir: Path) -> int:
     extensions = {".md", ".toml", ".py", ".sh"}
 
     # Directories to exclude (legitimate references)
-    exclude_dirs = {".git", ".venv", ".aider"}
+    exclude_dirs = {".git", ".venv"}
     exclude_path_parts = [
         ".adversarial",
         ".agent-context",
@@ -570,11 +570,10 @@ def cmd_setup(args):
     force = "--force" in args
     use_uv = False  # Flag to track if we need uv for venv creation
 
-    # 1. Verify Python version (3.10+ required, <3.13 due to aider-chat constraint)
+    # 1. Verify Python version (3.10+ required)
     major, minor = sys.version_info[:2]
     version_str = f"{major}.{minor}.{sys.version_info[2]}"
 
-    # Lower bound
     if (major, minor) < (3, 10):
         print(f"❌ Python {version_str} is too old")
         print("   Minimum required: Python 3.10")
@@ -583,31 +582,6 @@ def cmd_setup(args):
         print("   - pyenv: pyenv install 3.12")
         print("   - brew:  brew install python@3.12")
         sys.exit(1)
-
-    # Upper bound (aider-chat constraint: Python <3.13)
-    if (major, minor) >= (3, 13):
-        if detect_uv():
-            # uv is available - we can auto-create a 3.12 venv
-            print(f"⚠️  Python {version_str} detected (requires <3.13)")
-            print("   uv found - will create venv with Python 3.12")
-            use_uv = True
-        else:
-            # uv not available - show helpful error with uv as primary recommendation
-            print(f"❌ Python {version_str} is not yet supported")
-            print("   adversarial-workflow requires Python >=3.10,<3.13")
-            print("   (constraint from aider-chat dependency)")
-            print()
-            print("   Recommended: Install uv (auto-manages Python versions)")
-            print("   curl -LsSf https://astral.sh/uv/install.sh | sh")
-            print("   Then run: ./scripts/core/project setup")
-            print()
-            print("   Alternative options:")
-            print("   - Use pyenv: pyenv install 3.12 && pyenv local 3.12")
-            print("   - Use brew:  brew install python@3.12")
-            print("   - Download:  https://www.python.org/downloads/")
-            print()
-            print("   Then run: python3.12 scripts/project setup")
-            sys.exit(1)
     else:
         print(f"✅ Python {version_str}")
 

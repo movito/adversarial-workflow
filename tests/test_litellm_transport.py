@@ -1,7 +1,6 @@
-"""Tests for LiteLLM transport layer replacing Aider subprocess.
+"""Tests for LiteLLM transport layer.
 
-Tests the core transport change: litellm.completion() replaces subprocess.run(["aider", ...])
-in _run_custom_evaluator(). Covers:
+Tests litellm.completion() in _run_custom_evaluator(). Covers:
 - Correct model string and prompt passthrough
 - Response content extraction
 - Error handling (rate limit, auth, timeout)
@@ -348,10 +347,10 @@ class TestLiteLLMErrorHandling:
 
 
 class TestRunEvaluatorWithLiteLLM:
-    """Test the full run_evaluator() flow with LiteLLM (no Aider check)."""
+    """Test the full run_evaluator() flow with LiteLLM."""
 
-    def test_no_aider_check_needed(self, custom_config, project_env, capsys):
-        """run_evaluator() no longer checks for Aider on PATH."""
+    def test_no_external_binary_needed(self, custom_config, project_env, capsys):
+        """run_evaluator() does not require external binaries on PATH."""
         eval_content = "Evaluation details. " * 30 + "\nVerdict: APPROVED"
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
@@ -363,10 +362,8 @@ class TestRunEvaluatorWithLiteLLM:
         ):
             result = run_evaluator(custom_config, str(project_env["test_file"]))
 
-            # Should succeed without Aider on PATH
+            # Should succeed using only LiteLLM API calls
             assert result == 0
-            captured = capsys.readouterr()
-            assert "Aider not found" not in captured.out
 
     def test_builtin_uses_litellm_path(self, project_env, capsys):
         """Built-in evaluators now use the same LiteLLM code path."""
