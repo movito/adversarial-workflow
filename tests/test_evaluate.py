@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 from adversarial_workflow.cli import (
     evaluate,
+    validate,
     validate_evaluation_output,
     verify_token_count,
 )
@@ -57,35 +58,45 @@ class TestEvaluate:
         assert "evaluator not found" in captured.out
 
     @patch("adversarial_workflow.cli.load_config")
-    @patch("adversarial_workflow.cli.validate_evaluation_output")
-    @patch("adversarial_workflow.cli.verify_token_count")
     def test_evaluate_successful_approved(
         self,
-        mock_verify,
-        mock_validate,
         mock_load_config,
         tmp_path,
         capsys,
     ):
-        """Test successful evaluate with APPROVED verdict."""
+        """Test successful evaluate — trusts run_evaluator exit code 0."""
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
 
-        log_dir = tmp_path / "logs"
-        log_dir.mkdir()
-        log_file = log_dir / "test-PLAN-EVALUATION.md"
-        log_file.write_text("# Evaluation\nVerdict: APPROVED")
+        mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
 
-        mock_load_config.return_value = {"log_directory": str(log_dir) + "/"}
-
-        # Mock run_evaluator to succeed
         with patch("adversarial_workflow.evaluators.runner.run_evaluator", return_value=0):
-            mock_validate.return_value = (True, "APPROVED", "Plan approved")
             result = evaluate(str(task_file))
 
         assert result == 0
         captured = capsys.readouterr()
-        assert "APPROVED" in captured.out
+        assert "approved" in captured.out.lower()
+
+    @patch("adversarial_workflow.cli.load_config")
+    def test_evaluate_successful_does_not_call_validate_evaluation_output(
+        self,
+        mock_load_config,
+        tmp_path,
+    ):
+        """Test evaluate() does NOT call validate_evaluation_output."""
+        task_file = tmp_path / "test_task.md"
+        task_file.write_text("# Test task")
+
+        mock_load_config.return_value = {"log_directory": ".adversarial/logs/"}
+
+        with (
+            patch("adversarial_workflow.evaluators.runner.run_evaluator", return_value=0),
+            patch("adversarial_workflow.cli.validate_evaluation_output") as mock_validate,
+        ):
+            result = evaluate(str(task_file))
+
+        assert result == 0
+        mock_validate.assert_not_called()
 
     @patch("adversarial_workflow.cli.load_config")
     def test_evaluate_needs_revision(
@@ -97,7 +108,7 @@ class TestEvaluate:
         """Test evaluate returns non-zero when run_evaluator signals revision needed.
 
         run_evaluator returns 1 for NEEDS_REVISION verdicts, so evaluate()
-        returns early without reaching validate_evaluation_output.
+        returns early.
         """
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
@@ -123,29 +134,19 @@ class TestEvaluate:
         assert result == 1
 
     def test_evaluate_delegates_to_run_evaluator(self, tmp_path, capsys):
-        """Test evaluate delegates to run_evaluator and processes the log file."""
+        """Test evaluate delegates to run_evaluator and trusts its exit code."""
         task_file = tmp_path / "test_task.md"
         task_file.write_text("# Test task")
-
-        log_dir = tmp_path / "logs"
-        log_dir.mkdir()
-        log_file = log_dir / "test-PLAN-EVALUATION.md"
-        log_file.write_text("# Evaluation\nVerdict: APPROVED")
 
         with (
             patch(
                 "adversarial_workflow.cli.load_config",
-                return_value={"log_directory": str(log_dir) + "/"},
+                return_value={"log_directory": ".adversarial/logs/"},
             ),
             patch(
                 "adversarial_workflow.evaluators.runner.run_evaluator",
                 return_value=0,
             ),
-            patch(
-                "adversarial_workflow.cli.validate_evaluation_output",
-                return_value=(True, "APPROVED", "OK"),
-            ),
-            patch("adversarial_workflow.cli.verify_token_count"),
         ):
             result = evaluate(str(task_file))
 
@@ -290,30 +291,67 @@ class TestVerifyTokenCount:
         assert "lower than expected" in captured.out
 
 
+class TestValidateCommand:
+    """Test the validate CLI command (Phase 4: Test validation)."""
+
+    @patch("adversarial_workflow.cli.load_config")
+    def test_validate_empty_string_returns_error(self, mock_load_config, capsys):
+        """Test validate('') returns 1 with error message, not ValueError."""
+        mock_load_config.return_value = {"test_command": "pytest"}
+
+        result = validate("")
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Test command is empty" in captured.out
+
+    @patch("adversarial_workflow.cli.load_config")
+    def test_validate_whitespace_only_returns_error(self, mock_load_config, capsys):
+        """Test validate('  ') returns 1 with error message, not ValueError."""
+        mock_load_config.return_value = {"test_command": "pytest"}
+
+        result = validate("  ")
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Test command is empty" in captured.out
+
+    @patch("adversarial_workflow.cli.load_config")
+    def test_validate_none_uses_config_default(self, mock_load_config, capsys):
+        """Test validate(None) falls back to config default."""
+        mock_load_config.return_value = {"test_command": "echo hello"}
+
+        # subprocess.run will execute "echo hello" which should succeed
+        result = validate(None)
+
+        assert result == 0
+
+    @patch("adversarial_workflow.cli.load_config")
+    def test_validate_config_not_initialized(self, mock_load_config, capsys):
+        """Test validate handles missing config."""
+        mock_load_config.side_effect = FileNotFoundError("Config not found")
+
+        result = validate("pytest")
+
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "Not initialized" in captured.out
+
+
 class TestEvaluateIntegration:
     """Integration tests for evaluate command with fixtures."""
 
     def test_evaluate_with_sample_task(self, sample_task_file, tmp_path):
         """Test evaluate with sample task file from fixture."""
-        log_dir = tmp_path / "logs"
-        log_dir.mkdir()
-        log_file = log_dir / "sample-PLAN-EVALUATION.md"
-        log_file.write_text("# Evaluation\nVerdict: APPROVED")
-
         with (
             patch(
                 "adversarial_workflow.cli.load_config",
-                return_value={"log_directory": str(log_dir) + "/"},
+                return_value={"log_directory": str(tmp_path) + "/"},
             ),
             patch(
                 "adversarial_workflow.evaluators.runner.run_evaluator",
                 return_value=0,
             ),
-            patch(
-                "adversarial_workflow.cli.validate_evaluation_output",
-                return_value=(True, "APPROVED", "OK"),
-            ),
-            patch("adversarial_workflow.cli.verify_token_count"),
         ):
             result = evaluate(str(sample_task_file))
             assert isinstance(result, int)
