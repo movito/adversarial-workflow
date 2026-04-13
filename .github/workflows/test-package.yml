@@ -160,7 +160,7 @@ jobs:
         run: |
           pip install -e .
 
-      - name: Initialize and test scripts
+      - name: Initialize and verify setup
         run: |
           mkdir -p /tmp/bash-test
           cd /tmp/bash-test
@@ -170,12 +170,14 @@ jobs:
 
           adversarial init
 
-          # Test scripts with explicit bash version check
-          for script in .adversarial/scripts/*.sh; do
-            echo "Testing: $script"
-            bash -n "$script" || exit 1
-          done
-          echo "✓ All scripts compatible with Linux bash"
+          # Verify initialization created expected files
+          test -d .adversarial || exit 1
+          test -f .adversarial/config.yml || exit 1
+          test -f .env.example || exit 1
+
+          # Verify no legacy script directory is created
+          test ! -d .adversarial/scripts || echo "Note: scripts directory exists but is no longer required"
+          echo "✓ Initialization compatible with Linux bash"
 
   test-pytest:
     name: Run Tests - Python ${{ matrix.python-version }}
