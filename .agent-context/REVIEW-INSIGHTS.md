@@ -126,4 +126,36 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 - Pre-commit hooks don't always fire (e.g., when committing CodeRabbit fixes quickly)
 - Add explicit `ruff format <changed-files>` to the inner loop after every code edit
 
-*Last updated: 2026-04-10*
+---
+
+## CLI (`adversarial_workflow/cli.py`)
+
+### ADV-0066: Builtin evaluator rewiring pattern
+- `evaluate()`, `review()` now call `run_evaluator(builtin_config, file)` instead of shelling out to scripts
+- Log file selection: filter by `output_suffix` (e.g., `PLAN-EVALUATION`) rather than glob for newest `.md`
+- Pattern: `BUILTIN_EVALUATORS.get("evaluate")` returns the config, then `run_evaluator()` handles everything
+
+### ADV-0066: Duplicate verdict extraction is dead code
+- `run_evaluator()` already extracts verdicts and returns exit codes (0=APPROVED, 1=revision/rejected)
+- `cli.evaluate()` then re-extracts the verdict from the log file — the NEEDS_REVISION/REJECTED branches are unreachable after a return code of 0
+- Pre-existing design smell tracked in `.agent-context/ADV-0066-preexisting-issues.md`
+
+---
+
+## Testing (`tests/`)
+
+### ADV-0066: Audit glob mocks that return empty lists
+- When a test mocks `glob.glob` to return `[]`, verify this doesn't accidentally skip the code path being tested
+- A `glob.glob` returning `[]` can bypass validation entirely, making the test pass vacuously
+- Pattern: after mocking glob, assert the validation function is still called (or test both empty and non-empty returns)
+
+---
+
+## Process
+
+### ADV-0066: Cleanup tasks can generate 4+ bot review rounds
+- A deletion-heavy task (46 files, ~7000 lines removed) generated 15 threads across 4 rounds
+- Most findings were valid (log file selection, shlex handling, impossible test mocks)
+- Budget for bot triage even on "simple" cleanup tasks
+
+*Last updated: 2026-04-13*

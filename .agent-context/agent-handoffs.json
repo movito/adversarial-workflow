@@ -1,20 +1,19 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-04-10",
+  "last_updated": "2026-04-13",
   "agents": {
     "planner": {
-      "status": "completed",
-      "current_task": "ADV-0066",
-      "brief_note": "COMPLETE: ADV-0066 task spec created, arch-review-fast REVISION_SUGGESTED (minor — addressed), handoff ready.",
-      "details_link": "delegation/tasks/2-todo/ADV-0066-remove-aider-remnants.md",
-      "handoff_file": ".agent-context/ADV-0066-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0066 complete (PR #61 merged). Aider fully removed. Review insights extracted. v1.0.0 candidate.",
+      "details_link": null
     },
     "feature-developer-v5": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0065 delivered and merged (PR #60). 14 threads, 2 fix rounds, 5 commits. Aider replaced with LiteLLM.",
-      "details_link": ".agent-context/retros/ADV-0065-retro.md"
+      "brief_note": "ADV-0066 delivered and merged (PR #61). 46 files, -6956 lines, 15 threads, 4 rounds, 0 regressions.",
+      "details_link": ".agent-context/retros/ADV-0066-retro.md"
     },
     "code-reviewer": {
       "status": "idle",
@@ -30,11 +29,11 @@
     }
   },
   "recent_completions": [
+    "ADV-0066: Remove aider remnants - PR #61 merged, 46 files, -6956 lines, 4 bot rounds (2026-04-13)",
     "ADV-0065: Replace Aider with LiteLLM - PR #60 merged, 14 threads, 2 fix rounds (2026-04-10)",
     "ADV-0057: Review script robustness - PR #56 merged, 0 bot rounds (2026-03-21)",
     "ADV-0035: Evaluator runner test coverage - PR #55 merged, 100% coverage (2026-03-20)",
-    "ADV-0062: Preflight auto-type from task spec - PR #54 merged (2026-03-18)",
-    "ADV-0061: Fix DK002 violations, promote pattern lint to blocking - PR #53 merged (2026-03-18)"
+    "ADV-0062: Preflight auto-type from task spec - PR #54 merged (2026-03-18)"
   ],
   "pending_tasks": [
     "ADV-0034: CLI library test coverage (backlog)",
@@ -47,14 +46,16 @@
   "blocked_items": [],
   "architecture_status": {
     "current_version": "0.9.9",
-    "next_minor": "1.0.0 (candidate — Aider removed, LiteLLM transport, Python 3.13 support)",
+    "next_minor": "1.0.0 (candidate — Aider removed, LiteLLM transport, Python 3.13 support, codebase clean)",
     "registry_schema": "1.0 - Published in library repo",
-    "evaluator_library": "v0.5.3 (all 26 items from issue #12 fixed)"
+    "evaluator_library": "v0.5.3 (all 26 items from issue #12 fixed)",
+    "transport": "LiteLLM (direct API calls, no subprocess)",
+    "python_support": "3.10-3.13+"
   },
   "conventions": {
     "handoffs": ".agent-context/[TASK-ID]-HANDOFF-[agent].md",
     "review_starters": ".agent-context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".agent-context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "ADV-0065 retro items: (1) ruff format before every commit, (2) ci-checker agent bash permissions broken, (3) post-merge git reset --hard needs allow list entry. gh-review-helper v1.1.0 adds thread-reply subcommand (fixes permission prompt issue on complex GraphQL mutations). Next version candidate: v1.0.0."
+  "notes": "Aider fully removed in ADV-0065 + ADV-0066. Pre-existing issues tracked in .agent-context/ADV-0066-preexisting-issues.md (dead verdict handling, empty test_command edge case). Retro items: glob mock audit pattern, builtin evaluator key naming convention. gh-review-helper v1.1.0 has thread-reply subcommand. Tests: 539 passing."
 }
