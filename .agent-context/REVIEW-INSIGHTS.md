@@ -139,6 +139,18 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 - `run_evaluator()` already extracts verdicts and returns exit codes (0=APPROVED, 1=revision/rejected)
 - `cli.evaluate()` then re-extracts the verdict from the log file — the NEEDS_REVISION/REJECTED branches are unreachable after a return code of 0
 - Pre-existing design smell tracked in `.agent-context/ADV-0066-preexisting-issues.md`
+- **RESOLVED in ADV-0067**: Dead code removed, `evaluate()` now follows the same pattern as `review()`
+
+### ADV-0067: `run_evaluator()` returns 0 for both APPROVED and UNKNOWN verdicts
+- `_report_verdict()` returns 0 for pass verdicts AND for unrecognized/unknown verdicts (the `else` branch)
+- This means callers cannot distinguish "approved" from "unknown verdict" using the return code alone
+- When simplifying `evaluate()` to check `eval_result != 0`, the success message should say "complete" not "approved" — since 0 doesn't guarantee approval
+- Bots caught this semantic subtlety during ADV-0067 review
+
+### ADV-0067: Cascading dead code cleanup
+- When removing a dead code block, audit all functions/imports it was the sole caller of
+- ADV-0067 spec estimated ~55 lines removed; actual was ~420 lines due to 4 orphaned helper functions + `import re` + their tests
+- Task specs should include a "cascade audit" step when deleting code blocks
 
 ---
 
@@ -157,5 +169,10 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 - A deletion-heavy task (46 files, ~7000 lines removed) generated 15 threads across 4 rounds
 - Most findings were valid (log file selection, shlex handling, impossible test mocks)
 - Budget for bot triage even on "simple" cleanup tasks
+
+### ADV-0067: Task spec precision enables fast implementation
+- The ADV-0067 handoff included exact line numbers and the target pattern (`review()` lines 1861-1869)
+- Agent went straight to implementation with zero exploration time
+- For small refactors, precise line-number references in the handoff are more valuable than architectural context
 
 *Last updated: 2026-04-13*

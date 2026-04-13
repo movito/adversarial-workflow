@@ -1,6 +1,6 @@
 # ADV-0065: Replace Aider Transport Layer with LiteLLM
 
-**Status**: In Review
+**Status**: Done
 **Priority**: high
 **Assigned To**: unassigned
 **Estimated Effort**: 4-6 hours

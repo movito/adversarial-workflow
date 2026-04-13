@@ -5,16 +5,16 @@
   "agents": {
     "planner": {
       "status": "completed",
-      "current_task": "ADV-0067",
-      "brief_note": "COMPLETE: ADV-0067 task spec + handoff ready. Small refactor — eval skipped per retro learnings.",
-      "details_link": "delegation/tasks/2-todo/ADV-0067-fix-cli-preexisting-issues.md",
-      "handoff_file": ".agent-context/ADV-0067-HANDOFF-feature-developer.md"
+      "current_task": null,
+      "brief_note": "ADV-0067 post-completion done. All pre-existing CLI issues resolved. Ready for v1.0.0 release.",
+      "details_link": "delegation/tasks/5-done/ADV-0067-fix-cli-preexisting-issues.md",
+      "handoff_file": null
     },
     "feature-developer-v5": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0066 delivered and merged (PR #61). 46 files, -6956 lines, 15 threads, 4 rounds, 0 regressions.",
-      "details_link": ".agent-context/retros/ADV-0066-retro.md"
+      "brief_note": "ADV-0067 delivered and merged (PR #63). ~420 lines removed, 4 threads, 2 rounds, 0 regressions.",
+      "details_link": ".agent-context/retros/ADV-0067-retro.md"
     },
     "code-reviewer": {
       "status": "idle",
@@ -30,6 +30,7 @@
     }
   },
   "recent_completions": [
+    "ADV-0067: Fix pre-existing CLI issues - PR #63 merged, ~420 lines removed, 2 bot rounds (2026-04-13)",
     "ADV-0066: Remove aider remnants - PR #61 merged, 46 files, -6956 lines, 4 bot rounds (2026-04-13)",
     "ADV-0065: Replace Aider with LiteLLM - PR #60 merged, 14 threads, 2 fix rounds (2026-04-10)",
     "ADV-0057: Review script robustness - PR #56 merged, 0 bot rounds (2026-03-21)",

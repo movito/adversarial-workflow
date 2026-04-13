@@ -1,6 +1,6 @@
 # ADV-0067: Fix Pre-Existing CLI Issues (Evaluate/Review/Validate)
 
-**Status**: Todo
+**Status**: Done
 **Priority**: medium
 **Assigned To**: unassigned
 **Estimated Effort**: 2-3 hours
