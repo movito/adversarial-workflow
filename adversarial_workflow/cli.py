@@ -1732,7 +1732,7 @@ def evaluate(task_file: str) -> int:
         return eval_result
 
     print()
-    print(f"{GREEN}✅ Evaluation approved!{RESET}")
+    print(f"{GREEN}✅ Evaluation complete!{RESET}")
     return 0
 
 
@@ -1807,7 +1807,7 @@ def review(task_file: str) -> int:
         return eval_result
 
     print()
-    print(f"{GREEN}✅ Review approved!{RESET}")
+    print(f"{GREEN}✅ Review complete!{RESET}")
     return 0
 
 

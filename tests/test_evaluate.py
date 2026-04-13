@@ -75,7 +75,7 @@ class TestEvaluate:
 
         assert result == 0
         captured = capsys.readouterr()
-        assert "approved" in captured.out.lower()
+        assert "Evaluation complete!" in captured.out
 
     @patch("adversarial_workflow.cli.load_config")
     def test_evaluate_successful_does_not_call_validate_evaluation_output(
