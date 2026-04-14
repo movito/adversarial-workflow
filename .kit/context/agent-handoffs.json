@@ -5,15 +5,15 @@
   "agents": {
     "planner": {
       "status": "completed",
-      "current_task": null,
-      "brief_note": "ADV-0070 post-completion done. Docs/ consolidated: 9→4 subdirs. Also cleaned up 7 obsolete agents, updated model versions.",
-      "details_link": ".kit/tasks/5-done/ADV-0070-docs-folder-cleanup.md",
-      "handoff_file": null
+      "current_task": "ADV-0071",
+      "brief_note": "COMPLETE: ADV-0071 evaluated (arch-review-fast: REVISION_SUGGESTED, minor DRY finding addressed in handoff). Ready for assignment.",
+      "details_link": ".kit/tasks/2-todo/ADV-0071-fix-version-management-release-1.0.0.md",
+      "handoff_file": ".kit/context/ADV-0071-HANDOFF-feature-developer.md"
     },
     "feature-developer-v5": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0070 delivered and merged (PR #66). Docs/ cleanup, 3 threads, 1 round, 2 commits.",
+      "brief_note": "ADV-0070 delivered and merged (PR #66). Awaiting ADV-0071 assignment.",
       "details_link": ".kit/context/retros/ADV-0070-retro.md"
     }
   },
