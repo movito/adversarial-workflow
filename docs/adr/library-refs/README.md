@@ -12,7 +12,7 @@ These ADRs are copied here for reference because:
 ## Source Repository
 
 **Repository**: [adversarial-evaluator-library](https://github.com/movito/adversarial-evaluator-library)
-**ADR Location**: `docs/decisions/adr/`
+**ADR Location**: `docs/adr/`
 
 ## Referenced ADRs
 

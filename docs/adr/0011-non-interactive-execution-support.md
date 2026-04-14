@@ -259,7 +259,7 @@ if line_count > 700:
 - `docs/QUICK-AGENT-SETUP.md` (Non-Interactive Execution Patterns, lines 229-289)
 
 **Architectural**:
-- This ADR (`docs/decisions/adr/0011-non-interactive-execution-support.md`)
+- This ADR (`docs/adr/0011-non-interactive-execution-support.md`)
 
 ### Usage Examples
 

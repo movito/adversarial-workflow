@@ -78,7 +78,7 @@ None yet.
 
 ## Historical Decision Documents
 
-Prior to adopting ADRs (2025-10-20), architectural decisions were documented in task files and planning documents. These are preserved in [docs/decisions/archive/](../archive/) for historical reference:
+Prior to adopting ADRs (2025-10-20), architectural decisions were documented in task files and planning documents. These are preserved in [docs/archive/decisions/](../archive/decisions/) for historical reference:
 
 - `TASK-PACKAGING-001-PHASE-6-TERMINOLOGY-DECISION.md` - v0.2.0 terminology change to "Author/Reviewer" (superseded by ADR-0008)
 - `TASK-TERMINOLOGY-001-REVERT-DECISION.md` - v0.3.2 terminology reversion (converted to ADR-0008)
@@ -135,10 +135,10 @@ When a decision changes:
 
 ## Related Documentation
 
-- [TERMINOLOGY.md](../../TERMINOLOGY.md) - Official terminology definitions
-- [CHANGELOG.md](../../../CHANGELOG.md) - Version history and changes
-- [WORKFLOW_PHASES.md](../../WORKFLOW_PHASES.md) - Detailed workflow documentation
-- [docs/decisions/archive/](../archive/) - Historical decision documents
+- [TERMINOLOGY.md](../reference/TERMINOLOGY.md) - Official terminology definitions
+- [CHANGELOG.md](../../CHANGELOG.md) - Version history and changes
+- [WORKFLOW_PHASES.md](../reference/WORKFLOW_PHASES.md) - Detailed workflow documentation
+- [docs/archive/decisions/](../archive/decisions/) - Historical decision documents
 
 ## References
 

@@ -123,7 +123,7 @@ The `adversarial-workflow` project predates `agentive-starter-kit` and has been 
 
 | Component | Starter Kit | adversarial-workflow | Status |
 |-----------|-------------|---------------------|--------|
-| `docs/decisions/adr/` | ❌ | ✅ (13 ADRs) | **Ours richer** |
+| `docs/adr/` | ❌ | ✅ (13 ADRs) | **Ours richer** |
 | `docs/guides/` | ❌ | ✅ | **Ours only** |
 | `docs/proposals/` | ❌ | ✅ | **Ours only** |
 | `docs/reference/` | ❌ | ✅ | **Ours only** |

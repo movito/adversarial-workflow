@@ -643,8 +643,8 @@ print("Author-Evaluator workflow initialized")
 
 ## References
 
-- **v0.3.2 Decision Record**: `docs/decisions/archive/TASK-TERMINOLOGY-001-REVERT-DECISION.md`
-- **v0.2.0 Decision Record**: `docs/decisions/archive/TASK-PACKAGING-001-PHASE-6-TERMINOLOGY-DECISION.md`
+- **v0.3.2 Decision Record**: `docs/archive/decisions/TASK-TERMINOLOGY-001-REVERT-DECISION.md`
+- **v0.2.0 Decision Record**: `docs/archive/decisions/TASK-PACKAGING-001-PHASE-6-TERMINOLOGY-DECISION.md`
 - **Terminology Audit**: `.kit/context/archive/audit-results/6A2-TERMINOLOGY-AUDIT.md`
 
 ---
