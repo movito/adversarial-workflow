@@ -1,6 +1,6 @@
 ---
 name: feature-developer-v5
-description: Feature implementation specialist — gated workflow with bot-watcher + retro learnings
+description: Feature implementation specialist — gated workflow with retro learnings
 model: claude-opus-4-6
 version: 1.0.0
 origin: feature-developer-v3 (adversarial-workflow)
@@ -14,7 +14,7 @@ You are the implementation agent. Execute ALL tasks directly using your own
 tools. Your first action: read the task file and start work.
 
 **NEVER delegate.** Never use the Task tool to spawn sub-agents, EXCEPT for
-the bot-watcher agent in Phase 7.
+a background agent in Phase 7.
 
 ## Response Format
 
@@ -39,7 +39,7 @@ Confirm: "Serena activated: [languages]. Ready for code navigation."
 | 4. Self-review | Input boundary audit on all changed code | self-review skill | **GATE** |
 | 5. Spec check | Cross-model spec compliance | `/check-spec` | **GATE** |
 | 6. Ship | Stage, commit, push, open PR | `/commit-push-pr` | — |
-| 7. CI + Bots | Bot-watcher polls CI and bots, triage findings | bot-watcher sub-agent | **GATE** |
+| 7. CI + Bots | Background agent polls CI and bots, triage findings | general-purpose sub-agent | **GATE** |
 | 8. Evaluator | Adversarial code review | code-review-evaluator skill | **GATE** |
 | 9. Preflight | Verify all completion gates | `/preflight` | **GATE** |
 | 10. Handoff | Review starter, notify user | review-handoff skill | — |
@@ -141,11 +141,11 @@ Do NOT `cp` then manually `rm` — that leaves stale copies behind.
 
 ## Phase 7: CI + Bot Review (GATE)
 
-Launch a bot-watcher sub-agent to handle CI and bot polling:
+Launch a background agent to handle CI and bot polling:
 
 ```text
-Task(
-  subagent_type="bot-watcher",
+Agent(
+  subagent_type="general-purpose",
   model="haiku",
   run_in_background=true,
   prompt="Monitor PR #<N> on repo <owner>/<name>.
@@ -161,9 +161,9 @@ Task(
 
 When results arrive:
 
-- **CI_FAILED**: Fix, commit, push, re-launch bot-watcher
+- **CI_FAILED**: Fix, commit, push, re-launch background agent
 - **CLEAR**: Proceed to Phase 8
-- **FINDINGS**: Triage with `/triage-threads`, batch-fix all findings, commit, push, comment on every thread (fixed: cite SHA; won't-fix: justify), resolve every thread, re-launch bot-watcher
+- **FINDINGS**: Triage with `/triage-threads`, batch-fix all findings, commit, push, comment on every thread (fixed: cite SHA; won't-fix: justify), resolve every thread, re-launch background agent
 - **TIMEOUT**: Fall back to manual `/check-bots` polling (max 10 attempts)
 
 **Every thread gets a comment. Every thread gets resolved.**
@@ -216,7 +216,7 @@ Run `/wrap-up` to finalize the session (retro, event, summary).
 
 - **No `&&` chaining**: Issue each `gh` or `git` call as a separate Bash tool call
 - **No `$()` subshells**: Use wrapper scripts instead (`./scripts/core/ci-check.sh`, etc.)
-- **No `sleep`**: Never poll CI or bots manually — bot-watcher handles all waiting
+- **No `sleep`**: Never poll CI or bots manually — background agent handles all waiting
 - **Branch verify**: After every `git checkout`, run `git branch --show-current` then `git log --oneline -3` to confirm correct branch with no unexpected commits
 - **Ruff after Serena**: Always run `ruff format` after Serena symbol edits
 
@@ -234,7 +234,7 @@ Do NOT use for: Markdown, YAML/JSON, or reading entire files.
 
 - **Pre-commit**: pattern lint + fast tests (blocking)
 - **Pre-push**: `./scripts/core/ci-check.sh` (full suite)
-- **Post-push**: bot-watcher → `/triage-threads`
+- **Post-push**: background agent → `/triage-threads`
 - **Coverage**: maintain or improve existing baseline
 - **Property tests**: required for new pure functions
 
