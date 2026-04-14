@@ -1,6 +1,10 @@
+# Spec Compliance Input: ADV-0071
+
+## Task Spec
+
 # ADV-0071: Fix Version Management + Release 1.0.0
 
-**Status**: Todo
+**Status**: In Progress
 **Priority**: high
 **Assigned To**: unassigned
 **Estimated Effort**: 2-3 hours
@@ -222,3 +226,211 @@ After version management is fixed:
 **Template Version**: 2.0.0
 **Project**: adversarial-workflow
 **Last Updated**: 2026-04-14
+
+## Changed Files
+
+### adversarial_workflow/__init__.py
+
+```python
+"""
+Adversarial Workflow - Multi-stage AI code review system
+
+A package for integrating Author-Evaluator adversarial code review
+into existing projects. Prevents "phantom work" through multi-stage verification.
+
+Usage:
+    pip install adversarial-workflow
+    adversarial init
+    adversarial evaluate task.md
+    adversarial review
+    adversarial validate "pytest"
+"""
+
+from importlib.metadata import version as _get_version
+
+__version__ = _get_version("adversarial-workflow")
+__author__ = "Fredrik Matheson"
+__license__ = "MIT"
+
+from .cli import check, evaluate, init, main, review, validate
+
+__all__ = ["__version__", "check", "evaluate", "init", "main", "review", "validate"]
+```
+
+### adversarial_workflow/cli.py (first 40 lines — version import change)
+
+```python
+#!/usr/bin/env python3
+"""
+CLI tool for adversarial workflow package - Enhanced with interactive onboarding.
+
+Commands:
+    init - Initialize workflow in existing project
+    init --interactive - Interactive setup wizard
+    quickstart - Quick start with example task
+    check - Validate setup and dependencies
+    health - Comprehensive system health check
+    agent onboard - Set up agent coordination system
+    evaluate - Run Phase 1: Plan evaluation
+    review - Run Phase 3: Code review
+    validate - Run Phase 4: Test validation
+    split - Split large task files into smaller evaluable chunks
+    check-citations - Verify URLs in documents before evaluation
+"""
+
+import argparse
+import getpass
+import os
+import platform
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import yaml
+from dotenv import dotenv_values, load_dotenv
+
+from . import __version__
+
+# ANSI color codes for better output
+RESET = "\033[0m"
+BOLD = "\033[1m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+RED = "\033[91m"
+CYAN = "\033[96m"
+GRAY = "\033[90m"
+```
+
+### pyproject.toml (first 10 lines — version field)
+
+```toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adversarial-workflow"
+
+version = "1.0.0"
+
+description = "Multi-stage AI evaluation system for task plans, code review, and test validation"
+```
+
+### tests/conftest.py (cli_python and run_cli fixtures)
+
+```python
+@pytest.fixture
+def cli_python():
+    """Get Python interpreter path that has adversarial_workflow installed.
+
+    Always uses sys.executable (the Python running pytest) to ensure the
+    subprocess tests the same package version as the in-process metadata.
+    Previous approach used shutil.which("adversarial") which could find
+    stale system-wide installs with different versions.
+    """
+    return sys.executable
+
+
+@pytest.fixture
+def run_cli(cli_python):
+    """Helper fixture to run CLI commands in subprocess.
+
+    Uses ``python -m adversarial_workflow.cli`` to ensure the subprocess
+    runs the same editable install as the test runner.
+
+    Usage:
+        result = run_cli(["check"], cwd=tmp_path, env=env)
+    """
+
+    def _run_cli(args, **kwargs):
+        cmd = [cli_python, "-m", "adversarial_workflow.cli", *args]
+        return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
+
+    return _run_cli
+```
+
+### CHANGELOG.md (1.0.0 section)
+
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.0.0] - 2026-04-14
+
+### Changed
+- **`.kit/` directory migration** — builder infrastructure moved into `.kit/` hierarchy (ADV-0068)
+- **Root declutter** — root reduced from 15 to 9 files; manifest upgraded to v2.0.0 (ADV-0069)
+- **docs/ consolidation** — 9 subdirectories → 4: adr/, archive/, guides/, reference/ (ADV-0070)
+- **Agent definitions** — updated to latest models with standardized frontmatter metadata
+- **Monitoring sub-agent** — now runs in worktree isolation with no-commit guardrail
+- **Version management** — removed hardcoded fallback versions; single source of truth via pyproject.toml
+
+### Removed
+- 7 obsolete agent definitions (v1, v3, v4, sonnet-v3, planner, test-runner, ci-checker)
+- `docs/decisions/` nesting layer — ADRs now at `docs/adr/` directly
+- Historical docs directories consolidated into `docs/archive/`
+
+### Fixed
+- **Launcher scripts** — PROJECT_ROOT resolution fixed after .kit/ migration
+- **Bot-watcher agent reference** — replaced non-existent agent type with general-purpose
+- **Version fallback** — removed stale hardcoded version strings that caused test failures
+
+## [0.9.10] - 2026-04-13
+
+### Removed
+
+- **Aider dependency** — all evaluators now use LiteLLM directly (ADV-0065, ADV-0066)
+- Dead shell scripts (`.adversarial/scripts/`), templates, and investigation files
+- `shutil.which("aider")` checks from CLI `init`, `check`, `evaluate`, `review`, `validate` commands
+- `pip install aider-chat` from CI workflow
+- Python <3.13 upper bound constraint (Python 3.13+ now supported)
+- Aider references from README, SETUP, QUICK_START, and agent docs
+- ~420 lines of dead/duplicate verdict-extraction code from `cli.evaluate()` (ADV-0067)
+- Orphaned helper functions (`verify_token_count`, `extract_verdict`, `get_evaluation_summary`, `format_verdict_message`) and unused `import re`, `import glob`
+
+### Changed
+
+- `adversarial init` no longer creates `.aider.conf.yml`
+- `adversarial check` no longer validates aider installation
+- Updated user-facing docs to reference LiteLLM instead of aider
+- `cli.evaluate()` now follows the same clean pattern as `cli.review()` — delegates fully to `run_evaluator()` (ADV-0067)
+
+### Fixed
+```
+
+### README.md (version footer — last 5 lines)
+
+```markdown
+**Inspired by**: The realization that AI needs AI to keep it honest.
+
+---
+
+*Version 1.0.0*
+```
+
+## Test Results
+
+- All 530 tests pass
+- ci-check.sh passes fully (format, lint, pattern lint, tests)
+- test_version_flag passes both standalone and in ci-check.sh
+- No hardcoded version strings remain (grep for "0.9." in adversarial_workflow/ returns nothing)
+
+## Requirements Traceability
+
+| Requirement | Implementation |
+|-------------|---------------|
+| No hardcoded version fallback in __init__.py | Removed try/except, bare importlib.metadata import |
+| No hardcoded version fallback in cli.py | Removed local __version__, imports from __init__.py |
+| pyproject.toml is single source of truth | importlib.metadata reads installed metadata from pyproject.toml |
+| __version__ defined once, imported in cli.py (DRY) | `from . import __version__` in cli.py |
+| test_version_flag passes in ci-check.sh | Fixed run_cli fixture to use sys.executable instead of PATH search |
+| Version bumped to 1.0.0 | pyproject.toml version = "1.0.0" |
+| CHANGELOG [1.0.0] section written | Added with content from task spec |
+| README has version footer | Added "*Version 1.0.0*" footer |

@@ -6,7 +6,6 @@ including temporary directories, sample files, and mocked dependencies.
 """
 
 import os
-import shutil
 import subprocess
 import sys
 from unittest.mock import Mock, patch
@@ -171,17 +170,11 @@ def change_test_dir(tmp_project):
 def cli_python():
     """Get Python interpreter path that has adversarial_workflow installed.
 
-    When running with system pytest, sys.executable may point to a Python
-    that doesn't have our package installed. This fixture finds the correct
-    Python by checking if the 'adversarial' command is available.
+    Always uses sys.executable (the Python running pytest) to ensure the
+    subprocess tests the same package version as the in-process metadata.
+    Previous approach used shutil.which("adversarial") which could find
+    stale system-wide installs with different versions.
     """
-    # First, try to find the adversarial command on PATH
-    adversarial_cmd = shutil.which("adversarial")
-    if adversarial_cmd:
-        # The adversarial script is available, signal to use command directly
-        return None
-
-    # Fall back to sys.executable (works in venv)
     return sys.executable
 
 
@@ -189,18 +182,15 @@ def cli_python():
 def run_cli(cli_python):
     """Helper fixture to run CLI commands in subprocess.
 
+    Uses ``python -m adversarial_workflow.cli`` to ensure the subprocess
+    runs the same editable install as the test runner.
+
     Usage:
         result = run_cli(["check"], cwd=tmp_path, env=env)
     """
 
     def _run_cli(args, **kwargs):
-        if cli_python is None:
-            # Use adversarial command directly
-            cmd = ["adversarial", *args]
-        else:
-            # Use python -m
-            cmd = [cli_python, "-m", "adversarial_workflow.cli", *args]
-
+        cmd = [cli_python, "-m", "adversarial_workflow.cli", *args]
         return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
 
     return _run_cli

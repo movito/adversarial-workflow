@@ -28,12 +28,7 @@ from pathlib import Path
 import yaml
 from dotenv import dotenv_values, load_dotenv
 
-try:
-    from importlib.metadata import version as _get_version
-
-    __version__ = _get_version("adversarial-workflow")
-except Exception:
-    __version__ = "0.9.9"  # Fallback for editable installs
+from . import __version__
 
 # ANSI color codes for better output
 RESET = "\033[0m"

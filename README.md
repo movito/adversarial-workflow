@@ -1079,3 +1079,7 @@ MIT License - see [LICENSE](LICENSE)
 Developed by [broadcaster_one](https://github.com/movito) and refined through months of production use on the thematic-cuts project.
 
 **Inspired by**: The realization that AI needs AI to keep it honest.
+
+---
+
+*Version 1.0.0*
