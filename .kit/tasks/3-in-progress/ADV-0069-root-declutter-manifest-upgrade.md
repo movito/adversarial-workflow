@@ -1,6 +1,6 @@
 # ADV-0069: Root Declutter + Manifest Upgrade to v2.0.0
 
-**Status**: Todo
+**Status**: In Progress
 **Priority**: medium
 **Assigned To**: unassigned
 **Estimated Effort**: 2-3 hours

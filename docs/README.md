@@ -35,10 +35,10 @@ docs/
 
 - [Token Optimization](reference/TOKEN_OPTIMIZATION.md) - Cost optimization strategies
 
-## Related Root Files
+## Related Files
 
 - [README.md](../README.md) - Main project documentation
-- [QUICK_START.md](../QUICK_START.md) - Getting started guide
-- [UPGRADE.md](../UPGRADE.md) - Upgrade instructions
+- [Quick Start](guides/QUICK-START.md) - Getting started guide
+- [Upgrade](guides/UPGRADE.md) - Upgrade instructions
 - [CHANGELOG.md](../CHANGELOG.md) - Version history
-- [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) - Agent system integration
+- [Agent Integration](guides/AGENT-INTEGRATION.md) - Agent system integration

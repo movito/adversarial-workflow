@@ -468,9 +468,9 @@ git commit -m "chore: Update adversarial-workflow to v0.3.1"
 
 ## Next Steps
 
-- See [QUICK_START.md](../QUICK_START.md) for basic usage
-- See [README.md](../README.md) for feature overview
-- See [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) for Claude Code agent integration
+- See [QUICK-START.md](QUICK-START.md) for basic usage
+- See [README.md](../../README.md) for feature overview
+- See [AGENT-INTEGRATION.md](AGENT-INTEGRATION.md) for Claude Code agent integration
 
 ---
 

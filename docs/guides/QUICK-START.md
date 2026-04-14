@@ -644,7 +644,7 @@ adversarial validate "pytest"   # Phase 4 (only when review passes)
 
 - **Full Documentation**: [README.md](README.md)
 - **Usage Examples**: See [README.md#usage-examples](README.md#usage-examples)
-- **For AI Agents**: [AGENT_INTEGRATION.md](AGENT_INTEGRATION.md)
+- **For AI Agents**: [AGENT-INTEGRATION.md](AGENT-INTEGRATION.md)
 - **Troubleshooting**: [README.md#troubleshooting](README.md#troubleshooting)
 
 ### Try Advanced Features
