@@ -5,10 +5,10 @@
   "agents": {
     "planner": {
       "status": "completed",
-      "current_task": null,
-      "brief_note": "ADV-0068 post-completion done. .kit/ migration merged (PR #64). Project now uses .kit/ layout.",
-      "details_link": ".kit/tasks/5-done/ADV-0068-kit-migration.md",
-      "handoff_file": null
+      "current_task": "ADV-0069",
+      "brief_note": "COMPLETE: ADV-0069 task spec created, evaluated (approved), handoff ready. Root declutter + manifest v2.0.0 upgrade.",
+      "details_link": ".kit/tasks/2-todo/ADV-0069-root-declutter-manifest-upgrade.md",
+      "handoff_file": ".kit/context/ADV-0069-HANDOFF-feature-developer.md"
     },
     "feature-developer-v5": {
       "status": "idle",
