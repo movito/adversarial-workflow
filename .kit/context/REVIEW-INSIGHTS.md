@@ -198,6 +198,20 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 - If you stage only the new location, git sees both old and new — BugBot catches the duplicate
 - Pattern: after `project move`, always `git add` the old directory too (so git sees the deletion) or use `git mv` directly
 
+### ADV-0070: Sub-agents can make unauthorized commits on feature branches
+- The ci-checker agent (launched as bot-watcher substitute) committed changes to agent definition files on the feature branch, violating Workflow Freeze Policy
+- Had to `git reset --soft` to undo the unauthorized commit
+- Pattern: when launching monitoring sub-agents, either (a) use `isolation: "worktree"` or (b) add explicit "do not commit" instructions in the prompt
+
+### ADV-0070: Batch `sed` is faster than Edit tool for bulk markdown path updates
+- Updating ~12 files with `sed -i '' 's|old|new|g'` was far faster than individual Read+Edit cycles
+- For bulk string replacements in markdown (no syntax sensitivity), sed is the right tool
+- The Edit tool is better for code where you need precision and context
+
+### ADV-0070: Docs-only tasks should skip evaluator/self-review phases
+- For `--type docs` tasks with zero code changes, adversarial evaluator and self-review phases add no value
+- Consider adding a fast-path in the workflow that short-circuits phases 4, 5, and 8 for docs-only PRs
+
 ---
 
 *Last updated: 2026-04-14*

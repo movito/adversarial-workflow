@@ -5,39 +5,27 @@
   "agents": {
     "planner": {
       "status": "completed",
-      "current_task": "ADV-0070",
-      "brief_note": "COMPLETE: ADV-0070 task spec created, evaluated (APPROVED), handoff ready. Docs/ cleanup: 9→4 subdirs.",
-      "details_link": ".kit/tasks/2-todo/ADV-0070-docs-folder-cleanup.md",
-      "handoff_file": ".kit/context/ADV-0070-HANDOFF-feature-developer.md"
+      "current_task": null,
+      "brief_note": "ADV-0070 post-completion done. Docs/ consolidated: 9→4 subdirs. Also cleaned up 7 obsolete agents, updated model versions.",
+      "details_link": ".kit/tasks/5-done/ADV-0070-docs-folder-cleanup.md",
+      "handoff_file": null
     },
     "feature-developer-v5": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0069 delivered and merged (PR #65). Root declutter + manifest upgrade, 2 threads, 1 round, 4 commits.",
-      "details_link": ".kit/context/retros/ADV-0069-retro.md"
-    },
-    "code-reviewer": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "ADV-0031 Round 1 APPROVED",
-      "details_link": ".kit/context/reviews/ADV-0031-review.md"
-    },
-    "test-runner": {
-      "status": "idle",
-      "current_task": null,
-      "brief_note": "Ready for TDD tasks",
-      "details_link": null
+      "brief_note": "ADV-0070 delivered and merged (PR #66). Docs/ cleanup, 3 threads, 1 round, 2 commits.",
+      "details_link": ".kit/context/retros/ADV-0070-retro.md"
     }
   },
   "recent_completions": [
+    "ADV-0070: Consolidate docs/ folder structure - PR #66 merged, 3 threads, 1 round (2026-04-14)",
     "ADV-0069: Root declutter + manifest v2.0.0 - PR #65 merged, 2 threads, 1 round (2026-04-14)",
     "ADV-0068: Migrate to .kit/ directory layout - PR #64 merged, 13 threads, 2 fix rounds, 5 commits (2026-04-13)",
     "ADV-0067: Fix pre-existing CLI issues - PR #63 merged, ~420 lines removed, 2 bot rounds (2026-04-13)",
     "ADV-0066: Remove aider remnants - PR #61 merged, 46 files, -6956 lines, 4 bot rounds (2026-04-13)",
     "ADV-0065: Replace Aider with LiteLLM - PR #60 merged, 14 threads, 2 fix rounds (2026-04-10)",
     "ADV-0057: Review script robustness - PR #56 merged, 0 bot rounds (2026-03-21)",
-    "ADV-0035: Evaluator runner test coverage - PR #55 merged, 100% coverage (2026-03-20)",
-    "ADV-0062: Preflight auto-type from task spec - PR #54 merged (2026-03-18)"
+    "ADV-0035: Evaluator runner test coverage - PR #55 merged, 100% coverage (2026-03-20)"
   ],
   "pending_tasks": [
     "ADV-0034: CLI library test coverage (backlog)",
@@ -54,12 +42,13 @@
     "registry_schema": "1.0 - Published in library repo",
     "evaluator_library": "v0.5.3 (all 26 items from issue #12 fixed)",
     "transport": "LiteLLM (direct API calls, no subprocess)",
-    "python_support": "3.10-3.13+"
+    "python_support": "3.10-3.13+",
+    "agents": "9 definitions (7 deleted in cleanup), all on claude-sonnet-4-6 / claude-opus-4-6"
   },
   "conventions": {
     "handoffs": ".kit/context/[TASK-ID]-HANDOFF-[agent].md",
     "review_starters": ".kit/context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".kit/context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "Aider fully removed in ADV-0065 + ADV-0066. Pre-existing issues tracked in .kit/context/ADV-0066-preexisting-issues.md (dead verdict handling, empty test_command edge case). Retro items: glob mock audit pattern, builtin evaluator key naming convention. gh-review-helper v1.1.0 has thread-reply subcommand. Tests: 539 passing."
+  "notes": "Structural cleanup complete: ADV-0068 (.kit/ migration), ADV-0069 (root declutter), ADV-0070 (docs/ consolidation). 7 obsolete agent defs deleted, remaining 9 updated with standardized metadata. KIT-0026 (agent sync) moved to todo in ASK. Tests: 539 passing."
 }
