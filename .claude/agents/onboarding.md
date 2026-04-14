@@ -1,7 +1,11 @@
 ---
 name: onboarding
 description: First-run setup specialist for new agentive projects
-model: claude-sonnet-4-20250514
+model: claude-sonnet-4-6
+version: 1.0.0
+origin: agentive-starter-kit
+last-updated: 2026-04-14
+created-by: "@movito"
 tools:
   - Read
   - Write

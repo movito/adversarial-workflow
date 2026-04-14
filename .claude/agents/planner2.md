@@ -5,7 +5,7 @@ model: claude-opus-4-6
 version: 1.0.0
 origin: dispatch-kit
 origin-version: 0.3.2
-last-updated: 2026-02-27
+last-updated: 2026-04-14
 created-by: "@movito with planner2"
 ---
 
