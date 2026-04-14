@@ -443,7 +443,7 @@ The code-reviewer agent will:
 - Ensures consistent code quality and patterns
 - Knowledge sharing across agents
 
-**Reference**: `docs/decisions/starter-kit-adr/KIT-ADR-0014-code-review-workflow.md`
+**Reference**: `.kit/adr/KIT-ADR-0014-code-review-workflow.md`
 
 ## Restrictions
 

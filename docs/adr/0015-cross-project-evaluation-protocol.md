@@ -111,7 +111,7 @@ subject: "Model Routing Layer Architecture"
 
 # Reference to detailed document
 document:
-  path: docs/decisions/adr/ADR-0004.md
+  path: docs/adr/ADR-0004.md
   commit: abc1234
 
 # Specific questions/requests
@@ -203,7 +203,7 @@ metadata:
     - adversarial-evaluator-library
     - adversarial-workflow
   established: 2026-02-03
-  adr_reference: docs/decisions/adr/library-refs/ADR-0005.md
+  adr_reference: docs/adr/library-refs/ADR-0005.md
 
 interface:
   name: "Evaluator Library Interface"
@@ -341,7 +341,7 @@ For now, **manual copy** is sufficient given low volume.
 
 ## References
 
-- Current cross-project artifacts: `docs/decisions/adr/library-refs/`
+- Current cross-project artifacts: `docs/adr/library-refs/`
 - Evaluation infrastructure: `adversarial_workflow/evaluators/`
 
 ## Revision History

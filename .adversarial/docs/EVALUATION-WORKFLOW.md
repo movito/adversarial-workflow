@@ -473,7 +473,7 @@ The built-in evaluators still work but receive no updates.
 ### Related Documentation:
 - **Evaluator library docs**: `.adversarial/evaluators/README.md`
 - **Evaluation logs**: `.adversarial/logs/`
-- **ADR**: `docs/decisions/adr/ADR-0011-adversarial-workflow-integration.md`
+- **ADR**: `docs/adr/ADR-0011-adversarial-workflow-integration.md`
 
 ---
 
