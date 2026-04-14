@@ -10,7 +10,7 @@
 # Don't use set -e because arithmetic operations can return non-zero
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PROJECT_NAME="adversarial-workflow"
 PROJECT_VERSION=$(grep -m1 '^version' "$PROJECT_ROOT/pyproject.toml" 2>/dev/null | sed 's/version[[:space:]]*=[[:space:]]*"\([^"]*\)"/\1/' || echo "0.0.0")
 
