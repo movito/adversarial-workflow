@@ -141,16 +141,21 @@ Do NOT `cp` then manually `rm` — that leaves stale copies behind.
 
 ## Phase 7: CI + Bot Review (GATE)
 
-Launch a background agent to handle CI and bot polling:
+Launch a background agent in a **worktree** to handle CI and bot polling.
+The worktree isolates the sub-agent so it cannot commit to the feature branch.
 
 ```text
 Agent(
   subagent_type="general-purpose",
   model="haiku",
   run_in_background=true,
-  prompt="Monitor PR #<N> on repo <owner>/<name>.
+  isolation="worktree",
+  prompt="You are a READ-ONLY monitoring agent. DO NOT commit, edit, or
+          modify any files. Only run shell commands and report results.
+
+          Monitor PR #<N> on repo <owner>/<name>.
           STEP 1 — CI: Run ./scripts/core/verify-ci.sh <branch> --wait
-          If CI fails, return with BOT_WATCHER_RESULT: CI_FAILED and output.
+          If CI fails, return with BOT_WATCHER_RESULT: CI_FAILED and the log output.
           STEP 2 — Bots: Poll ./scripts/core/check-bots.sh <N> every 2 min.
           When both bots show CURRENT, run:
             ./scripts/core/gh-review-helper.sh summary <N>
