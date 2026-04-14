@@ -1,134 +1,64 @@
-# ADV-0014 Review Starter (Round 2)
+# Review Starter: ADV-0014
 
-## Quick Context
+**Task**: ADV-0014 - Evaluator Library CLI Enhancements
+**Task File**: `delegation/tasks/4-in-review/ADV-0014-library-cli-enhancements.md`
+**Branch**: feat/adv-0014-library-cli-enhancements → main
+**PR**: https://github.com/movito/adversarial-workflow/pull/22
 
-Review round 2 changes addressing findings from first code review.
+## Implementation Summary
 
-**Branch**: `feature/plugin-architecture`
-**PR**: https://github.com/movito/adversarial-workflow/pull/6
-**Commits**:
-- `c072c1f` - "docs: Address PR #6 review feedback from CodeRabbit and Bugbot"
-- `84cad6f` - "docs: Address code review findings (round 2)"
+- Added `adversarial library info <provider/name>` command for detailed evaluator info
+- Added `--dry-run` flag to preview install/update without making changes
+- Added `--category` flag to install all evaluators in a category at once
+- Added `--yes` flag and non-TTY detection for CI/CD pipeline support
+- Added configuration system with precedence: env vars > config file > defaults
+  - `ADVERSARIAL_LIBRARY_URL`: Override library repository URL
+  - `ADVERSARIAL_LIBRARY_NO_CACHE`: Disable caching
+  - `ADVERSARIAL_LIBRARY_CACHE_TTL`: Override cache TTL
+  - `.adversarial/config.yml` library section support
 
 ## Files Changed
 
-1. `delegation/tasks/2-todo/ADV-0013-plugin-architecture-phase1.md`
+- `adversarial_workflow/library/config.py` (new) - Configuration system
+- `adversarial_workflow/library/client.py` (modified) - Use config, add fetch_readme
+- `adversarial_workflow/library/commands.py` (modified) - Add info command, dry-run, category, yes flags
+- `adversarial_workflow/library/__init__.py` (modified) - Export new functions
+- `adversarial_workflow/cli.py` (modified) - Register new CLI options
+- `tests/test_library_enhancements.py` (new) - 18 new tests
+- `tests/test_library_commands.py` (modified) - Add isatty mock fixture
+- `tests/test_library_integration.py` (modified) - Add isatty mock fixture
 
-## Round 1 Items (Previously Verified ✅)
+## Test Results
 
-These were verified in the first review and should still be correct:
+- 373 tests passing (18 new tests for this feature)
+- 58% overall coverage (library module 65-84% coverage)
+- CI passed on GitHub Actions
 
-1. ✅ Alias-skipping logic fix (Critical)
-2. ✅ Security considerations section (Major)
-3. ✅ Hardcoded path replacement (Minor)
-4. ✅ Fallback model documentation (Minor)
-5. ✅ Missing function definitions (Minor)
-6. ✅ Markdown formatting fixes (Trivial)
+## Areas for Review Focus
 
-## Round 2 Review Checklist
+1. **Config precedence logic** in `config.py` - env > file > defaults
+2. **Non-TTY detection** - Proper error handling when stdin is not a terminal
+3. **Dry-run implementation** - Preview mode for install and update
+4. **Category installation** - Batch install logic with confirmation prompt
+5. **Error handling** - Graceful failures for network errors, missing evaluators
 
-### 1. CLI Registration Logic (HIGH)
+## Related ADRs
 
-Verify line ~203 uses `config.name` instead of dict key `name`:
+None specifically, but follows patterns from ADV-0013 (Library CLI Core).
 
-```python
-# OLD (flawed):
-eval_parser = subparsers.add_parser(
-    name,  # Could be an alias key
-    help=config.description,
-    aliases=config.aliases
-)
+---
 
-# NEW (correct):
-eval_parser = subparsers.add_parser(
-    config.name,  # Always the canonical name
-    help=config.description,
-    aliases=config.aliases
-)
-```
+## Round 2 Fixes (2026-02-05)
 
-**Review questions**:
-- Does this ensure the canonical name is always registered as primary?
-- Will aliases still work correctly via `config.aliases`?
+Addressed all HIGH and MEDIUM priority findings from Round 1:
 
-### 2. Exception Handling (HIGH)
+1. **HIGH: Config precedence bug** - Fixed by reordering: `CACHE_TTL` is now processed before `NO_CACHE`, so `NO_CACHE` always wins
+2. **MEDIUM: Non-TTY detection** - Added `not dry_run` condition so dry-run works in CI/CD without `--yes`
+3. **MEDIUM: Dry-run success count** - Added `preview_success` flag to only count successful previews
 
-Verify line ~143 catches all relevant exceptions:
+Added new test: `test_config_no_cache_takes_precedence_over_ttl`
 
-```python
-# OLD (incomplete):
-except EvaluatorParseError as e:
-    print(f"Warning: Skipping {yml_file}: {e}")
+All 374 tests passing. CI passed on GitHub Actions (12/12 jobs).
 
-# NEW (comprehensive):
-except (EvaluatorParseError, yaml.YAMLError, TypeError) as e:
-    print(f"Warning: Skipping {yml_file}: {e}")
-```
-
-**Review questions**:
-- Does this handle malformed YAML files gracefully?
-- Does this handle empty YAML files (TypeError from None)?
-
-### 3. Enhanced parse_evaluator_yaml (MEDIUM)
-
-Verify lines ~153-177 include all enhancements:
-
-```python
-def parse_evaluator_yaml(yml_file: Path) -> EvaluatorConfig:
-    """Parse a YAML file into an EvaluatorConfig."""
-    import yaml  # pyyaml is already a dependency
-
-    data = yaml.safe_load(yml_file.read_text())
-    if data is None:
-        raise EvaluatorParseError("Empty or invalid YAML file")
-
-    required = ["name", "description", "model", "api_key_env", "prompt", "output_suffix"]
-    for field in required:
-        if field not in data:
-            raise EvaluatorParseError(f"Missing required field: {field}")
-
-    # Normalize aliases to list (handle missing, None, or single string)
-    aliases = data.get("aliases")
-    if aliases is None:
-        data["aliases"] = []
-    elif isinstance(aliases, str):
-        data["aliases"] = [aliases]  # Convert single string to list
-    elif not isinstance(aliases, list):
-        raise EvaluatorParseError(f"aliases must be a string or list, got {type(aliases).__name__}")
-
-    # Filter to only known EvaluatorConfig fields
-    known_fields = {
-        "name", "description", "model", "api_key_env", "prompt",
-        "output_suffix", "log_prefix", "fallback_model", "aliases", "version"
-    }
-    filtered_data = {k: v for k, v in data.items() if k in known_fields}
-
-    return EvaluatorConfig(**filtered_data)
-```
-
-**Review questions**:
-- Is "description" now in the required fields list?
-- Does aliases normalization handle None and missing cases?
-- Does field filtering prevent unexpected kwargs errors?
-
-## Commands
-
-```bash
-# View round 2 changes only
-git show 84cad6f
-
-# View full diff from main
-git diff main...feature/plugin-architecture -- delegation/tasks/2-todo/ADV-0013-plugin-architecture-phase1.md
-
-# Check PR status
-gh pr view 6 --json state,reviews
-
-# View latest review comments
-gh pr view 6 --web
-```
-
-## Expected Outcome
-
-- All 3 round 2 items verified as correctly implemented
-- Round 1 items still intact (no regressions)
-- PR ready for approval
+---
+**Ready for code-reviewer Round 2 in new tab**

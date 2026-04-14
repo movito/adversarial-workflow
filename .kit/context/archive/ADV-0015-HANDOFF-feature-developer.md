@@ -1,306 +1,386 @@
-# ADV-0015 Task Starter
+# ADV-0015 Handoff: Model Routing Layer - Phase 1
 
-## Quick Context
+**Task**: ADV-0015 - Model Routing Layer - Phase 1
+**Assigned To**: feature-developer
+**Created By**: planner
+**Date**: 2026-02-03
 
-You are implementing the foundation for the plugin architecture: the `EvaluatorConfig` dataclass and evaluators module skeleton.
+---
 
-**Branch**: `feature/adv-0015-evaluator-config`
-**Base**: `main`
-**Target Version**: v0.6.0
+## Mission
 
-## Create Branch
+Implement dual-field support for evaluator model resolution: parse both legacy `model` field and new `model_requirement` field, with automatic resolution via embedded registry. This enables Library team integration testing.
 
-```bash
-git checkout main
-git pull
-git checkout -b feature/adv-0015-evaluator-config
-```
+---
 
-## Files to Create
+## Current State Analysis
 
-### 1. `adversarial_workflow/evaluators/__init__.py`
+### Existing Files to Modify
+
+1. **`adversarial_workflow/evaluators/config.py`** (52 lines)
+   - Current: `EvaluatorConfig` dataclass with `model: str` and `api_key_env: str`
+   - Change: Add optional `model_requirement: ModelRequirement | None = None`
+   - Add: New `ModelRequirement` dataclass
+
+2. **`adversarial_workflow/evaluators/discovery.py`** (238 lines)
+   - Current: Parses YAML with `known_fields` whitelist (line 147-159)
+   - Change: Add `model_requirement` to known fields
+   - Change: Parse nested `model_requirement` dict into `ModelRequirement` object
+   - Change: Make `model` and `api_key_env` optional when `model_requirement` present
+
+3. **`adversarial_workflow/evaluators/runner.py`** (200+ lines)
+   - Current: Uses `config.model` directly (lines 134, 140, 171)
+   - Change: Call `ModelResolver.resolve()` before using model
+   - Change: Use resolved `(model_id, api_key_env)` tuple
+
+### New File to Create
+
+4. **`adversarial_workflow/evaluators/resolver.py`** (~150 lines)
+   - `ResolutionError` exception class
+   - `ModelResolver` class with embedded registry
+   - `resolve(config) -> (model_id, api_key_env)` method
+   - Fallback logic with warning
+
+---
+
+## Implementation Order (TDD)
+
+### Phase 1: Data Structures (Tests First)
 
 ```python
-"""
-Evaluators module for adversarial-workflow.
+# tests/test_model_resolver.py - write these first
 
-This module provides the plugin architecture for custom evaluators.
-"""
+def test_model_requirement_dataclass():
+    """ModelRequirement stores family, tier, min_version, min_context."""
+    req = ModelRequirement(family="claude", tier="opus")
+    assert req.family == "claude"
+    assert req.tier == "opus"
+    assert req.min_version == ""  # default
+    assert req.min_context == 0   # default
 
-from .config import EvaluatorConfig
-
-__all__ = ["EvaluatorConfig"]
+def test_evaluator_config_with_model_requirement():
+    """EvaluatorConfig accepts optional model_requirement."""
+    config = EvaluatorConfig(
+        name="test", description="Test", model="", api_key_env="",
+        prompt="Test", output_suffix="TEST",
+        model_requirement=ModelRequirement(family="claude", tier="opus")
+    )
+    assert config.model_requirement is not None
 ```
 
-### 2. `adversarial_workflow/evaluators/config.py`
+Then implement in `config.py`:
 
 ```python
-"""
-EvaluatorConfig dataclass for evaluator definitions.
-"""
-
-from __future__ import annotations
-
-from dataclasses import dataclass, field
-
+@dataclass
+class ModelRequirement:
+    """Model capability requirements (from library)."""
+    family: str
+    tier: str
+    min_version: str = ""
+    min_context: int = 0
 
 @dataclass
 class EvaluatorConfig:
-    """Configuration for an evaluator (built-in or custom).
+    # ... existing fields ...
 
-    This dataclass represents the configuration for any evaluator,
-    whether built-in (evaluate, proofread, review) or custom
-    (defined in .adversarial/evaluators/*.yml).
-
-    Attributes:
-        name: Command name (e.g., "evaluate", "athena")
-        description: Help text shown in CLI
-        model: Model to use (e.g., "gpt-4o", "gemini-2.5-pro")
-        api_key_env: Environment variable name for API key
-        prompt: The evaluation prompt template
-        output_suffix: Log file suffix (e.g., "PLAN-EVALUATION")
-        log_prefix: CLI output prefix (e.g., "ATHENA")
-        fallback_model: Fallback model if primary fails
-        aliases: Alternative command names
-        version: Evaluator version
-        source: "builtin" or "local" (set internally)
-        config_file: Path to YAML file if local (set internally)
-    """
-
-    # Required fields
-    name: str
-    description: str
-    model: str
-    api_key_env: str
-    prompt: str
-    output_suffix: str
-
-    # Optional fields with defaults
-    log_prefix: str = ""
-    fallback_model: str | None = None
-    aliases: list[str] = field(default_factory=list)
-    version: str = "1.0.0"
-
-    # Metadata (set internally during discovery, not from YAML)
-    source: str = "builtin"
-    config_file: str | None = None
+    # NEW: Structured model requirement (Phase 1)
+    model_requirement: ModelRequirement | None = None
 ```
 
-### 3. `tests/test_evaluator_config.py`
+### Phase 2: Resolver Logic (Tests First)
 
 ```python
-"""Tests for EvaluatorConfig dataclass."""
+# tests/test_model_resolver.py - continued
 
-import pytest
+def test_resolve_claude_opus():
+    """Resolver maps claude/opus to correct model ID."""
+    config = EvaluatorConfig(
+        name="test", description="Test", model="", api_key_env="",
+        prompt="Test", output_suffix="TEST",
+        model_requirement=ModelRequirement(family="claude", tier="opus")
+    )
+    resolver = ModelResolver()
+    model_id, api_key_env = resolver.resolve(config)
+    assert "claude" in model_id.lower()
+    assert "opus" in model_id.lower()
+    assert api_key_env == "ANTHROPIC_API_KEY"
 
-from adversarial_workflow.evaluators import EvaluatorConfig
+def test_resolve_legacy_fallback():
+    """Resolver uses legacy model field when model_requirement absent."""
+    config = EvaluatorConfig(
+        name="test", description="Test",
+        model="gpt-4o", api_key_env="OPENAI_API_KEY",
+        prompt="Test", output_suffix="TEST"
+    )
+    resolver = ModelResolver()
+    model_id, api_key_env = resolver.resolve(config)
+    assert model_id == "gpt-4o"
+    assert api_key_env == "OPENAI_API_KEY"
 
+def test_resolve_fallback_on_unknown_family():
+    """Resolver falls back to legacy when family unknown."""
+    config = EvaluatorConfig(
+        name="test", description="Test",
+        model="gpt-4o", api_key_env="OPENAI_API_KEY",  # fallback
+        prompt="Test", output_suffix="TEST",
+        model_requirement=ModelRequirement(family="unknown", tier="unknown")
+    )
+    resolver = ModelResolver()
+    with pytest.warns(UserWarning, match="resolution failed"):
+        model_id, api_key_env = resolver.resolve(config)
+    assert model_id == "gpt-4o"  # fell back
 
-class TestEvaluatorConfig:
-    """Tests for EvaluatorConfig dataclass."""
-
-    def test_required_fields_only(self):
-        """Create config with only required fields."""
-        config = EvaluatorConfig(
-            name="test",
-            description="Test evaluator",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="Evaluate this document",
-            output_suffix="TEST-EVAL",
-        )
-
-        assert config.name == "test"
-        assert config.description == "Test evaluator"
-        assert config.model == "gpt-4o"
-        assert config.api_key_env == "OPENAI_API_KEY"
-        assert config.prompt == "Evaluate this document"
-        assert config.output_suffix == "TEST-EVAL"
-
-    def test_default_values(self):
-        """Verify default values for optional fields."""
-        config = EvaluatorConfig(
-            name="test",
-            description="Test",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="Test",
-            output_suffix="TEST",
-        )
-
-        assert config.log_prefix == ""
-        assert config.fallback_model is None
-        assert config.aliases == []
-        assert config.version == "1.0.0"
-        assert config.source == "builtin"
-        assert config.config_file is None
-
-    def test_with_all_optional_fields(self):
-        """Create config with all optional fields specified."""
-        config = EvaluatorConfig(
-            name="athena",
-            description="Knowledge evaluation using Gemini 2.5 Pro",
-            model="gemini-2.5-pro",
-            api_key_env="GEMINI_API_KEY",
-            prompt="You are Athena, a knowledge evaluation specialist...",
-            output_suffix="KNOWLEDGE-EVAL",
-            log_prefix="ATHENA",
-            fallback_model="gpt-4o",
-            aliases=["knowledge", "research"],
-            version="1.0.0",
-            source="local",
-            config_file="/path/to/athena.yml",
-        )
-
-        assert config.name == "athena"
-        assert config.log_prefix == "ATHENA"
-        assert config.fallback_model == "gpt-4o"
-        assert config.aliases == ["knowledge", "research"]
-        assert config.source == "local"
-        assert config.config_file == "/path/to/athena.yml"
-
-    def test_aliases_not_shared_between_instances(self):
-        """Verify aliases list is not shared between instances."""
-        config1 = EvaluatorConfig(
-            name="test1",
-            description="Test 1",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="Test",
-            output_suffix="TEST",
-        )
-        config2 = EvaluatorConfig(
-            name="test2",
-            description="Test 2",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="Test",
-            output_suffix="TEST",
-        )
-
-        config1.aliases.append("alias1")
-
-        assert config1.aliases == ["alias1"]
-        assert config2.aliases == []  # Should NOT be affected
-
-    def test_equality(self):
-        """Two configs with same values are equal."""
-        config1 = EvaluatorConfig(
-            name="test",
-            description="Test",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="Test",
-            output_suffix="TEST",
-        )
-        config2 = EvaluatorConfig(
-            name="test",
-            description="Test",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="Test",
-            output_suffix="TEST",
-        )
-
-        assert config1 == config2
-
-    def test_inequality(self):
-        """Two configs with different values are not equal."""
-        config1 = EvaluatorConfig(
-            name="test1",
-            description="Test",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="Test",
-            output_suffix="TEST",
-        )
-        config2 = EvaluatorConfig(
-            name="test2",
-            description="Test",
-            model="gpt-4o",
-            api_key_env="OPENAI_API_KEY",
-            prompt="Test",
-            output_suffix="TEST",
-        )
-
-        assert config1 != config2
+def test_resolve_error_when_no_model():
+    """Resolver raises when neither model nor model_requirement present."""
+    config = EvaluatorConfig(
+        name="test", description="Test",
+        model="", api_key_env="",
+        prompt="Test", output_suffix="TEST"
+    )
+    resolver = ModelResolver()
+    with pytest.raises(ResolutionError, match="No model"):
+        resolver.resolve(config)
 ```
 
-## Run Tests
+Then implement `resolver.py`.
+
+### Phase 3: YAML Parsing (Tests First)
+
+```python
+# tests/test_evaluator_discovery.py - add these
+
+def test_parse_yaml_with_model_requirement(tmp_path):
+    """Parser handles model_requirement field."""
+    yml = tmp_path / "test.yml"
+    yml.write_text("""
+name: test-eval
+description: Test evaluator
+model_requirement:
+  family: gemini
+  tier: flash
+prompt: "Test prompt"
+output_suffix: TEST
+""")
+    config = parse_evaluator_yaml(yml)
+    assert config.model_requirement is not None
+    assert config.model_requirement.family == "gemini"
+    assert config.model_requirement.tier == "flash"
+    assert config.model == ""  # not required when model_requirement present
+
+def test_parse_yaml_with_both_fields(tmp_path):
+    """Parser handles dual-field format (library format)."""
+    yml = tmp_path / "test.yml"
+    yml.write_text("""
+name: test-eval
+description: Test evaluator
+model: gemini/gemini-2.5-flash
+api_key_env: GEMINI_API_KEY
+model_requirement:
+  family: gemini
+  tier: flash
+  min_version: "2.5"
+prompt: "Test prompt"
+output_suffix: TEST
+""")
+    config = parse_evaluator_yaml(yml)
+    assert config.model == "gemini/gemini-2.5-flash"  # legacy present
+    assert config.model_requirement.family == "gemini"  # new present
+```
+
+Then update `discovery.py`.
+
+### Phase 4: Runner Integration (Tests First)
+
+```python
+# tests/test_runner_resolution.py
+
+def test_runner_uses_resolved_model(tmp_path, mocker):
+    """Runner resolves model_requirement before execution."""
+    # Mock subprocess to capture the model argument
+    mock_run = mocker.patch("subprocess.run")
+    mock_run.return_value = MagicMock(returncode=0)
+
+    # Create evaluator with model_requirement only
+    config = EvaluatorConfig(
+        name="test", description="Test",
+        model="", api_key_env="",
+        prompt="Test", output_suffix="TEST",
+        model_requirement=ModelRequirement(family="gemini", tier="flash"),
+        source="local"
+    )
+
+    # ... setup and run ...
+
+    # Verify resolved model was passed to aider
+    call_args = mock_run.call_args
+    assert "gemini" in str(call_args)  # resolved, not empty
+```
+
+Then update `runner.py`.
+
+---
+
+## Registry Data (From Library Team)
+
+Use this embedded registry matching `providers/registry.yml`:
+
+```python
+DEFAULT_REGISTRY = {
+    "claude": {
+        "opus": {"models": ["claude-4-opus-20260115", "claude-opus-4-5-20251101"], "prefix": "anthropic/"},
+        "sonnet": {"models": ["claude-4-sonnet-20260115"], "prefix": "anthropic/"},
+        "haiku": {"models": ["claude-4-haiku-20260115"], "prefix": "anthropic/"},
+    },
+    "gpt": {
+        "flagship": {"models": ["gpt-4o", "gpt-4o-2024-08-06"], "prefix": ""},
+        "standard": {"models": ["gpt-4-turbo", "gpt-4"], "prefix": ""},
+        "mini": {"models": ["gpt-4o-mini"], "prefix": ""},
+    },
+    "o": {
+        "flagship": {"models": ["o1", "o1-2024-12-17"], "prefix": ""},
+        "mini": {"models": ["o3-mini"], "prefix": ""},
+    },
+    "gemini": {
+        "pro": {"models": ["gemini-2.5-pro"], "prefix": "gemini/"},
+        "flash": {"models": ["gemini-2.5-flash"], "prefix": "gemini/"},
+    },
+    "mistral": {
+        "large": {"models": ["mistral-large-latest"], "prefix": "mistral/"},
+        "small": {"models": ["mistral-small-latest"], "prefix": "mistral/"},
+    },
+    "codestral": {
+        "latest": {"models": ["codestral-latest"], "prefix": "mistral/"},
+    },
+    "llama": {
+        "large": {"models": ["llama-3.3-70b"], "prefix": ""},
+        "medium": {"models": ["llama-3.1-8b"], "prefix": ""},
+    },
+}
+
+API_KEY_MAP = {
+    "claude": "ANTHROPIC_API_KEY",
+    "gpt": "OPENAI_API_KEY",
+    "o": "OPENAI_API_KEY",
+    "gemini": "GEMINI_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+    "codestral": "MISTRAL_API_KEY",
+    "llama": "TOGETHER_API_KEY",
+}
+```
+
+---
+
+## Key Implementation Notes
+
+### 1. Backwards Compatibility is MANDATORY
+
+```python
+# MUST work: Legacy evaluator with only model field
+name: my-evaluator
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+prompt: "..."
+output_suffix: TEST
+
+# MUST work: New evaluator with only model_requirement
+name: my-evaluator
+model_requirement:
+  family: gpt
+  tier: flagship
+prompt: "..."
+output_suffix: TEST
+
+# MUST work: Dual-field (library format)
+name: my-evaluator
+model: gpt-4o
+api_key_env: OPENAI_API_KEY
+model_requirement:
+  family: gpt
+  tier: flagship
+prompt: "..."
+output_suffix: TEST
+```
+
+### 2. Resolution Order
+
+1. If `model_requirement` present → resolve via registry
+2. If resolution fails AND `model` present → warn + fallback to legacy
+3. If resolution fails AND no `model` → raise `ResolutionError`
+4. If no `model_requirement` AND `model` present → use legacy directly
+5. If neither → raise `ResolutionError`
+
+### 3. Warning Format
+
+```python
+import warnings
+
+warnings.warn(
+    f"model_requirement resolution failed for {config.name}: {error}. "
+    f"Falling back to legacy model field: {config.model}",
+    UserWarning
+)
+```
+
+### 4. Error Format
+
+```python
+class ResolutionError(Exception):
+    """Raised when model resolution fails."""
+    pass
+
+# Clear error messages:
+raise ResolutionError(f"Unknown model family: {req.family}")
+raise ResolutionError(f"Unknown tier '{req.tier}' for family '{req.family}'")
+raise ResolutionError("No model or model_requirement specified")
+```
+
+---
+
+## Files to Update Summary
+
+| File | Action | Lines Changed (est.) |
+|------|--------|---------------------|
+| `evaluators/config.py` | Add ModelRequirement, extend EvaluatorConfig | +25 |
+| `evaluators/resolver.py` | NEW FILE | +120 |
+| `evaluators/discovery.py` | Parse model_requirement, make model optional | +30, ~10 modified |
+| `evaluators/runner.py` | Use resolver before execution | +10, ~5 modified |
+| `evaluators/__init__.py` | Export new classes | +3 |
+| `tests/test_model_resolver.py` | NEW FILE | +150 |
+| `tests/test_evaluator_discovery.py` | Add model_requirement tests | +50 |
+
+---
+
+## Integration Testing with Library
+
+After implementation, test with real library evaluator:
 
 ```bash
-# Run the new tests
-pytest tests/test_evaluator_config.py -v
+# Install library evaluator
+adversarial library install google/gemini-flash
 
-# Run all tests to ensure nothing is broken
-pytest tests/ -v
+# Check it has model_requirement
+cat .adversarial/evaluators/google-gemini-flash.yml | grep -A4 model_requirement
+
+# Run evaluation (should resolve model_requirement)
+adversarial evaluate some-file.md --evaluator gemini-flash
 ```
 
-## Verify Import Works
+---
 
-```bash
-python -c "from adversarial_workflow.evaluators import EvaluatorConfig; print('Import OK')"
-```
+## Related Documents
 
-## Commit & Push
+- **Task Spec**: `delegation/tasks/1-backlog/ADV-0015-model-routing-phase1.md`
+- **ADR-0004**: `docs/decisions/adr/library-refs/ADR-0004-evaluator-definition-model-routing-separation.md`
+- **ADR-0005**: `docs/decisions/adr/library-refs/ADR-0005-library-workflow-interface-contract.md`
+- **Library Registry**: https://github.com/movito/adversarial-evaluator-library/blob/main/providers/registry.yml
 
-After tests pass:
+---
 
-```bash
-git add -A
-git commit -m "feat(evaluators): Add EvaluatorConfig dataclass for plugin architecture
+## Definition of Done
 
-- Create adversarial_workflow/evaluators/ module
-- Add EvaluatorConfig dataclass with required and optional fields
-- Include metadata fields (source, config_file) for discovery
-- Add comprehensive unit tests
-
-Part of ADV-0015 for v0.6.0 plugin architecture.
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
-
-git push -u origin feature/adv-0015-evaluator-config
-```
-
-## Create PR
-
-```bash
-gh pr create --title "feat(evaluators): Add EvaluatorConfig dataclass (ADV-0015)" --body "$(cat <<'EOF'
-## Summary
-
-Implements ADV-0015: Creates the foundation for the plugin architecture with the `EvaluatorConfig` dataclass.
-
-## Changes
-
-- Created `adversarial_workflow/evaluators/` module
-- Added `EvaluatorConfig` dataclass with:
-  - Required fields: name, description, model, api_key_env, prompt, output_suffix
-  - Optional fields: log_prefix, fallback_model, aliases, version
-  - Metadata fields: source, config_file
-- Added comprehensive unit tests
-
-## Test plan
-
-- [x] `pytest tests/test_evaluator_config.py -v` passes
-- [x] `pytest tests/ -v` - all existing tests pass
-- [x] Import verification: `from adversarial_workflow.evaluators import EvaluatorConfig`
-
-## Related
-
-- Task: ADV-0015-evaluators-module-skeleton.md
-- Epic: ADV-0013 Plugin Architecture
-- Target: v0.6.0
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-EOF
-)"
-```
-
-## Acceptance Checklist
-
-- [ ] `adversarial_workflow/evaluators/` directory exists
-- [ ] `EvaluatorConfig` dataclass has all fields defined
-- [ ] Type hints use Python 3.10+ syntax with `from __future__ import annotations`
-- [ ] Unit tests pass
-- [ ] All existing tests still pass
-- [ ] PR created and ready for review
+- [ ] All 11 acceptance criteria met
+- [ ] Unit tests for resolver (all resolution paths)
+- [ ] Integration tests with sample evaluators
+- [ ] Existing evaluators still work (backwards compat)
+- [ ] CI passes
+- [ ] Code review approved

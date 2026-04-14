@@ -1,6 +1,6 @@
 # ADV-0070: Consolidate docs/ Folder Structure
 
-**Status**: In Progress
+**Status**: Done
 **Priority**: low
 **Assigned To**: unassigned
 **Estimated Effort**: 1-2 hours
