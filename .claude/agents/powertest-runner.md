@@ -1,7 +1,11 @@
 ---
 name: powertest-runner
 description: Comprehensive testing and validation specialist with advanced TDD and analysis capabilities
-model: claude-sonnet-4-20250514
+model: claude-sonnet-4-6
+version: 1.0.0
+origin: adversarial-workflow
+last-updated: 2026-04-14
+created-by: "@movito with planner2"
 tools:
   - Read
   - Write

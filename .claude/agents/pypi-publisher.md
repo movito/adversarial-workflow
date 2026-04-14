@@ -1,7 +1,11 @@
 ---
 name: pypi-publisher
 description: Handles PyPI package builds, releases, and version management
-model: claude-sonnet-4-20250514
+model: claude-sonnet-4-6
+version: 1.0.0
+origin: adversarial-workflow
+last-updated: 2026-04-14
+created-by: "@movito"
 tools:
   - Read
   - Write
