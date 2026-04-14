@@ -5,10 +5,10 @@
   "agents": {
     "planner": {
       "status": "completed",
-      "current_task": null,
-      "brief_note": "ADV-0069 post-completion done. Root decluttered (15→9 files), manifest v2.0.0. Also fixed launcher PROJECT_ROOT bug.",
-      "details_link": ".kit/tasks/5-done/ADV-0069-root-declutter-manifest-upgrade.md",
-      "handoff_file": null
+      "current_task": "ADV-0070",
+      "brief_note": "COMPLETE: ADV-0070 task spec created, evaluated (APPROVED), handoff ready. Docs/ cleanup: 9→4 subdirs.",
+      "details_link": ".kit/tasks/2-todo/ADV-0070-docs-folder-cleanup.md",
+      "handoff_file": ".kit/context/ADV-0070-HANDOFF-feature-developer.md"
     },
     "feature-developer-v5": {
       "status": "idle",
