@@ -185,7 +185,7 @@ adversarial check
 
 The `adversarial check` command will warn you if your local scripts are outdated compared to the installed package version.
 
-> **📖 Full upgrade guide**: See [UPGRADE.md](UPGRADE.md) for detailed instructions and version-specific notes.
+> **📖 Full upgrade guide**: See [UPGRADE.md](docs/guides/UPGRADE.md) for detailed instructions and version-specific notes.
 
 ## Quick Start
 
