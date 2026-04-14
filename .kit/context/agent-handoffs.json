@@ -1,20 +1,20 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-04-13",
+  "last_updated": "2026-04-14",
   "agents": {
     "planner": {
       "status": "completed",
-      "current_task": "ADV-0069",
-      "brief_note": "COMPLETE: ADV-0069 task spec created, evaluated (approved), handoff ready. Root declutter + manifest v2.0.0 upgrade.",
-      "details_link": ".kit/tasks/2-todo/ADV-0069-root-declutter-manifest-upgrade.md",
-      "handoff_file": ".kit/context/ADV-0069-HANDOFF-feature-developer.md"
+      "current_task": null,
+      "brief_note": "ADV-0069 post-completion done. Root decluttered (15→9 files), manifest v2.0.0. Also fixed launcher PROJECT_ROOT bug.",
+      "details_link": ".kit/tasks/5-done/ADV-0069-root-declutter-manifest-upgrade.md",
+      "handoff_file": null
     },
     "feature-developer-v5": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0068 delivered and merged (PR #64). .kit/ migration, 13 threads, 2 fix rounds, 5 commits.",
-      "details_link": ".kit/context/retros/ADV-0068-retro.md"
+      "brief_note": "ADV-0069 delivered and merged (PR #65). Root declutter + manifest upgrade, 2 threads, 1 round, 4 commits.",
+      "details_link": ".kit/context/retros/ADV-0069-retro.md"
     },
     "code-reviewer": {
       "status": "idle",
@@ -30,6 +30,7 @@
     }
   },
   "recent_completions": [
+    "ADV-0069: Root declutter + manifest v2.0.0 - PR #65 merged, 2 threads, 1 round (2026-04-14)",
     "ADV-0068: Migrate to .kit/ directory layout - PR #64 merged, 13 threads, 2 fix rounds, 5 commits (2026-04-13)",
     "ADV-0067: Fix pre-existing CLI issues - PR #63 merged, ~420 lines removed, 2 bot rounds (2026-04-13)",
     "ADV-0066: Remove aider remnants - PR #61 merged, 46 files, -6956 lines, 4 bot rounds (2026-04-13)",
@@ -48,7 +49,7 @@
   ],
   "blocked_items": [],
   "architecture_status": {
-    "current_version": "0.9.9",
+    "current_version": "0.9.10",
     "next_minor": "1.0.0 (candidate — Aider removed, LiteLLM transport, Python 3.13 support, codebase clean)",
     "registry_schema": "1.0 - Published in library repo",
     "evaluator_library": "v0.5.3 (all 26 items from issue #12 fixed)",

@@ -193,6 +193,11 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 - Stage by category: `git add .kit/` then `git add .claude/` etc.
 - Add common dev artifacts (`.aider.*`, `.dispatch/`) to `.gitignore` proactively
 
+### ADV-0069: `project move` doesn't git-track the old path removal
+- `./scripts/core/project move` moves the filesystem file but doesn't `git rm` the old path
+- If you stage only the new location, git sees both old and new — BugBot catches the duplicate
+- Pattern: after `project move`, always `git add` the old directory too (so git sees the deletion) or use `git mv` directly
+
 ---
 
-*Last updated: 2026-04-13*
+*Last updated: 2026-04-14*
