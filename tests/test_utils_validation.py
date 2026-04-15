@@ -260,7 +260,23 @@ class TestVerdictFormatExtraction:
 
         is_valid, verdict, _msg = validate_evaluation_output(str(log_file))
         assert is_valid is True
-        assert verdict == "APPROVED", f"Should extract APPROVED, not FAIL from substring, got {verdict}"
+        assert verdict == "APPROVED", (
+            f"Should extract APPROVED, not FAIL from substring, got {verdict}"
+        )
+
+    def test_bold_verdict_key_value_substring_not_matched(self, tmp_path):
+        """**Verdict**: **FAIL**ed should not false-positive on FAIL."""
+        content = (
+            f"# Review\n\n{_PAD}\n\n**Verdict**: **FAIL**ed due to context.\n\nVerdict: APPROVED\n"
+        )
+        log_file = tmp_path / "bold_kv_substring.md"
+        log_file.write_text(content)
+
+        is_valid, verdict, _msg = validate_evaluation_output(str(log_file))
+        assert is_valid is True
+        assert verdict == "APPROVED", (
+            f"Should extract APPROVED, not FAIL from bold key-value substring, got {verdict}"
+        )
 
     def test_bold_key_bold_value(self, tmp_path):
         """Bold key AND bold value: **Verdict**: **FAIL**."""
