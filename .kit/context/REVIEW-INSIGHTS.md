@@ -214,4 +214,38 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 
 ---
 
-*Last updated: 2026-04-14*
+## Version Management (`adversarial_workflow/__init__.py`, `cli.py`)
+
+### ADV-0071: `shutil.which()` finds stale system installs over venv binaries
+- The `run_cli` test fixture used `shutil.which("adversarial")` which resolved to `/opt/homebrew/bin/adversarial` (stale system install) instead of the venv binary
+- Fix: use `sys.executable` to ensure tests run against the same Python environment
+- Pattern: always use `[sys.executable, "-m", "module"]` or `sys.executable` path for subprocess tests, never rely on PATH resolution
+
+### ADV-0071: `PackageNotFoundError.__str__` produces garbled messages
+- `PackageNotFoundError("adversarial-workflow")` formats as "No package metadata was found for adversarial-workflow" — but if you embed it in a larger string like `f"{pkg_name} is not installed"`, the result is garbled
+- Fix: raise `RuntimeError` with a clean message instead of re-raising `PackageNotFoundError`
+
+### ADV-0071: DRY refactor of `from . import __version__` breaks direct execution
+- Making `cli.py` import `__version__` from `__init__.py` via relative import (`from . import __version__`) breaks `python adversarial_workflow/cli.py` direct execution
+- The evaluator (arch-review-fast) suggested this DRY pattern, but it's incorrect for CLI entry points
+- Fix: keep separate `importlib.metadata.version()` calls in both files — duplication is acceptable here
+- Pattern: evaluator suggestions about import DRY should be validated against direct-execution use cases
+
+---
+
+## Evaluator Pipeline
+
+### ADV-0071: Gemini Flash wraps verdicts in bold markdown, breaking extraction
+- Gemini Flash evaluators output `**FAIL**` or `**NON_COMPLIANT**` while o1 outputs bare `FAIL`
+- The verdict extraction regex worked by luck because most runs used o1
+- This is a silent bug affecting all Gemini-based evaluators — tracked as ADV-0072
+- Pattern: verdict extraction regex should strip markdown formatting before matching
+
+### ADV-0071: Evaluator pipeline catches regressions TDD misses
+- Round 1 evaluator flagged that the DRY relative import broke direct script execution
+- Unit tests couldn't catch this because they import the module normally
+- The evaluator pipeline earned its keep on this task — it found a real correctness regression
+
+---
+
+*Last updated: 2026-04-15*
