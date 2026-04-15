@@ -248,4 +248,24 @@ Knowledge extracted from code reviews for future reference (KIT-ADR-0019).
 
 ---
 
+## Validation (`adversarial_workflow/utils/validation.py`)
+
+### ADV-0072: Regex patterns for verdict extraction must be line-anchored
+- Bold-wrapped verdicts (`**FAIL**`) can appear as incidental text mid-document (e.g., `**FAIL**ure modes discussed`)
+- ALL verdict patterns must use `^\s*` prefix and `\s*$` or `(?::|\s*$)` suffix to prevent false positives from substring/mid-line matches
+- Pattern ordering matters: higher-specificity patterns (keyed `Verdict:`) first, lower-specificity (bare line) last
+- When adding new regex patterns to a group, **audit ALL existing sibling patterns** for the same class of vulnerability
+
+### ADV-0072: CodeRabbit catches regex boundary issues TDD misses
+- The original spec only proposed adding 2 patterns, but CodeRabbit progressively flagged that all 6 patterns had the same anchoring gap across 3 rounds
+- The iterative bot-driven refinement expanded the fix scope correctly — more thorough than the original spec
+- For regex-heavy changes, expect 2-3 bot rounds of boundary tightening
+
+### ADV-0072: o1 evaluator doesn't recognize parametrized test coverage
+- The code-review evaluator flagged "untested" cases that were actually covered by parametrized fixtures (`@pytest.mark.parametrize`)
+- When writing evaluator dispositions, explicitly note which parametrized tests cover each finding
+- Consider adding a note to evaluator input templates about parametrized test structures
+
+---
+
 *Last updated: 2026-04-15*

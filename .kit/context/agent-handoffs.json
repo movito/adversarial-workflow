@@ -4,20 +4,20 @@
   "last_updated": "2026-04-15",
   "agents": {
     "planner": {
-      "status": "completed",
-      "current_task": "ADV-0072",
-      "brief_note": "COMPLETE: ADV-0072 evaluated + handoff ready. Verdict extraction bold-markdown fix, blocks 1.0.0.",
-      "details_link": ".kit/tasks/2-todo/ADV-0072-fix-verdict-extraction-bold-markdown.md",
-      "handoff_file": ".kit/context/ADV-0072-HANDOFF-feature-developer.md"
+      "status": "idle",
+      "current_task": null,
+      "brief_note": "ADV-0072 post-completion done. PR #68 merged, 4 threads, 3 bot rounds. 1.0.0 unblocked.",
+      "details_link": ".kit/tasks/5-done/ADV-0072-fix-verdict-extraction-bold-markdown.md"
     },
     "feature-developer-v5": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0071 delivered and merged (PR #67). 7 threads, 3 fix rounds, 10 commits.",
-      "details_link": ".kit/context/retros/ADV-0071-retro.md"
+      "brief_note": "ADV-0072 delivered and merged (PR #68). 4 threads, 3 bot rounds, 5 commits.",
+      "details_link": ".kit/context/retros/ADV-0072-retro.md"
     }
   },
   "recent_completions": [
+    "ADV-0072: Fix verdict extraction bold-markdown regex - PR #68 merged, 4 threads, 3 rounds (2026-04-15)",
     "ADV-0071: Fix version management + release 0.9.11 - PR #67 merged, 7 threads, 3 rounds (2026-04-15)",
     "ADV-0070: Consolidate docs/ folder structure - PR #66 merged, 3 threads, 1 round (2026-04-14)",
     "ADV-0069: Root declutter + manifest v2.0.0 - PR #65 merged, 2 threads, 1 round (2026-04-14)",
@@ -29,7 +29,6 @@
     "ADV-0035: Evaluator runner test coverage - PR #55 merged, 100% coverage (2026-03-20)"
   ],
   "pending_tasks": [
-    "ADV-0072: Fix verdict extraction bold-markdown regex (backlog, blocks 1.0.0)",
     "ADV-0034: CLI library test coverage (backlog)",
     "ADV-0036: Library module test coverage (backlog)",
     "ADV-0055: Enhance health check (backlog, fold into ADV-0056)",
@@ -40,7 +39,7 @@
   "blocked_items": [],
   "architecture_status": {
     "current_version": "0.9.11",
-    "next_minor": "1.0.0 (blocked on ADV-0072 verdict extraction fix)",
+    "next_minor": "1.0.0 (unblocked — ADV-0072 merged)",
     "registry_schema": "1.0 - Published in library repo",
     "evaluator_library": "v0.5.3 (all 26 items from issue #12 fixed)",
     "transport": "LiteLLM (direct API calls, no subprocess)",
@@ -52,5 +51,5 @@
     "review_starters": ".kit/context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".kit/context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "v0.9.11 released (ADV-0071). Version management fixed — pyproject.toml is single source of truth. Python 3.13 added to CI matrix. 1.0.0 blocked on ADV-0072 (verdict extraction bold-markdown regex). Tests: 539+ passing."
+  "notes": "v0.9.11 released (ADV-0071). ADV-0072 merged — verdict extraction fixed for bold markdown (Gemini Flash evaluators). 1.0.0 unblocked. Tests: 643+ passing."
 }
