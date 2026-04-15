@@ -5,10 +5,10 @@
   "agents": {
     "planner": {
       "status": "completed",
-      "current_task": null,
-      "brief_note": "ADV-0071 post-completion done. Version management fixed, 0.9.11 released. 1.0.0 blocked on ADV-0072 (verdict extraction).",
-      "details_link": ".kit/tasks/5-done/ADV-0071-fix-version-management-release-1.0.0.md",
-      "handoff_file": null
+      "current_task": "ADV-0072",
+      "brief_note": "COMPLETE: ADV-0072 evaluated + handoff ready. Verdict extraction bold-markdown fix, blocks 1.0.0.",
+      "details_link": ".kit/tasks/2-todo/ADV-0072-fix-verdict-extraction-bold-markdown.md",
+      "handoff_file": ".kit/context/ADV-0072-HANDOFF-feature-developer.md"
     },
     "feature-developer-v5": {
       "status": "idle",
