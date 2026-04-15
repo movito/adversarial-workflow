@@ -48,7 +48,10 @@ def validate_evaluation_output(
     verdict_patterns = [
         rf"Verdict:\s*({all_verdicts})",
         rf"\*\*Verdict\*\*:\s*({all_verdicts})",
-        rf"^({all_verdicts})\s*$",
+        rf"\*\*Verdict\*\*:\s*\*\*({all_verdicts})\*\*",  # **Verdict**: **FAIL**
+        rf"[-*]\s*\*\*({all_verdicts})\*\*",  # - **FAIL**: ... (list item)
+        rf"^\*\*({all_verdicts})\*\*",  # **FAIL** at line start
+        rf"^({all_verdicts})\s*$",  # FAIL (bare line)
     ]
 
     for pattern in verdict_patterns:
