@@ -49,8 +49,8 @@ def validate_evaluation_output(
         rf"Verdict:\s*({all_verdicts})",
         rf"\*\*Verdict\*\*:\s*({all_verdicts})",
         rf"\*\*Verdict\*\*:\s*\*\*({all_verdicts})\*\*",  # **Verdict**: **FAIL**
-        rf"[-*]\s*\*\*({all_verdicts})\*\*",  # - **FAIL**: ... (list item)
-        rf"^\*\*({all_verdicts})\*\*",  # **FAIL** at line start
+        rf"^\s*[-*]\s+\*\*({all_verdicts})\*\*(?::|\s*$)",  # list item verdict line
+        rf"^\s*\*\*({all_verdicts})\*\*\s*$",  # bold verdict as full line
         rf"^({all_verdicts})\s*$",  # FAIL (bare line)
     ]
 

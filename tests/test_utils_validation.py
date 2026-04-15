@@ -218,6 +218,50 @@ class TestVerdictFormatExtraction:
         assert is_valid is True
         assert verdict == "NON_COMPLIANT"
 
+    def test_bold_verdict_word_in_prose_not_false_positive(self, tmp_path):
+        """**FAIL**ure in prose should not match — real verdict later should win."""
+        content = (
+            f"# Review\n\n{_PAD}\n\n"
+            "**FAIL**ure modes discussed in the architecture.\n\n"
+            "Verdict: APPROVED\n"
+        )
+        log_file = tmp_path / "false_positive_prose.md"
+        log_file.write_text(content)
+
+        is_valid, verdict, _msg = validate_evaluation_output(str(log_file))
+        assert is_valid is True
+        assert verdict == "APPROVED", f"Should extract APPROVED from Verdict: line, got {verdict}"
+
+    def test_list_item_bold_only_verdict_still_matches(self, tmp_path):
+        """A list-item bold verdict as the only verdict still matches."""
+        content = f"# Review\n\n{_PAD}\n\n- **FAIL**: Correctness issues found\n"
+        log_file = tmp_path / "list_only_verdict.md"
+        log_file.write_text(content)
+
+        is_valid, verdict, _msg = validate_evaluation_output(str(log_file))
+        assert is_valid is True
+        assert verdict == "FAIL"
+
+    def test_standalone_bold_verdict_line_still_matches(self, tmp_path):
+        """A standalone **APPROVED** on its own line still matches."""
+        content = f"# Review\n\n{_PAD}\n\n**APPROVED**\n"
+        log_file = tmp_path / "standalone_bold.md"
+        log_file.write_text(content)
+
+        is_valid, verdict, _msg = validate_evaluation_output(str(log_file))
+        assert is_valid is True
+        assert verdict == "APPROVED"
+
+    def test_bold_verdict_substring_not_matched(self, tmp_path):
+        """**FAIL**ed should not match the bold-line pattern."""
+        content = f"# Review\n\n{_PAD}\n\n**FAIL**ed to meet standards.\n\nVerdict: APPROVED\n"
+        log_file = tmp_path / "bold_substring.md"
+        log_file.write_text(content)
+
+        is_valid, verdict, _msg = validate_evaluation_output(str(log_file))
+        assert is_valid is True
+        assert verdict == "APPROVED", f"Should extract APPROVED, not FAIL from substring, got {verdict}"
+
     def test_bold_key_bold_value(self, tmp_path):
         """Bold key AND bold value: **Verdict**: **FAIL**."""
         content = f"# Review\n\n{_PAD}\n\n**Verdict**: **FAIL**\n"
