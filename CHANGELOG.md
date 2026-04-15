@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-04-15
+
+### Fixed
+- **Verdict extraction for bold markdown** — Gemini Flash evaluators wrapping verdicts in `**FAIL**` or `- **FAIL**: ...` are now correctly parsed (ADV-0072)
+- **All verdict regex patterns line-anchored** — prevents false positives from incidental bold text mid-document (e.g., `**FAIL**ure modes`)
+
+### Changed
+- **Verdict pattern ordering** — higher-specificity patterns (keyed `Verdict:`) match first, bare-line patterns last
+- **Test coverage** — 643+ tests passing; validation.py at 100% coverage with 120 parametrized verdict format tests
+
 ## [0.9.11] - 2026-04-15
 
 ### Changed
@@ -626,6 +636,8 @@ This release specifically improves the agent integration experience by:
 
 ---
 
+[1.0.0]: https://github.com/movito/adversarial-workflow/compare/v0.9.11...v1.0.0
+[0.9.11]: https://github.com/movito/adversarial-workflow/compare/v0.9.10...v0.9.11
 [0.9.2]: https://github.com/movito/adversarial-workflow/compare/v0.9.1...v0.9.2
 [0.9.10]: https://github.com/movito/adversarial-workflow/compare/v0.9.9...v0.9.10
 [0.9.9]: https://github.com/movito/adversarial-workflow/compare/v0.9.8...v0.9.9
