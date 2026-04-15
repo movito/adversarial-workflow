@@ -1,6 +1,6 @@
 # ADV-0072: Fix Verdict Extraction for Bold Markdown Formats
 
-**Status**: In Progress
+**Status**: In Review
 **Priority**: Medium
 **Type**: Bug fix
 **Estimated Effort**: 1-2 hours
@@ -91,3 +91,16 @@ Each verdict name × each format variant:
 - Affects all Gemini-based evaluators (~$0.004/run), which are the most commonly used
 - The evaluation content is correct — only the verdict extraction/display is broken
 - No impact on human-readable output (the log file is fine), only on CLI status reporting
+
+## Review
+
+**PR**: #68
+**Branch**: feature/ADV-0072-fix-verdict-extraction -> main
+
+### Artifacts
+- Review starter: `.kit/context/ADV-0072-REVIEW-STARTER.md`
+- Evaluator review: `.kit/context/reviews/ADV-0072-evaluator-review.md`
+
+### Files Changed
+- `adversarial_workflow/utils/validation.py` (modified)
+- `tests/test_utils_validation.py` (modified)
