@@ -1082,4 +1082,4 @@ Developed by [broadcaster_one](https://github.com/movito) and refined through mo
 
 ---
 
-*Version 1.0.0*
+*Version 0.9.11*

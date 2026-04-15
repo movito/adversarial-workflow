@@ -1,4 +1,4 @@
-# ADV-0071: Fix Version Management + Release 1.0.0
+# ADV-0071: Fix Version Management + Release 0.9.11
 
 **Status**: In Review
 **Priority**: high
