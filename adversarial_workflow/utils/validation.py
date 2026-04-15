@@ -46,9 +46,12 @@ def validate_evaluation_output(
         "|PASS|CONCERNS|FAIL"  # code-reviewer
     )
     verdict_patterns = [
-        rf"Verdict:\s*({all_verdicts})",
-        rf"\*\*Verdict\*\*:\s*({all_verdicts})",
-        rf"^({all_verdicts})\s*$",
+        rf"^\s*Verdict:\s*({all_verdicts})\s*$",
+        rf"^\s*\*\*Verdict\*\*:\s*({all_verdicts})\s*$",
+        rf"^\s*\*\*Verdict\*\*:\s*\*\*({all_verdicts})\*\*\s*$",  # **Verdict**: **FAIL**
+        rf"^\s*[-*]\s+\*\*({all_verdicts})\*\*(?::|\s*$)",  # list item verdict line
+        rf"^\s*\*\*({all_verdicts})\*\*\s*$",  # bold verdict as full line
+        rf"^({all_verdicts})\s*$",  # FAIL (bare line)
     ]
 
     for pattern in verdict_patterns:
