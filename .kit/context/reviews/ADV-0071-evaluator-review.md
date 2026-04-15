@@ -37,3 +37,25 @@
 ### Verdict
 
 - **FAIL**: Correctness bugs found. The inability to run `cli.py` directly is a regression in developer usability and a correctness issue for a script designed to be executable. Robustness gaps regarding package discoverability and test environment assumptions are also present.
+
+---
+
+### Response (Round 2)
+
+**Finding 1 — FIXED**: Reverted `from . import __version__` to direct
+`importlib.metadata.version()` call in `cli.py`. This preserves direct execution
+(`python adversarial_workflow/cli.py`) while still eliminating the hardcoded
+fallback. Both `__init__.py` and `cli.py` call `_get_version("adversarial-workflow")`
+— the lookup mechanism is duplicated but the version value cannot drift since
+both read from the same `pyproject.toml` metadata.
+
+**Finding 2 — By design**: `PackageNotFoundError` propagation is the intentional
+behavior specified in the task spec: "If the package isn't installed,
+`_get_version()` raises `PackageNotFoundError` — this should propagate (not be
+silently swallowed), since an uninstalled package can't run anyway."
+
+**Finding 3 — Improvement over prior behavior**: The old `shutil.which("adversarial")`
+found stale system-wide installs (e.g., `/opt/homebrew/bin/adversarial` reporting
+0.9.9 while the venv had 0.9.10). Using `sys.executable` ensures the subprocess
+tests the same package as the in-process metadata. If pytest runs from a different
+environment than the package, that is a misconfigured test setup.

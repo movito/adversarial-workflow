@@ -23,12 +23,13 @@ import platform
 import shutil
 import subprocess
 import sys
+from importlib.metadata import version as _get_version
 from pathlib import Path
 
 import yaml
 from dotenv import dotenv_values, load_dotenv
 
-from . import __version__
+__version__ = _get_version("adversarial-workflow")
 
 # ANSI color codes for better output
 RESET = "\033[0m"
