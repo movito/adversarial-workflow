@@ -1,6 +1,6 @@
 # ADV-0071: Fix Version Management + Release 1.0.0
 
-**Status**: In Progress
+**Status**: In Review
 **Priority**: high
 **Assigned To**: unassigned
 **Estimated Effort**: 2-3 hours
@@ -217,8 +217,25 @@ After version management is fixed:
 - **CHANGELOG.md**: Release notes
 - **ci-check.sh line 91**: Where pytest is invoked
 
+## Review
+
+**PR**: #67
+**Branch**: feature/ADV-0071-fix-version-management -> main
+
+### Artifacts
+- Review starter: `.kit/context/ADV-0071-REVIEW-STARTER.md`
+- Evaluator review: `.kit/context/reviews/ADV-0071-evaluator-review.md`
+
+### Files Changed
+- `adversarial_workflow/__init__.py` (modified)
+- `adversarial_workflow/cli.py` (modified)
+- `pyproject.toml` (modified)
+- `tests/conftest.py` (modified)
+- `CHANGELOG.md` (modified)
+- `README.md` (modified)
+
 ---
 
 **Template Version**: 2.0.0
 **Project**: adversarial-workflow
-**Last Updated**: 2026-04-14
+**Last Updated**: 2026-04-15
