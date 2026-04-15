@@ -1,3 +1,67 @@
+# Code Review Input: ADV-0071 — Fix Version Management + Release 1.0.0 (Round 2)
+
+## Summary of Changes
+
+Removed hardcoded version fallback strings from `__init__.py` and `cli.py` that drifted
+from `pyproject.toml`, causing `test_version_flag` to fail in subprocess environments.
+Made `pyproject.toml` the single source of truth via `importlib.metadata`. Fixed the
+`run_cli` test fixture to use `sys.executable` instead of PATH search. Bumped to 1.0.0.
+
+## Round 1 Evaluator Findings and Response
+
+Round 1 (code-reviewer-fast / Gemini Flash) returned FAIL with 3 findings:
+
+1. **FIXED — Direct execution regression**: `from . import __version__` was the first
+   relative import in cli.py, breaking `python adversarial_workflow/cli.py` direct execution.
+   Reverted to direct `importlib.metadata.version()` call — no relative import, no hardcoded
+   fallback, preserves shebang + `if __name__ == "__main__"` usage.
+
+2. **By design — PackageNotFoundError propagation**: Task spec explicitly requires this:
+   "If the package isn't installed, `_get_version()` raises `PackageNotFoundError` — this
+   should propagate (not be silently swallowed), since an uninstalled package can't run anyway."
+
+3. **Improvement — sys.executable fixture**: The old `shutil.which("adversarial")` found
+   `/opt/homebrew/bin/adversarial` (stale 0.9.9 system install) while the venv had 0.9.10.
+   Using `sys.executable` ensures subprocess tests the same package as in-process metadata.
+
+## Bot Review Summary
+
+- BugBot: No findings
+- CodeRabbit: 2 threads (both markdownlint on evaluator input/output artifacts) — resolved as cosmetic on non-shipped content
+
+## All Changed Files (complete content)
+
+### adversarial_workflow/__init__.py (COMPLETE FILE)
+
+```python
+"""
+Adversarial Workflow - Multi-stage AI code review system
+
+A package for integrating Author-Evaluator adversarial code review
+into existing projects. Prevents "phantom work" through multi-stage verification.
+
+Usage:
+    pip install adversarial-workflow
+    adversarial init
+    adversarial evaluate task.md
+    adversarial review
+    adversarial validate "pytest"
+"""
+
+from importlib.metadata import version as _get_version
+
+__version__ = _get_version("adversarial-workflow")
+__author__ = "Fredrik Matheson"
+__license__ = "MIT"
+
+from .cli import check, evaluate, init, main, review, validate
+
+__all__ = ["__version__", "check", "evaluate", "init", "main", "review", "validate"]
+```
+
+### adversarial_workflow/cli.py (COMPLETE FILE — 2975 lines)
+
+```python
 #!/usr/bin/env python3
 """
 CLI tool for adversarial workflow package - Enhanced with interactive onboarding.
@@ -23,20 +87,13 @@ import platform
 import shutil
 import subprocess
 import sys
-from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _get_version
 from pathlib import Path
 
 import yaml
 from dotenv import dotenv_values, load_dotenv
 
-try:
-    __version__ = _get_version("adversarial-workflow")
-except PackageNotFoundError:
-    raise RuntimeError(
-        "adversarial-workflow package is not installed. "
-        "Run: pip install adversarial-workflow (or pip install -e '.[dev]' for development)"
-    ) from None
+__version__ = _get_version("adversarial-workflow")
 
 # ANSI color codes for better output
 RESET = "\033[0m"
@@ -2980,3 +3037,541 @@ For more information: https://github.com/movito/adversarial-workflow
 
 if __name__ == "__main__":
     sys.exit(main())
+```
+
+### pyproject.toml (COMPLETE FILE)
+
+```toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adversarial-workflow"
+
+version = "1.0.0"
+
+description = "Multi-stage AI evaluation system for task plans, code review, and test validation"
+readme = "README.md"
+authors = [
+    {name = "Fredrik Matheson"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+]
+keywords = ["code-review", "ai", "llm", "quality", "testing", "litellm"]
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+    "python-dotenv>=0.19.0",
+    "litellm>=1.40.0",
+    "aiohttp>=3.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=3.0",
+    "pytest-asyncio>=0.21.0",
+    "ruff>=0.14.7",
+    "tomli>=2.0; python_version < '3.11'",
+]
+
+[project.urls]
+Homepage = "https://github.com/movito/adversarial-workflow"
+Documentation = "https://github.com/movito/adversarial-workflow/blob/main/README.md"
+Repository = "https://github.com/movito/adversarial-workflow"
+Issues = "https://github.com/movito/adversarial-workflow/issues"
+
+[project.scripts]
+adversarial = "adversarial_workflow.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["adversarial_workflow*"]
+
+[tool.setuptools.package-data]
+adversarial_workflow = ["templates/*", "templates/.*", "templates/agent-context/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+external = ["DK001", "DK002", "DK003", "DK004"]  # Custom pattern lint rules (scripts/pattern_lint.py)
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "W",      # pycodestyle warnings
+    "I",      # isort (import sorting)
+    "N",      # pep8-naming
+    "B",      # flake8-bugbear (defensive coding)
+    "SIM",    # flake8-simplify
+    "ARG",    # unused arguments
+    "UP",     # pyupgrade (modern Python)
+    "S",      # flake8-bandit (security basics)
+    "RUF",    # ruff-specific rules
+]
+ignore = [
+    "E203",   # conflicts with Black-style formatting
+    "S101",   # assert used -- fine in tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ARG", "S", "F841", "SIM103", "SIM105", "SIM117", "RUF059"]
+"scripts/**" = ["S603", "S607", "S110"]
+"adversarial_workflow/cli.py" = ["E501", "E722", "E741", "SIM108", "SIM102", "SIM103", "SIM118", "N806", "S103", "S110", "S310", "S603", "S607", "ARG001", "F841", "RUF001", "RUF013"]
+"adversarial_workflow/evaluators/runner.py" = ["ARG001"]
+"adversarial_workflow/library/client.py" = ["S310"]
+"adversarial_workflow/library/cache.py" = ["SIM105"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "network: marks tests as requiring network access (deselect with '-m not network')",
+]
+```
+
+### tests/conftest.py (COMPLETE FILE)
+
+```python
+"""
+Shared test fixtures for adversarial-workflow tests.
+
+This module provides common fixtures used across all test modules,
+including temporary directories, sample files, and mocked dependencies.
+"""
+
+import os
+import subprocess
+import sys
+from unittest.mock import Mock, patch
+
+import pytest
+
+
+@pytest.fixture
+def tmp_project(tmp_path):
+    """Create a temporary project directory with basic structure."""
+    project_dir = tmp_path / "test_project"
+    project_dir.mkdir()
+
+    # Create basic project structure
+    (project_dir / ".adversarial").mkdir()
+    (project_dir / ".adversarial" / "logs").mkdir()
+
+    # Create a basic config file
+    config_content = """
+project_name: test_project
+openai_api_key: sk-fake-test-key
+stages:
+  - plan_evaluation
+  - implementation
+  - code_review
+  - test_validation
+"""
+    (project_dir / ".adversarial" / "config.yaml").write_text(config_content.strip())
+
+    # Create a basic .env file
+    env_content = "OPENAI_API_KEY=sk-fake-test-key\n"
+    (project_dir / ".env").write_text(env_content)
+
+    return project_dir
+
+
+@pytest.fixture
+def sample_task_content():
+    """Sample task file content for testing."""
+    return """# TEST-001: Sample Test Task
+
+**Status**: Todo
+**Priority**: Medium
+**Assigned To**: test-agent
+**Estimated Effort**: 1 hour
+
+## Overview
+
+This is a sample task for testing the adversarial workflow system.
+
+## Requirements
+
+### Functional Requirements
+1. Implement a simple function
+2. Add basic error handling
+3. Include unit tests
+
+### Non-Functional Requirements
+- Performance: Function should complete in <100ms
+- Maintainability: Clear documentation
+
+## Implementation Plan
+
+### Files to Create
+1. `src/test_function.py` - Main implementation
+2. `tests/test_test_function.py` - Unit tests
+
+### Approach
+Simple implementation with proper error handling.
+
+## Acceptance Criteria
+
+- Function works correctly
+- Tests pass
+- Documentation is clear
+
+## Success Metrics
+
+- All tests pass
+- Code coverage >80%
+"""
+
+
+@pytest.fixture
+def sample_task_file(tmp_project, sample_task_content):
+    """Create a sample task file in the test project."""
+    task_file = tmp_project / "test_task.md"
+    task_file.write_text(sample_task_content)
+    return task_file
+
+
+@pytest.fixture
+def mock_subprocess():
+    """Mock subprocess.run calls to avoid running actual subprocess commands."""
+    with patch("subprocess.run") as mock_run:
+        from unittest.mock import Mock
+
+        mock_run.return_value = Mock(
+            returncode=0, stdout="Command completed successfully", stderr=""
+        )
+        yield mock_run
+
+
+@pytest.fixture
+def mock_openai_api():
+    """Mock OpenAI API calls to avoid actual API requests during tests."""
+    with patch("openai.ChatCompletion.create") as mock_create:
+        mock_create.return_value = Mock(
+            choices=[Mock(message=Mock(content="Test response from mocked OpenAI"))]
+        )
+        yield mock_create
+
+
+@pytest.fixture
+def sample_config():
+    """Sample configuration dictionary for testing."""
+    return {
+        "project_name": "test_project",
+        "openai_api_key": "sk-fake-test-key",
+        "stages": [
+            "plan_evaluation",
+            "implementation",
+            "code_review",
+            "test_validation",
+        ],
+        "working_directory": "/tmp/test",
+        "output_directory": ".adversarial/logs",
+    }
+
+
+@pytest.fixture
+def mock_file_operations():
+    """Mock file system operations for isolated testing."""
+    mocks = {}
+    with (
+        patch("pathlib.Path.exists") as mock_exists,
+        patch("pathlib.Path.is_file") as mock_is_file,
+        patch("pathlib.Path.is_dir") as mock_is_dir,
+    ):
+        # Default to files/dirs existing
+        mock_exists.return_value = True
+        mock_is_file.return_value = True
+        mock_is_dir.return_value = True
+
+        mocks["exists"] = mock_exists
+        mocks["is_file"] = mock_is_file
+        mocks["is_dir"] = mock_is_dir
+
+        yield mocks
+
+
+@pytest.fixture(autouse=True)
+def change_test_dir(tmp_project):
+    """Change to temporary directory for each test to avoid side effects."""
+    old_cwd = os.getcwd()
+    os.chdir(tmp_project)
+    yield
+    os.chdir(old_cwd)
+
+
+@pytest.fixture
+def cli_python():
+    """Get Python interpreter path that has adversarial_workflow installed.
+
+    Always uses sys.executable (the Python running pytest) to ensure the
+    subprocess tests the same package version as the in-process metadata.
+    Previous approach used shutil.which("adversarial") which could find
+    stale system-wide installs with different versions.
+    """
+    return sys.executable
+
+
+@pytest.fixture
+def run_cli(cli_python):
+    """Helper fixture to run CLI commands in subprocess.
+
+    Uses ``python -m adversarial_workflow.cli`` to ensure the subprocess
+    runs the same editable install as the test runner.
+
+    Usage:
+        result = run_cli(["check"], cwd=tmp_path, env=env)
+    """
+
+    def _run_cli(args, **kwargs):
+        cmd = [cli_python, "-m", "adversarial_workflow.cli", *args]
+        return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
+
+    return _run_cli
+```
+
+### tests/test_cli.py (COMPLETE FILE)
+
+```python
+"""
+Tests for the adversarial CLI.
+
+Comprehensive smoke tests for all CLI commands to ensure basic functionality
+works correctly before refactoring the monolithic cli.py.
+"""
+
+from importlib.metadata import version
+from unittest.mock import Mock, patch
+
+from adversarial_workflow.cli import check, health, load_config, main
+
+
+class TestCLISmoke:
+    """Basic smoke tests to verify CLI is functional."""
+
+    def test_version_flag(self, run_cli):
+        """Test that --version returns version info."""
+        result = run_cli(["--version"])
+        assert result.returncode == 0
+
+        expected_version = version("adversarial-workflow")
+        assert expected_version in result.stdout or expected_version in result.stderr
+
+    def test_help_flag(self, run_cli):
+        """Test that --help returns help text."""
+        result = run_cli(["--help"])
+        assert result.returncode == 0
+        help_text = result.stdout.lower()
+        assert any(cmd in help_text for cmd in ["evaluate", "init", "check", "health"])
+
+    def test_no_command_shows_help(self, run_cli):
+        """Test that no command shows help text."""
+        result = run_cli([])
+        assert result.returncode == 0
+        help_text = result.stdout.lower()
+        assert "usage" in help_text or "help" in help_text
+
+    def test_evaluate_without_file_shows_error(self, run_cli):
+        """Test that evaluate without a file shows an error."""
+        result = run_cli(["evaluate"])
+        # Should fail because no file was provided
+        assert result.returncode != 0
+
+    def test_init_help(self, run_cli):
+        """Test that init command help works."""
+        result = run_cli(["init", "--help"])
+        assert result.returncode == 0
+        assert "workflow" in result.stdout.lower() or "init" in result.stdout.lower()
+
+    def test_check_help(self, run_cli):
+        """Test that check command help works."""
+        result = run_cli(["check", "--help"])
+        assert result.returncode == 0
+        assert "validate" in result.stdout.lower() or "check" in result.stdout.lower()
+
+    def test_health_help(self, run_cli):
+        """Test that health command help works."""
+        result = run_cli(["health", "--help"])
+        assert result.returncode == 0
+        assert "health" in result.stdout.lower()
+
+
+class TestCLIDirectImport:
+    """Test CLI functions by importing them directly."""
+
+    def test_main_function_exists(self):
+        """Test that main function can be imported."""
+        assert callable(main)
+
+    def test_load_config_function_exists(self):
+        """Test that load_config function can be imported."""
+        assert callable(load_config)
+
+    def test_check_function_exists(self):
+        """Test that check function can be imported."""
+        assert callable(check)
+
+    def test_health_function_exists(self):
+        """Test that health function can be imported."""
+        assert callable(health)
+
+    @patch("sys.argv", ["adversarial", "--version"])
+    @patch("sys.exit")
+    def test_main_with_version_arg(self, mock_exit):
+        """Test main function with version argument."""
+        with patch("builtins.print") as mock_print:
+            try:
+                main()
+            except SystemExit:
+                pass
+        # Should have called print or exit
+        assert mock_exit.called or mock_print.called
+
+    @patch("sys.argv", ["adversarial"])
+    def test_main_with_no_args(self):
+        """Test main function with no arguments shows help."""
+        result = main()
+        # Should return 0 (showing help is not an error)
+        assert result == 0
+
+    @patch("os.path.exists", return_value=False)
+    def test_load_config_missing_file(self, mock_exists):
+        """Test load_config with missing config file."""
+        result = load_config("nonexistent.yaml")
+        # Should return default configuration for missing file
+        assert isinstance(result, dict)
+        assert "evaluator_model" in result
+
+    @patch("subprocess.run")
+    def test_check_function_basic(self, mock_run):
+        """Test check function basic execution."""
+        mock_run.return_value = Mock(returncode=0, stdout="", stderr="")
+        # Should not raise an exception
+        result = check()
+        # check() function should return an integer exit code
+        assert isinstance(result, int)
+
+    @patch("subprocess.run")
+    def test_health_function_basic(self, mock_run):
+        """Test health function basic execution."""
+        mock_run.return_value = Mock(returncode=0, stdout="", stderr="")
+        # Should not raise an exception
+        result = health()
+        # health() function should return an integer exit code
+        assert isinstance(result, int)
+
+
+class TestCLIErrorHandling:
+    """Test CLI error handling scenarios."""
+
+    def test_invalid_command(self, run_cli):
+        """Test that invalid command shows error."""
+        result = run_cli(["invalid_command"])
+        # Should show help (return code 1) for invalid command
+        assert result.returncode != 0 or "usage" in result.stdout.lower()
+
+    def test_evaluate_with_nonexistent_file(self, run_cli):
+        """Test evaluate command with nonexistent file."""
+        result = run_cli(["evaluate", "nonexistent.md"])
+        # Should fail with appropriate error
+        assert result.returncode != 0
+
+    def test_agent_without_subcommand(self, run_cli):
+        """Test agent command without subcommand shows error."""
+        result = run_cli(["agent"])
+        # Should fail and show usage
+        assert result.returncode != 0
+```
+
+### CHANGELOG.md (first 50 lines — 1.0.0 section)
+
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.0.0] - 2026-04-14
+
+### Changed
+- **`.kit/` directory migration** — builder infrastructure moved into `.kit/` hierarchy (ADV-0068)
+- **Root declutter** — root reduced from 15 to 9 files; manifest upgraded to v2.0.0 (ADV-0069)
+- **docs/ consolidation** — 9 subdirectories → 4: adr/, archive/, guides/, reference/ (ADV-0070)
+- **Agent definitions** — updated to latest models with standardized frontmatter metadata
+- **Monitoring sub-agent** — now runs in worktree isolation with no-commit guardrail
+- **Version management** — removed hardcoded fallback versions; single source of truth via pyproject.toml
+
+### Removed
+- 7 obsolete agent definitions (v1, v3, v4, sonnet-v3, planner, test-runner, ci-checker)
+- `docs/decisions/` nesting layer — ADRs now at `docs/adr/` directly
+- Historical docs directories consolidated into `docs/archive/`
+
+### Fixed
+- **Launcher scripts** — PROJECT_ROOT resolution fixed after .kit/ migration
+- **Bot-watcher agent reference** — replaced non-existent agent type with general-purpose
+- **Version fallback** — removed stale hardcoded version strings that caused test failures
+
+## [0.9.10] - 2026-04-13
+
+### Removed
+
+- **Aider dependency** — all evaluators now use LiteLLM directly (ADV-0065, ADV-0066)
+- Dead shell scripts (`.adversarial/scripts/`), templates, and investigation files
+- `shutil.which("aider")` checks from CLI `init`, `check`, `evaluate`, `review`, `validate` commands
+- `pip install aider-chat` from CI workflow
+- Python <3.13 upper bound constraint (Python 3.13+ now supported)
+- Aider references from README, SETUP, QUICK_START, and agent docs
+- ~420 lines of dead/duplicate verdict-extraction code from `cli.evaluate()` (ADV-0067)
+- Orphaned helper functions (`verify_token_count`, `extract_verdict`, `get_evaluation_summary`, `format_verdict_message`) and unused `import re`, `import glob`
+
+### Changed
+
+- `adversarial init` no longer creates `.aider.conf.yml`
+- `adversarial check` no longer validates aider installation
+- Updated user-facing docs to reference LiteLLM instead of aider
+- `cli.evaluate()` now follows the same clean pattern as `cli.review()` — delegates fully to `run_evaluator()` (ADV-0067)
+
+### Fixed
+```
+
+### README.md (last 10 lines — version footer)
+
+```markdown
+
+## Credits
+
+Developed by [broadcaster_one](https://github.com/movito) and refined through months of production use on the thematic-cuts project.
+
+**Inspired by**: The realization that AI needs AI to keep it honest.
+
+---
+
+*Version 1.0.0*
+```
+
+## Test Results
+
+- 530/530 tests pass
+- ci-check.sh fully green (format, lint, pattern lint, tests)
+- CI green on GitHub for all commits

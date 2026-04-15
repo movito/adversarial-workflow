@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.11] - 2026-04-15
+
+### Changed
+- **`.kit/` directory migration** — builder infrastructure moved into `.kit/` hierarchy (ADV-0068)
+- **Root declutter** — root reduced from 15 to 9 files; manifest upgraded to v2.0.0 (ADV-0069)
+- **docs/ consolidation** — 9 subdirectories → 4: adr/, archive/, guides/, reference/ (ADV-0070)
+- **Agent definitions** — updated to latest models with standardized frontmatter metadata
+- **Monitoring sub-agent** — now runs in worktree isolation with no-commit guardrail
+- **Version management** — removed hardcoded fallback versions; single source of truth via pyproject.toml
+
+### Removed
+- 7 obsolete agent definitions (v1, v3, v4, sonnet-v3, planner, test-runner, ci-checker)
+- `docs/decisions/` nesting layer — ADRs now at `docs/adr/` directly
+- Historical docs directories consolidated into `docs/archive/`
+
+### Fixed
+- **Launcher scripts** — PROJECT_ROOT resolution fixed after .kit/ migration
+- **Bot-watcher agent reference** — replaced non-existent agent type with general-purpose
+- **Version fallback** — removed stale hardcoded version strings that caused test failures
+
 ## [0.9.10] - 2026-04-13
 
 ### Removed

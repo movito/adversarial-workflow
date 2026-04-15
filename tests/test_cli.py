@@ -8,6 +8,8 @@ works correctly before refactoring the monolithic cli.py.
 from importlib.metadata import version
 from unittest.mock import Mock, patch
 
+import pytest
+
 from adversarial_workflow.cli import check, health, load_config, main
 
 
@@ -124,6 +126,44 @@ class TestCLIDirectImport:
         result = health()
         # health() function should return an integer exit code
         assert isinstance(result, int)
+
+
+class TestVersionNotInstalled:
+    """Test behavior when package metadata is unavailable."""
+
+    def test_init_raises_helpful_error_when_not_installed(self):
+        """RuntimeError with install instructions when package not found."""
+        import importlib
+        from importlib.metadata import PackageNotFoundError
+
+        import adversarial_workflow
+
+        with patch(
+            "importlib.metadata.version",
+            side_effect=PackageNotFoundError("adversarial-workflow"),
+        ):
+            with pytest.raises(RuntimeError, match="pip install"):
+                importlib.reload(adversarial_workflow)
+
+        # Restore the module to its normal state so other tests aren't affected
+        importlib.reload(adversarial_workflow)
+
+    def test_cli_raises_helpful_error_when_not_installed(self):
+        """cli.py RuntimeError with install instructions when package not found."""
+        import importlib
+        from importlib.metadata import PackageNotFoundError
+
+        from adversarial_workflow import cli
+
+        with patch(
+            "importlib.metadata.version",
+            side_effect=PackageNotFoundError("adversarial-workflow"),
+        ):
+            with pytest.raises(RuntimeError, match="pip install"):
+                importlib.reload(cli)
+
+        # Restore the module to its normal state so other tests aren't affected
+        importlib.reload(cli)
 
 
 class TestCLIErrorHandling:
