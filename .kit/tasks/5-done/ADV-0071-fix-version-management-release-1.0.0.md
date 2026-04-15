@@ -1,6 +1,6 @@
 # ADV-0071: Fix Version Management + Release 0.9.11
 
-**Status**: In Review
+**Status**: Done
 **Priority**: high
 **Assigned To**: unassigned
 **Estimated Effort**: 2-3 hours
