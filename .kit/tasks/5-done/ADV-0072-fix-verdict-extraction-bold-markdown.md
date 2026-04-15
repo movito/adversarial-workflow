@@ -1,6 +1,6 @@
 # ADV-0072: Fix Verdict Extraction for Bold Markdown Formats
 
-**Status**: In Review
+**Status**: Done
 **Priority**: Medium
 **Type**: Bug fix
 **Estimated Effort**: 1-2 hours
