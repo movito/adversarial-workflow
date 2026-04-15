@@ -132,7 +132,7 @@ class TestVersionNotInstalled:
     """Test behavior when package metadata is unavailable."""
 
     def test_init_raises_helpful_error_when_not_installed(self):
-        """PackageNotFoundError includes install instructions when package not found."""
+        """RuntimeError with install instructions when package not found."""
         import importlib
         from importlib.metadata import PackageNotFoundError
 
@@ -142,14 +142,14 @@ class TestVersionNotInstalled:
             "importlib.metadata.version",
             side_effect=PackageNotFoundError("adversarial-workflow"),
         ):
-            with pytest.raises(PackageNotFoundError, match="pip install"):
+            with pytest.raises(RuntimeError, match="pip install"):
                 importlib.reload(adversarial_workflow)
 
         # Restore the module to its normal state so other tests aren't affected
         importlib.reload(adversarial_workflow)
 
     def test_cli_raises_helpful_error_when_not_installed(self):
-        """cli.py PackageNotFoundError includes install instructions when package not found."""
+        """cli.py RuntimeError with install instructions when package not found."""
         import importlib
         from importlib.metadata import PackageNotFoundError
 
@@ -159,7 +159,7 @@ class TestVersionNotInstalled:
             "importlib.metadata.version",
             side_effect=PackageNotFoundError("adversarial-workflow"),
         ):
-            with pytest.raises(PackageNotFoundError, match="pip install"):
+            with pytest.raises(RuntimeError, match="pip install"):
                 importlib.reload(cli)
 
         # Restore the module to its normal state so other tests aren't affected

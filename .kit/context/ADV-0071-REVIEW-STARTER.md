@@ -31,16 +31,16 @@
 
 ## Automated Review Summary
 
-- **BugBot**: No findings
-- **CodeRabbit**: 1 thread (markdownlint on evaluator input artifact) — resolved as cosmetic on non-shipped content
-- **Code-review evaluator** (Gemini Flash): FAIL verdict with 3 findings, all triaged as by-design:
-  1. Direct `python cli.py` execution fails — expected Python packaging behavior, never supported
-  2. `PackageNotFoundError` propagation — intentional design choice per task spec
-  3. `sys.executable` fixture assumes same environment — improvement over previous behavior
+- **BugBot (Cursor)**: 1 finding — garbled `PackageNotFoundError` message (FIXED: switched to `RuntimeError`)
+- **CodeRabbit**: 2 markdownlint threads on evaluator artifacts (resolved as cosmetic)
+- **Code-review evaluator** (3 rounds: Gemini Flash x2 + o1):
+  - R1: Direct execution regression via relative import → FIXED (reverted to direct `importlib.metadata` call)
+  - R2: 4 pre-existing concerns in other cli.py functions (not our changes)
+  - R3 (o1): No correctness bugs. Single untested path (PackageNotFoundError) → FIXED (added tests + helpful RuntimeError)
 
 ## Areas for Review Focus
 
-- **Circular import safety**: `cli.py` does `from . import __version__` while `__init__.py` does `from .cli import ...`. This works because `__version__` is set BEFORE the `.cli` import in `__init__.py`. Verify this ordering is robust.
+- **Version lookup in both files**: Both `__init__.py` and `cli.py` call `_get_version("adversarial-workflow")`. This duplicates the lookup mechanism but NOT any version string — both read from the same pyproject.toml metadata. A relative import would be DRYer but breaks direct `python adversarial_workflow/cli.py` execution (cli.py has shebang + `if __name__ == "__main__"` with no other relative imports).
 - **Test fixture change**: `run_cli` now always uses `python -m adversarial_workflow.cli` instead of the `adversarial` command. This ensures version consistency but changes how CLI tests execute.
 - **Post-merge**: Create git tag `v1.0.0` after merge.
 

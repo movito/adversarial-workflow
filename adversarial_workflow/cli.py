@@ -33,8 +33,8 @@ from dotenv import dotenv_values, load_dotenv
 try:
     __version__ = _get_version("adversarial-workflow")
 except PackageNotFoundError:
-    raise PackageNotFoundError(
-        "adversarial-workflow is not installed. "
+    raise RuntimeError(
+        "adversarial-workflow package is not installed. "
         "Run: pip install adversarial-workflow (or pip install -e '.[dev]' for development)"
     ) from None
 
