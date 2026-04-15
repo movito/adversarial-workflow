@@ -1,129 +1,95 @@
 # Task Completion Protocol
 
 **Purpose**: Standard process for completing implementation tasks
-**Agent**: All agents that complete implementation tasks
-**Last Updated**: 2025-11-01
+**Agents**: Planner (post-completion), feature-developer (handoff creation)
+**Last Updated**: 2026-04-15
 
 ---
 
 ## When to Use
 
-- ✅ When all implementation work is complete
-- ✅ Before handing off to coordinator or other agent
-- ✅ Before marking task as COMPLETE in `delegation/`
+- After PR is merged and task is done
+- Before marking task as complete in `.kit/tasks/5-done/`
 
 ---
 
-## Completion Checklist
+## Feature-Developer Checklist (Before Merge)
 
-1. ✅ **All deliverables implemented** as specified in task file
-2. ✅ **All tests passing** (or properly xfailed with justification)
-3. ✅ **Code committed to git** with descriptive message
-4. ✅ **No regressions introduced** (overall pass rate maintained or improved)
-5. ✅ **Documentation updated** (README, CHANGELOG, ADRs if applicable)
-6. ✅ **CI/CD passing** (GitHub Actions green)
-7. ✅ **Handoff document created** (`.kit/context/archive/HANDOFF-TO-*.md`)
+1. ✅ All acceptance criteria met
+2. ✅ All tests passing (no regressions)
+3. ✅ CI/CD green on GitHub
+4. ✅ Bot reviews addressed (CodeRabbit, BugBot)
+5. ✅ Evaluator review run and findings dispositioned
+6. ✅ Review starter created at `.kit/context/{TASK-ID}-REVIEW-STARTER.md`
+7. ✅ Retro written at `.kit/context/retros/{TASK-ID}-retro.md`
+8. ✅ Task moved to `4-in-review/`
+
+---
+
+## Planner Post-Completion Checklist (After Merge)
+
+1. ✅ Move task to `5-done/`: `./scripts/core/project complete {TASK-ID}`
+2. ✅ Update `agent-handoffs.json` — agent status, recent_completions, pending_tasks
+3. ✅ Extract review insights → append to `REVIEW-INSIGHTS.md` (KIT-ADR-0019)
+4. ✅ **Archive task artifacts** — move from `.kit/context/` top level to `archive/`:
+   ```bash
+   git mv .kit/context/{TASK-ID}-HANDOFF-*.md .kit/context/archive/
+   git mv .kit/context/{TASK-ID}-REVIEW-STARTER.md .kit/context/archive/
+   ```
+5. ✅ Update `current-state.json` if project state changed (version, metrics)
+6. ✅ Commit all post-completion changes to main
+7. ✅ Verify CI passes on main
+
+**Rule**: No task-specific files (`{TASK-ID}-*`) should remain at `.kit/context/`
+top level after post-completion. See `.kit/context/README.md` for the top-level
+convention.
 
 ---
 
 ## Handoff Document Format
 
-### Filename:
+### Filename
 ```
-.kit/context/archive/HANDOFF-TO-<AGENT>-TASK-YYYY-####.md
+.kit/context/{TASK-ID}-HANDOFF-{agent-type}.md
 ```
 
-### Required Sections:
+### Required Sections
 
 ```markdown
 ## Task Summary
 Brief description of the task and its purpose
 
-## What Was Implemented
-Detailed description of what you actually built/fixed
+## Implementation Guidance
+Detailed technical guidance for the implementing agent
 
-## Deliverables
-- ✅ Deliverable 1 (with status/location)
-- ✅ Deliverable 2
-- ✅ Deliverable 3
+## Acceptance Criteria
+Checkboxes from the task spec
 
-## Test Results
-- Before: XXX/350 tests passing (XX.X%)
-- After: YYY/350 tests passing (YY.Y%)
-- New tests added: Z
-- Regressions: None / List any
+## Key Files
+- path/to/file.py — what to modify and why
 
-## Files Modified/Created
-- path/to/file1.py (description)
-- path/to/file2.py (description)
-- tests/test_new_feature.py (NEW - Z tests)
-
-## Commits
-- abc1234 - feat: Add new feature
-- def5678 - test: Add comprehensive tests
-- ghi9012 - docs: Update README
-
-## Technical Notes
-Any important implementation details, design decisions, or caveats
-
-## Known Issues (if any)
-List any issues you discovered but didn't fix
-
-## Next Steps (for receiving agent)
-What should the next agent do with this?
+## Notes
+Evaluation history, dependencies, edge cases
 ```
 
 ---
 
-## Workflow Steps
+## Review Starter Format
 
-1. **Verify all deliverables complete** (check task file)
-2. **Run full test suite**: `pytest tests/ -v`
-3. **Review git status**: Ensure all changes committed
-4. **Create handoff document** in `.kit/context/archive/`
-5. **Update `.kit/context/agent-handoffs.json`** with task completion
-6. **Stage and commit** handoff + agent-handoffs.json update
-7. **Push to remote repository**
-8. **Notify coordinator** (or wait for coordinator to pick up)
+### Filename
+```
+.kit/context/{TASK-ID}-REVIEW-STARTER.md
+```
 
----
+### Required Sections
 
-## Best Practices
-
-### ✅ DO:
-- Be thorough - don't skip checklist items
-- Include test metrics in handoff (before/after pass rates)
-- Document any known issues or limitations honestly
-- Provide clear next steps for coordinator/user
-- Update agent-handoffs.json status to "task_complete"
-
-### ❌ DON'T:
-- Don't mark task complete if tests are failing
-- Don't skip handoff document (critical for coordination)
-- Don't leave uncommitted changes
-- Don't claim 100% completion if known issues exist
+See template: `.kit/context/templates/review-starter-template.md`
 
 ---
 
-## Example Handoff Document
+## Related Workflows
 
-See existing handoffs for examples:
-- `.kit/context/archive/SCRIPTWRITER-MVP-IMPLEMENTATION-COMPLETE.md`
-- `.kit/context/archive/HANDOFF-TO-FEATURE-DEVELOPER-TASK-2025-0037.md`
-- `.kit/context/archive/TASK-P3-001-IMPLEMENTATION-COMPLETE.md`
-
----
-
-## Documentation
-
-- **Quick Reference**: `.kit/context/PROCEDURAL-KNOWLEDGE-INDEX.md`
-- **Full Protocol**: This document
-- **Handoff Examples**: `.kit/context/archive/*.md`
-- **Task Templates**: `.kit/tasks/9-reference/templates/task-template.md`
-
----
-
-**Related Workflows**:
-- [TESTING-WORKFLOW.md](./TESTING-WORKFLOW.md) - Verify tests before completion
-- [COMMIT-PROTOCOL.md](./COMMIT-PROTOCOL.md) - Commit changes properly
-- [Evaluation Workflow](../../.adversarial/docs/EVALUATION-WORKFLOW.md) - For coordinators assigning tasks
+- [TESTING-WORKFLOW.md](./TESTING-WORKFLOW.md) — verify tests before completion
+- [COMMIT-PROTOCOL.md](./COMMIT-PROTOCOL.md) — commit changes properly
+- [COVERAGE-WORKFLOW.md](./COVERAGE-WORKFLOW.md) — coverage requirements
+- [Evaluation Workflow](../../.adversarial/docs/EVALUATION-WORKFLOW.md) — pre-assignment evaluation
