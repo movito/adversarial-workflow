@@ -12,9 +12,16 @@ Usage:
     adversarial validate "pytest"
 """
 
+from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _get_version
 
-__version__ = _get_version("adversarial-workflow")
+try:
+    __version__ = _get_version("adversarial-workflow")
+except PackageNotFoundError:
+    raise PackageNotFoundError(
+        "adversarial-workflow is not installed. "
+        "Run: pip install adversarial-workflow (or pip install -e '.[dev]' for development)"
+    ) from None
 __author__ = "Fredrik Matheson"
 __license__ = "MIT"
 

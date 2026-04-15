@@ -23,13 +23,20 @@ import platform
 import shutil
 import subprocess
 import sys
+from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _get_version
 from pathlib import Path
 
 import yaml
 from dotenv import dotenv_values, load_dotenv
 
-__version__ = _get_version("adversarial-workflow")
+try:
+    __version__ = _get_version("adversarial-workflow")
+except PackageNotFoundError:
+    raise PackageNotFoundError(
+        "adversarial-workflow is not installed. "
+        "Run: pip install adversarial-workflow (or pip install -e '.[dev]' for development)"
+    ) from None
 
 # ANSI color codes for better output
 RESET = "\033[0m"
