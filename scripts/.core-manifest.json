@@ -37,7 +37,7 @@
     ],
     "kit_builder": [
       ".kit/templates/",
-      ".kit/skills/",
+
       ".kit/launchers/",
       ".kit/adr/",
       ".kit/docs/",
