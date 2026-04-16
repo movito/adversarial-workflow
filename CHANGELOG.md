@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-04-17
+
+### Changed
+- **Development status** — upgraded PyPI classifier from `4 - Beta` to `5 - Production/Stable` to match v1.0.0 release
+- **Removed redundant license classifier** — `License :: OSI Approved :: MIT License` dropped (inferred from license field)
+
 ## [1.0.0] - 2026-04-15
 
 ### Fixed
