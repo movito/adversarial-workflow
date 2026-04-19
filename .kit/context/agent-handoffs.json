@@ -1,55 +1,55 @@
 {
   "project": "adversarial-workflow",
   "description": "Multi-stage AI code review system - PyPI package",
-  "last_updated": "2026-04-15",
+  "last_updated": "2026-04-19",
   "agents": {
     "planner": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0072 post-completion done. PR #68 merged, 4 threads, 3 bot rounds. 1.0.0 unblocked.",
-      "details_link": ".kit/tasks/5-done/ADV-0072-fix-verdict-extraction-bold-markdown.md"
+      "brief_note": "v1.0.0 + v1.0.1 released to PyPI and GitHub. All releases complete.",
+      "details_link": null
     },
     "feature-developer-v5": {
       "status": "idle",
       "current_task": null,
-      "brief_note": "ADV-0072 delivered and merged (PR #68). 4 threads, 3 bot rounds, 5 commits.",
+      "brief_note": "ADV-0072 was last task delivered (PR #68). No active work.",
       "details_link": ".kit/context/retros/ADV-0072-retro.md"
     }
   },
   "recent_completions": [
-    "ADV-0072: Fix verdict extraction bold-markdown regex - PR #68 merged, 4 threads, 3 rounds (2026-04-15)",
-    "ADV-0071: Fix version management + release 0.9.11 - PR #67 merged, 7 threads, 3 rounds (2026-04-15)",
-    "ADV-0070: Consolidate docs/ folder structure - PR #66 merged, 3 threads, 1 round (2026-04-14)",
-    "ADV-0069: Root declutter + manifest v2.0.0 - PR #65 merged, 2 threads, 1 round (2026-04-14)",
-    "ADV-0068: Migrate to .kit/ directory layout - PR #64 merged, 13 threads, 2 fix rounds, 5 commits (2026-04-13)",
-    "ADV-0067: Fix pre-existing CLI issues - PR #63 merged, ~420 lines removed, 2 bot rounds (2026-04-13)",
-    "ADV-0066: Remove aider remnants - PR #61 merged, 46 files, -6956 lines, 4 bot rounds (2026-04-13)",
-    "ADV-0065: Replace Aider with LiteLLM - PR #60 merged, 14 threads, 2 fix rounds (2026-04-10)",
-    "ADV-0057: Review script robustness - PR #56 merged, 0 bot rounds (2026-03-21)",
-    "ADV-0035: Evaluator runner test coverage - PR #55 merged, 100% coverage (2026-03-20)"
+    "v1.0.1: Release — Production/Stable classifier, license cleanup (2026-04-17)",
+    "v1.0.0: Release — verdict extraction fix, 644 tests passing (2026-04-15)",
+    "ADV-0072: Fix verdict extraction bold-markdown regex - PR #68 merged (2026-04-15)",
+    "ADV-0071: Fix version management + release 0.9.11 - PR #67 merged (2026-04-15)",
+    "ADV-0070: Consolidate docs/ folder structure - PR #66 merged (2026-04-14)",
+    "ADV-0069: Root declutter + manifest v2.0.0 - PR #65 merged (2026-04-14)",
+    "ADV-0068: Migrate to .kit/ directory layout - PR #64 merged (2026-04-13)",
+    "ADV-0067: Fix pre-existing CLI issues - PR #63 merged (2026-04-13)",
+    "ADV-0066: Remove aider remnants - PR #61 merged (2026-04-13)",
+    "ADV-0065: Replace Aider with LiteLLM - PR #60 merged (2026-04-10)"
   ],
   "pending_tasks": [
+    "ADV-0062: Sanity architecture evaluation (todo)",
     "ADV-0034: CLI library test coverage (backlog)",
     "ADV-0036: Library module test coverage (backlog)",
-    "ADV-0055: Enhance health check (backlog, fold into ADV-0056)",
+    "ADV-0055: Enhance health check (backlog)",
     "ADV-0056: adversarial upgrade command (backlog)",
-    "ADV-0063: Fix triage-threads jq quoting (backlog, workflow freeze)",
-    "ADV-0064: Review script deep hardening (backlog, 8 latent items)"
+    "ADV-0063: Fix triage-threads jq quoting (backlog)",
+    "ADV-0064: Review script deep hardening (backlog)"
   ],
   "blocked_items": [],
   "architecture_status": {
-    "current_version": "0.9.11",
-    "next_minor": "1.0.0 (unblocked — ADV-0072 merged)",
+    "current_version": "1.0.1",
     "registry_schema": "1.0 - Published in library repo",
     "evaluator_library": "v0.5.3 (all 26 items from issue #12 fixed)",
     "transport": "LiteLLM (direct API calls, no subprocess)",
     "python_support": "3.10-3.13+",
-    "agents": "9 definitions (7 deleted in cleanup), all on claude-sonnet-4-6 / claude-opus-4-6"
+    "agents": "9 definitions, all on claude-sonnet-4-6 / claude-opus-4-6"
   },
   "conventions": {
     "handoffs": ".kit/context/[TASK-ID]-HANDOFF-[agent].md",
     "review_starters": ".kit/context/[TASK-ID]-REVIEW-STARTER.md",
     "reviews": ".kit/context/reviews/[TASK-ID]-review.md"
   },
-  "notes": "v0.9.11 released (ADV-0071). ADV-0072 merged — verdict extraction fixed for bold markdown (Gemini Flash evaluators). 1.0.0 unblocked. Tests: 643+ passing."
+  "notes": "v1.0.1 released to PyPI + GitHub. 644 tests passing. Project stable. Backlog has 6 tasks, 1 in todo."
 }

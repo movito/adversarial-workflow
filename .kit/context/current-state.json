@@ -1,7 +1,7 @@
 {
   "project": {
     "name": "adversarial-workflow",
-    "version": "0.9.9",
+    "version": "1.0.1",
     "description": "Multi-stage AI code review CLI tool",
     "created": "2024-10-20",
     "languages": ["python"]
@@ -13,18 +13,19 @@
     "task_prefix": "ADV"
   },
   "metrics": {
-    "tasks_created": 58,
-    "tasks_completed": 44,
-    "agents_active": 1,
-    "test_pass_rate": null,
-    "coverage": null
+    "tasks_created": 72,
+    "tasks_completed": 58,
+    "agents_active": 0,
+    "test_count": 644,
+    "test_pass_rate": "100%",
+    "coverage": "66%"
   },
   "recent_activity": [
-    "ADV-0054: Fix 4 bugs in adversarial review pipeline",
-    "ADV-0045: Sync settings.json + pre-commit hooks",
-    "ADV-0049: Sync pattern_lint + tests",
-    "ADV-0048: Fix find_task_file boundary matching",
-    "ADV-0046: CLAUDE.md & sync documentation (in progress)"
+    "v1.0.1: Released to PyPI — Production/Stable classifier (2026-04-17)",
+    "v1.0.0: Released to PyPI — verdict extraction fix (2026-04-15)",
+    "ADV-0072: Fix verdict extraction for bold markdown (2026-04-15)",
+    "ADV-0071: Fix version management, release 0.9.11 (2026-04-15)",
+    "ADV-0070: Consolidate docs/ to 4 subdirs (2026-04-14)"
   ],
   "starter_kit_sync": {
     "last_synced": "2026-03-15",
@@ -33,22 +34,12 @@
     "source_date": "2026-03-07",
     "synced_components": [
       ".claude/commands/ (slash commands — ADV-0040)",
-      ".claude/skills/ + .agent-context/workflows/ + patterns.yml (ADV-0041/0050)",
+      ".claude/skills/ + .kit/context/workflows/ + patterns.yml (ADV-0041/0050)",
       ".claude/agents/ (11 take-upstream — ADV-0043)",
       ".claude/settings.json + .pre-commit-config.yaml (ADV-0045)",
       "scripts/core/ (14 files — ADV-0047/0048/0052)",
       "CLAUDE.md (ADV-0046)"
     ],
-    "preserved_ours": [
-      ".claude/agents/code-reviewer.md",
-      ".claude/agents/pypi-publisher.md",
-      ".claude/agents/ci-checker.md"
-    ],
-    "skipped": [
-      "scripts/linear_sync_utils.py (Linear-specific)",
-      "scripts/sync_tasks_to_linear.py (Linear-specific)",
-      ".claude/agents/tycho.md (upstream only)"
-    ],
-    "check_for_updates": "cd ~/Github/agentive-starter-kit && git log --oneline --since='2026-03-07' -- .claude/ scripts/ .agent-context/ CLAUDE.md"
+    "check_for_updates": "cd ~/Github/agentive-starter-kit && git log --oneline --since='2026-03-07' -- .claude/ scripts/ .kit/ CLAUDE.md"
   }
 }
