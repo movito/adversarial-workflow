@@ -852,9 +852,7 @@ class TestConfirmContinue:
         assert "auto-cancelling" in captured.out
         assert "ADVERSARIAL_UNATTENDED=1" in captured.out
 
-    def test_non_tty_with_unattended_other_value_auto_cancels(
-        self, capsys, monkeypatch
-    ):
+    def test_non_tty_with_unattended_other_value_auto_cancels(self, capsys, monkeypatch):
         """Non-TTY + ADVERSARIAL_UNATTENDED set to non-'1' value: still cancels.
 
         Strict opt-in: only the literal string '1' enables auto-confirm.
