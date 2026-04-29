@@ -757,37 +757,124 @@ class TestWarnLargeFile:
 
 
 class TestConfirmContinue:
-    """Direct tests for _confirm_continue helper (lines 320-321)."""
+    """Direct tests for _confirm_continue helper.
+
+    The non-TTY auto-yes guard (added 2026-04-29 in ADV follow-up to
+    ID2-0047) means every prompt-path test must also patch
+    ``sys.stdin.isatty`` to True, otherwise pytest captures stdin as
+    non-TTY and the helper short-circuits before ``input()`` is
+    consulted.
+    """
 
     def test_y_returns_true(self):
         """User typing 'y' means continue."""
-        with patch("builtins.input", return_value="y"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="y"),
+        ):
             assert _confirm_continue() is True
 
     def test_yes_returns_true(self):
         """User typing 'yes' means continue."""
-        with patch("builtins.input", return_value="yes"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="yes"),
+        ):
             assert _confirm_continue() is True
 
     def test_uppercase_y_returns_true(self):
         """User typing 'Y' (uppercase) is treated as yes after lower()."""
-        with patch("builtins.input", return_value="Y"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="Y"),
+        ):
             assert _confirm_continue() is True
 
     def test_n_returns_false(self):
         """User typing 'n' means cancel."""
-        with patch("builtins.input", return_value="n"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="n"),
+        ):
             assert _confirm_continue() is False
 
     def test_empty_returns_false(self):
         """Empty input (pressing Enter) defaults to No."""
-        with patch("builtins.input", return_value=""):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value=""),
+        ):
             assert _confirm_continue() is False
 
     def test_arbitrary_text_returns_false(self):
         """Any other input defaults to No."""
-        with patch("builtins.input", return_value="maybe"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="maybe"),
+        ):
             assert _confirm_continue() is False
+
+    def test_non_tty_with_unattended_env_auto_confirms(self, capsys, monkeypatch):
+        """Non-TTY + ADVERSARIAL_UNATTENDED=1: auto-confirm with notice."""
+        monkeypatch.setenv("ADVERSARIAL_UNATTENDED", "1")
+        with (
+            patch("sys.stdin.isatty", return_value=False),
+            # If we accidentally fall through to input(), this side_effect
+            # surfaces it as a clear test failure rather than a hang.
+            patch(
+                "builtins.input",
+                side_effect=AssertionError("input() should not be called in non-TTY"),
+            ),
+        ):
+            assert _confirm_continue() is True
+        captured = capsys.readouterr()
+        assert "ADVERSARIAL_UNATTENDED=1" in captured.out
+        assert "auto-confirming" in captured.out
+
+    def test_non_tty_without_unattended_env_auto_cancels(self, capsys, monkeypatch):
+        """Non-TTY without env var: auto-cancel (fail-safe), don't prompt.
+
+        Default behavior change after CodeRabbit re-review on PR
+        movito/adversarial-workflow#69: bare isatty()==False used to
+        auto-confirm, which silently approves expensive runs in CI.
+        Now the default is cancel; opt in via ADVERSARIAL_UNATTENDED=1.
+        """
+        monkeypatch.delenv("ADVERSARIAL_UNATTENDED", raising=False)
+        with (
+            patch("sys.stdin.isatty", return_value=False),
+            patch(
+                "builtins.input",
+                side_effect=AssertionError("input() should not be called in non-TTY"),
+            ),
+        ):
+            assert _confirm_continue() is False
+        captured = capsys.readouterr()
+        assert "auto-cancelling" in captured.out
+        assert "ADVERSARIAL_UNATTENDED=1" in captured.out
+
+    def test_non_tty_with_unattended_other_value_auto_cancels(self, capsys, monkeypatch):
+        """Non-TTY + ADVERSARIAL_UNATTENDED set to non-'1' value: still cancels.
+
+        Strict opt-in: only the literal string '1' enables auto-confirm.
+        Prevents accidental opt-in from typo'd values like 'true', 'yes', etc.
+        Cancel notice should accurately report the actual env value rather
+        than claiming the var is unset (CodeRabbit/Bugbot follow-up on PR
+        movito/adversarial-workflow#69).
+        """
+        monkeypatch.setenv("ADVERSARIAL_UNATTENDED", "true")
+        with (
+            patch("sys.stdin.isatty", return_value=False),
+            patch(
+                "builtins.input",
+                side_effect=AssertionError("input() should not be called in non-TTY"),
+            ),
+        ):
+            assert _confirm_continue() is False
+        captured = capsys.readouterr()
+        assert "auto-cancelling" in captured.out
+        # Notice must report the actual wrong value, not claim unset.
+        assert "'true'" in captured.out
+        assert "is unset" not in captured.out
 
 
 class TestBuiltinEvaluatorPath:

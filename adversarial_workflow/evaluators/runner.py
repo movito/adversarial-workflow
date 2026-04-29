@@ -10,6 +10,7 @@ Transport: Uses litellm.completion() for LLM calls (ADV-0065).
 from __future__ import annotations
 
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -232,7 +233,44 @@ def _warn_large_file(line_count: int, tokens: int) -> None:
 
 
 def _confirm_continue() -> bool:
-    """Ask user to confirm continuing with large file."""
+    """Ask user to confirm continuing with large file.
+
+    Behavior by context:
+
+    - **TTY (interactive)**: prompt as before; default is No.
+    - **Non-TTY with `ADVERSARIAL_UNATTENDED=1`**: auto-confirm with a
+      printed notice. This is the explicit opt-in for CI runs and
+      agentic harnesses that want to spend the tokens unattended.
+    - **Non-TTY without the env var**: auto-cancel (return False) with
+      a printed notice. Calling `input()` in this context would raise
+      EOFError and abort the run; cancelling is the safer default
+      because it avoids both the crash and silently-approved expensive
+      evaluations.
+
+    See: ID2-0043 / ID2-0046 retros (ixda-services-2.0) for the
+    original non-TTY EOFError friction; CodeRabbit re-review on PR
+    movito/adversarial-workflow#69 for the opt-in gate rationale.
+    """
+    if not sys.stdin.isatty():
+        unattended = os.environ.get("ADVERSARIAL_UNATTENDED")
+        if unattended == "1":
+            print(
+                "Non-TTY context detected and ADVERSARIAL_UNATTENDED=1 set "
+                "— auto-confirming large input."
+            )
+            return True
+        if unattended is None:
+            print(
+                "Non-TTY context detected and ADVERSARIAL_UNATTENDED is unset "
+                "— auto-cancelling. Set ADVERSARIAL_UNATTENDED=1 to opt into "
+                "unattended approval of large inputs."
+            )
+        else:
+            print(
+                "Non-TTY context detected and ADVERSARIAL_UNATTENDED is set to "
+                f"{unattended!r} (expected '1') — auto-cancelling."
+            )
+        return False
     response = input("Continue anyway? [y/N]: ").strip().lower()
     return response in ["y", "yes"]
 
