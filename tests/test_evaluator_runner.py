@@ -814,8 +814,9 @@ class TestConfirmContinue:
         ):
             assert _confirm_continue() is False
 
-    def test_non_tty_auto_confirms(self, capsys):
-        """Non-TTY context: auto-confirm without prompting."""
+    def test_non_tty_with_unattended_env_auto_confirms(self, capsys, monkeypatch):
+        """Non-TTY + ADVERSARIAL_UNATTENDED=1: auto-confirm with notice."""
+        monkeypatch.setenv("ADVERSARIAL_UNATTENDED", "1")
         with (
             patch("sys.stdin.isatty", return_value=False),
             # If we accidentally fall through to input(), this side_effect
@@ -827,7 +828,49 @@ class TestConfirmContinue:
         ):
             assert _confirm_continue() is True
         captured = capsys.readouterr()
-        assert "Non-TTY" in captured.out or "auto-confirming" in captured.out
+        assert "ADVERSARIAL_UNATTENDED=1" in captured.out
+        assert "auto-confirming" in captured.out
+
+    def test_non_tty_without_unattended_env_auto_cancels(self, capsys, monkeypatch):
+        """Non-TTY without env var: auto-cancel (fail-safe), don't prompt.
+
+        Default behavior change after CodeRabbit re-review on PR
+        movito/adversarial-workflow#69: bare isatty()==False used to
+        auto-confirm, which silently approves expensive runs in CI.
+        Now the default is cancel; opt in via ADVERSARIAL_UNATTENDED=1.
+        """
+        monkeypatch.delenv("ADVERSARIAL_UNATTENDED", raising=False)
+        with (
+            patch("sys.stdin.isatty", return_value=False),
+            patch(
+                "builtins.input",
+                side_effect=AssertionError("input() should not be called in non-TTY"),
+            ),
+        ):
+            assert _confirm_continue() is False
+        captured = capsys.readouterr()
+        assert "auto-cancelling" in captured.out
+        assert "ADVERSARIAL_UNATTENDED=1" in captured.out
+
+    def test_non_tty_with_unattended_other_value_auto_cancels(
+        self, capsys, monkeypatch
+    ):
+        """Non-TTY + ADVERSARIAL_UNATTENDED set to non-'1' value: still cancels.
+
+        Strict opt-in: only the literal string '1' enables auto-confirm.
+        Prevents accidental opt-in from typo'd values like 'true', 'yes', etc.
+        """
+        monkeypatch.setenv("ADVERSARIAL_UNATTENDED", "true")
+        with (
+            patch("sys.stdin.isatty", return_value=False),
+            patch(
+                "builtins.input",
+                side_effect=AssertionError("input() should not be called in non-TTY"),
+            ),
+        ):
+            assert _confirm_continue() is False
+        captured = capsys.readouterr()
+        assert "auto-cancelling" in captured.out
 
 
 class TestBuiltinEvaluatorPath:

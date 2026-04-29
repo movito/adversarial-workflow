@@ -235,18 +235,35 @@ def _warn_large_file(line_count: int, tokens: int) -> None:
 def _confirm_continue() -> bool:
     """Ask user to confirm continuing with large file.
 
-    Non-TTY contexts (CI runs, agentic harnesses, piped invocations)
-    auto-confirm: prompting for input without a terminal raises
-    EOFError and aborts the evaluation, which is worse than running
-    a slightly-too-large evaluation. When stdin is not a TTY we print
-    a notice and proceed.
+    Behavior by context:
+
+    - **TTY (interactive)**: prompt as before; default is No.
+    - **Non-TTY with `ADVERSARIAL_UNATTENDED=1`**: auto-confirm with a
+      printed notice. This is the explicit opt-in for CI runs and
+      agentic harnesses that want to spend the tokens unattended.
+    - **Non-TTY without the env var**: auto-cancel (return False) with
+      a printed notice. Calling `input()` in this context would raise
+      EOFError and abort the run; cancelling is the safer default
+      because it avoids both the crash and silently-approved expensive
+      evaluations.
 
     See: ID2-0043 / ID2-0046 retros (ixda-services-2.0) for the
-    non-TTY EOFError friction this guard fixes.
+    original non-TTY EOFError friction; CodeRabbit re-review on PR
+    movito/adversarial-workflow#69 for the opt-in gate rationale.
     """
     if not sys.stdin.isatty():
-        print("Non-TTY context detected — auto-confirming large input.")
-        return True
+        if os.environ.get("ADVERSARIAL_UNATTENDED") == "1":
+            print(
+                "Non-TTY context detected and ADVERSARIAL_UNATTENDED=1 set "
+                "— auto-confirming large input."
+            )
+            return True
+        print(
+            "Non-TTY context detected and ADVERSARIAL_UNATTENDED is unset "
+            "— auto-cancelling. Set ADVERSARIAL_UNATTENDED=1 to opt into "
+            "unattended approval of large inputs."
+        )
+        return False
     response = input("Continue anyway? [y/N]: ").strip().lower()
     return response in ["y", "yes"]
 
