@@ -10,6 +10,7 @@ Transport: Uses litellm.completion() for LLM calls (ADV-0065).
 from __future__ import annotations
 
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -232,7 +233,20 @@ def _warn_large_file(line_count: int, tokens: int) -> None:
 
 
 def _confirm_continue() -> bool:
-    """Ask user to confirm continuing with large file."""
+    """Ask user to confirm continuing with large file.
+
+    Non-TTY contexts (CI runs, agentic harnesses, piped invocations)
+    auto-confirm: prompting for input without a terminal raises
+    EOFError and aborts the evaluation, which is worse than running
+    a slightly-too-large evaluation. When stdin is not a TTY we print
+    a notice and proceed.
+
+    See: ID2-0043 / ID2-0046 retros (ixda-services-2.0) for the
+    non-TTY EOFError friction this guard fixes.
+    """
+    if not sys.stdin.isatty():
+        print("Non-TTY context detected — auto-confirming large input.")
+        return True
     response = input("Continue anyway? [y/N]: ").strip().lower()
     return response in ["y", "yes"]
 

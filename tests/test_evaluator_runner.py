@@ -757,37 +757,77 @@ class TestWarnLargeFile:
 
 
 class TestConfirmContinue:
-    """Direct tests for _confirm_continue helper (lines 320-321)."""
+    """Direct tests for _confirm_continue helper.
+
+    The non-TTY auto-yes guard (added 2026-04-29 in ADV follow-up to
+    ID2-0047) means every prompt-path test must also patch
+    ``sys.stdin.isatty`` to True, otherwise pytest captures stdin as
+    non-TTY and the helper short-circuits before ``input()`` is
+    consulted.
+    """
 
     def test_y_returns_true(self):
         """User typing 'y' means continue."""
-        with patch("builtins.input", return_value="y"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="y"),
+        ):
             assert _confirm_continue() is True
 
     def test_yes_returns_true(self):
         """User typing 'yes' means continue."""
-        with patch("builtins.input", return_value="yes"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="yes"),
+        ):
             assert _confirm_continue() is True
 
     def test_uppercase_y_returns_true(self):
         """User typing 'Y' (uppercase) is treated as yes after lower()."""
-        with patch("builtins.input", return_value="Y"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="Y"),
+        ):
             assert _confirm_continue() is True
 
     def test_n_returns_false(self):
         """User typing 'n' means cancel."""
-        with patch("builtins.input", return_value="n"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="n"),
+        ):
             assert _confirm_continue() is False
 
     def test_empty_returns_false(self):
         """Empty input (pressing Enter) defaults to No."""
-        with patch("builtins.input", return_value=""):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value=""),
+        ):
             assert _confirm_continue() is False
 
     def test_arbitrary_text_returns_false(self):
         """Any other input defaults to No."""
-        with patch("builtins.input", return_value="maybe"):
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="maybe"),
+        ):
             assert _confirm_continue() is False
+
+    def test_non_tty_auto_confirms(self, capsys):
+        """Non-TTY context: auto-confirm without prompting."""
+        with (
+            patch("sys.stdin.isatty", return_value=False),
+            # If we accidentally fall through to input(), this side_effect
+            # surfaces it as a clear test failure rather than a hang.
+            patch(
+                "builtins.input",
+                side_effect=AssertionError("input() should not be called in non-TTY"),
+            ),
+        ):
+            assert _confirm_continue() is True
+        captured = capsys.readouterr()
+        assert "Non-TTY" in captured.out or "auto-confirming" in captured.out
 
 
 class TestBuiltinEvaluatorPath:
