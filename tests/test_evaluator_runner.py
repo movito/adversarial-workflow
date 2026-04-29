@@ -857,6 +857,9 @@ class TestConfirmContinue:
 
         Strict opt-in: only the literal string '1' enables auto-confirm.
         Prevents accidental opt-in from typo'd values like 'true', 'yes', etc.
+        Cancel notice should accurately report the actual env value rather
+        than claiming the var is unset (CodeRabbit/Bugbot follow-up on PR
+        movito/adversarial-workflow#69).
         """
         monkeypatch.setenv("ADVERSARIAL_UNATTENDED", "true")
         with (
@@ -869,6 +872,9 @@ class TestConfirmContinue:
             assert _confirm_continue() is False
         captured = capsys.readouterr()
         assert "auto-cancelling" in captured.out
+        # Notice must report the actual wrong value, not claim unset.
+        assert "'true'" in captured.out
+        assert "is unset" not in captured.out
 
 
 class TestBuiltinEvaluatorPath:

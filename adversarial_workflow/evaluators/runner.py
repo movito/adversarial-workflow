@@ -252,17 +252,24 @@ def _confirm_continue() -> bool:
     movito/adversarial-workflow#69 for the opt-in gate rationale.
     """
     if not sys.stdin.isatty():
-        if os.environ.get("ADVERSARIAL_UNATTENDED") == "1":
+        unattended = os.environ.get("ADVERSARIAL_UNATTENDED")
+        if unattended == "1":
             print(
                 "Non-TTY context detected and ADVERSARIAL_UNATTENDED=1 set "
                 "— auto-confirming large input."
             )
             return True
-        print(
-            "Non-TTY context detected and ADVERSARIAL_UNATTENDED is unset "
-            "— auto-cancelling. Set ADVERSARIAL_UNATTENDED=1 to opt into "
-            "unattended approval of large inputs."
-        )
+        if unattended is None:
+            print(
+                "Non-TTY context detected and ADVERSARIAL_UNATTENDED is unset "
+                "— auto-cancelling. Set ADVERSARIAL_UNATTENDED=1 to opt into "
+                "unattended approval of large inputs."
+            )
+        else:
+            print(
+                "Non-TTY context detected and ADVERSARIAL_UNATTENDED is set to "
+                f"{unattended!r} (expected '1') — auto-cancelling."
+            )
         return False
     response = input("Continue anyway? [y/N]: ").strip().lower()
     return response in ["y", "yes"]
