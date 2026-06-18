@@ -218,29 +218,35 @@ def check_dk003(tree: ast.AST, source_lines: list[str], path: str) -> list[Viola
         if not isinstance(node, ast.Compare):
             continue
 
+        current_left = node.left
         for op, comparator in zip(node.ops, node.comparators, strict=False):
             if not isinstance(op, ast.In):
+                current_left = comparator
                 continue
 
             # Skip collection literals — set, list, tuple, dict on the right
             if isinstance(comparator, (ast.Set, ast.List, ast.Tuple, ast.Dict)):
+                current_left = comparator
                 continue
             # Skip set/frozenset/list/dict/tuple constructor calls
             if isinstance(comparator, ast.Call):
                 func_name = _extract_name(comparator.func)
                 if func_name in {"set", "frozenset", "list", "dict", "tuple"}:
+                    current_left = comparator
                     continue
 
-            left = node.left
+            left = current_left
             left_name = _extract_name(left)
             right_name = _extract_name(comparator)
 
             if not left_name or not right_name:
+                current_left = comparator
                 continue
 
             # Skip if right side looks like a collection variable
             right_lower = right_name.lower().split(".")[-1]  # last segment
             if any(right_lower.endswith(s) for s in collection_suffixes):
+                current_left = comparator
                 continue
 
             # Both sides must look like identifier variables
@@ -248,12 +254,14 @@ def check_dk003(tree: ast.AST, source_lines: list[str], path: str) -> list[Viola
             right_is_id = any(hint in right_name.lower() for hint in identifier_hints)
 
             if not (left_is_id and right_is_id):
+                current_left = comparator
                 continue
 
             line = source_lines[node.lineno - 1] if node.lineno <= len(source_lines) else ""
 
             # Suppressed by '# substring:' comment
             if "# substring:" in line or "# noqa: DK003" in line:
+                current_left = comparator
                 continue
 
             violations.append(
@@ -268,6 +276,8 @@ def check_dk003(tree: ast.AST, source_lines: list[str], path: str) -> list[Viola
                     ),
                 )
             )
+
+            current_left = comparator
 
     return violations
 
